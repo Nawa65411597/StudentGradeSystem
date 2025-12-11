@@ -13,6 +13,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- HTML5-QRCode Library for Barcode Scanning -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -20,6 +23,9 @@
                     fontFamily: {
                         sans: ['Prompt', 'sans-serif'],
                     },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
                 },
             },
         }
@@ -50,6 +56,10 @@
         .calculated-field {
             @apply bg-gray-100 text-gray-600 cursor-not-allowed font-bold;
         }
+
+        /* Scanner Styles */
+        #reader, #direct-reader { width: 100%; border-radius: 1rem; overflow: hidden; background: #000; }
+        #reader video, #direct-reader video { object-fit: cover; border-radius: 1rem; }
     </style>
 
     <!-- React & ReactDOM -->
@@ -63,7 +73,7 @@
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         // --- CONFIG & ICONS ---
         let firebaseConfig;
@@ -89,6 +99,7 @@
         const PUBLIC_DATA_PATH = `artifacts/${appId}/public/data`;
         const STUDENTS_COLLECTION = `${PUBLIC_DATA_PATH}/students`;
         const CONFIG_DOC = `${PUBLIC_DATA_PATH}/config/main`;
+        const SCANNER_SESSIONS_COLLECTION = `${PUBLIC_DATA_PATH}/scanner_sessions`;
 
         const Icon = ({ path, size = 20, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>
@@ -119,7 +130,11 @@
             Database: (props) => <Icon {...props} path={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
             ArrowUp: (props) => <Icon {...props} path={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
             Users: (props) => <Icon {...props} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />
+            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />,
+            Calculator: (props) => <Icon {...props} path={<><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
+            Percent: (props) => <Icon {...props} path={<><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></>} />,
+            QrCode: (props) => <Icon {...props} path={<><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></>} />,
+            Camera: (props) => <Icon {...props} path={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />
         };
 
         const SEED_DATA = [
@@ -166,6 +181,82 @@
 
         const { useState, useMemo, useEffect, useRef } = React;
 
+        // --- Mobile Scanner Component ---
+        function MobileScanner({ sessionId, onClose }) {
+            const [scanStatus, setScanStatus] = useState('กำลังเปิดกล้อง...');
+            const [lastScanned, setLastScanned] = useState(null);
+
+            useEffect(() => {
+                const scanner = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: 250, aspectRatio: 1.0 };
+                
+                scanner.start(
+                    { facingMode: "environment" }, 
+                    config, 
+                    (decodedText, decodedResult) => {
+                        // On Success
+                        if (lastScanned === decodedText) return; 
+                        
+                        setLastScanned(decodedText);
+                        setScanStatus(`สแกนสำเร็จ: ${decodedText}`);
+                        
+                        // Send to Firestore
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId);
+                        updateDoc(docRef, { 
+                            lastScanned: decodedText,
+                            timestamp: Date.now()
+                        }).catch(e => console.error(e));
+
+                        if (navigator.vibrate) navigator.vibrate(200);
+                        setTimeout(() => setLastScanned(null), 3000);
+                    },
+                    (errorMessage) => { }
+                ).catch(err => {
+                    setScanStatus("ไม่สามารถเปิดกล้องได้: " + err);
+                });
+
+                return () => {
+                    scanner.stop().then(ignore => {}).catch(err => {});
+                };
+            }, [sessionId]);
+
+            return (
+                <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
+                    <h3 className="text-white text-xl font-bold mb-4 flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
+                    <div id="reader" className="bg-white"></div>
+                    <p className="text-white mt-4 text-center">{scanStatus}</p>
+                    {lastScanned && <div className="mt-2 bg-green-500 text-white px-4 py-2 rounded-full animate-bounce font-bold">{lastScanned}</div>}
+                    <button onClick={onClose} className="mt-8 bg-red-600 text-white px-6 py-3 rounded-full font-bold">ปิดสแกนเนอร์</button>
+                    <p className="text-gray-500 text-xs mt-4">Session: {sessionId.substring(0,6)}...</p>
+                </div>
+            );
+        }
+
+        // --- NEW: Direct Scanner Modal for Same-Device Scanning ---
+        function DirectScannerModal({ onClose, onScan }) {
+            useEffect(() => {
+                const scanner = new Html5Qrcode("direct-reader");
+                const config = { fps: 10, qrbox: 250 };
+                scanner.start({ facingMode: "environment" }, config, 
+                    (text) => {
+                        onScan(text);
+                        scanner.stop().then(() => onClose()).catch(() => onClose());
+                    }, 
+                    () => {}
+                ).catch(err => alert("ไม่สามารถเปิดกล้องได้: " + err));
+
+                return () => { try { scanner.stop(); } catch(e){} };
+            }, []);
+
+            return (
+                <div className="fixed inset-0 bg-black/90 z-[200] flex flex-col items-center justify-center p-4">
+                    <h3 className="text-white text-xl font-bold mb-4 flex items-center gap-2"><Icons.Camera/> สแกนบาร์โค้ด</h3>
+                    <div id="direct-reader" className="w-full max-w-sm bg-black rounded-xl overflow-hidden"></div>
+                    <button onClick={onClose} className="mt-8 bg-white text-black px-6 py-2 rounded-full font-bold">ยกเลิก</button>
+                </div>
+            )
+        }
+
         function App() {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('student');
@@ -183,6 +274,7 @@
             const [sortConfig, setSortConfig] = useState({ key: 'no', direction: 'asc' });
             const [warning, setWarning] = useState({ show: false, msg: '' });
             const [teacherSearchId, setTeacherSearchId] = useState('');
+            const [scannerSessionId, setScannerSessionId] = useState(null); 
             
             // Refs
             const teacherSearchInputRef = useRef(null);
@@ -199,7 +291,7 @@
             // Settings Page States
             const [newColName, setNewColName] = useState('');
             const [newColMax, setNewColMax] = useState(10);
-            const [newColType, setNewColType] = useState('manual'); // NEW: 'manual', 'sum', 'percent'
+            const [newColType, setNewColType] = useState('manual');
             const [targetSectionId, setTargetSectionId] = useState('');
             const [targetGroupName, setTargetGroupName] = useState('คะแนนเก็บ');
             const [newSectionTitle, setNewSectionTitle] = useState('');
@@ -217,9 +309,22 @@
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
             const [sectionSettings, setSectionSettings] = useState(null);
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
+            const [isScannerModalOpen, setIsScannerModalOpen] = useState(false); // For PC displaying QR
+            const [isMobileScannerActive, setIsMobileScannerActive] = useState(false); // For Phone showing camera (Session mode)
+            
+            // NEW: Direct Scanner State
+            const [showDirectScanner, setShowDirectScanner] = useState(false);
+            const [scanTarget, setScanTarget] = useState('student'); // 'student' or 'teacher'
 
             // Auth & Init
             useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const scanSession = params.get('scan_session');
+                if (scanSession) {
+                    setIsMobileScannerActive(true);
+                    setScannerSessionId(scanSession); 
+                }
+
                 const initAuth = async () => {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
                     else await signInAnonymously(auth);
@@ -247,13 +352,31 @@
                 return () => { unsubConfig(); unsubStudents(); };
             }, [user]);
 
+            // Scanner Listener (PC Side)
+            useEffect(() => {
+                if (!scannerSessionId || isMobileScannerActive) return; 
+
+                const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
+                
+                setDoc(sessionDoc, { created: Date.now() }, { merge: true });
+
+                const unsub = onSnapshot(sessionDoc, (doc) => {
+                    const data = doc.data();
+                    if (data && data.lastScanned) {
+                        setTeacherSearchId(data.lastScanned);
+                    }
+                });
+                return () => unsub();
+            }, [scannerSessionId, isMobileScannerActive]); 
+
+            // Auto Focus Logic
             useEffect(() => {
                 if (view === 'teacher' && teacherSearchInputRef.current) teacherSearchInputRef.current.focus();
                 if (view === 'student' && studentSearchInputRef.current) studentSearchInputRef.current.focus();
-                if (!isEditModalOpen && !isAddStudentModalOpen && !isImportModalOpen && !isEditColumnModalOpen && view === 'teacher' && teacherSearchInputRef.current) {
+                if (!isEditModalOpen && !isAddStudentModalOpen && !isImportModalOpen && !isEditColumnModalOpen && !isScannerModalOpen && !showDirectScanner && view === 'teacher' && teacherSearchInputRef.current) {
                     setTimeout(() => teacherSearchInputRef.current.focus(), 100);
                 }
-            }, [view, isEditModalOpen, isAddStudentModalOpen, isImportModalOpen, isEditColumnModalOpen, teacherTab]);
+            }, [view, isEditModalOpen, isAddStudentModalOpen, isImportModalOpen, isEditColumnModalOpen, isScannerModalOpen, showDirectScanner, teacherTab]);
 
             // Helpers
             const isCalculatedCol = (colName) => colName === 'รวม' || colName.includes('%') || colName === 'คิดเป็น %';
@@ -262,13 +385,16 @@
                 if (!isCalculatedCol(colName)) return student.scores?.[colName];
                 if (colName === 'รวม') {
                     let total = 0;
-                    group.columns.forEach(c => {
-                        if (!isCalculatedCol(c)) {
-                            const val = parseFloat(student.scores?.[c]) || 0;
-                            total += val;
-                        }
-                    });
-                    return total === 0 && !group.columns.some(c => student.scores?.[c] !== undefined && !isCalculatedCol(c)) ? '-' : parseFloat(total.toFixed(2));
+                    if(group && group.columns) {
+                        group.columns.forEach(c => {
+                            if (!isCalculatedCol(c)) {
+                                const val = parseFloat(student.scores?.[c]) || 0;
+                                total += val;
+                            }
+                        });
+                        return total === 0 && !group.columns.some(c => student.scores?.[c] !== undefined && !isCalculatedCol(c)) ? '-' : parseFloat(total.toFixed(2));
+                    }
+                    return '-';
                 }
                 if (colName.includes('%') || colName === 'คิดเป็น %') {
                     const idx = group.columns.indexOf(colName);
@@ -310,6 +436,32 @@
             };
 
             // Actions
+            const handleGenerateScanner = () => {
+                const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                setScannerSessionId(newSessionId);
+                setIsScannerModalOpen(true);
+            };
+
+            const handleDirectScan = (text) => {
+                if (scanTarget === 'student') {
+                    setSearchId(text);
+                    // Optionally auto-search if needed, but let's just fill for now to let user confirm
+                } else if (scanTarget === 'teacher') {
+                    setTeacherSearchId(text);
+                }
+                setShowDirectScanner(false);
+            };
+
+            const startScanStudent = () => {
+                setScanTarget('student');
+                setShowDirectScanner(true);
+            };
+
+            const startScanTeacher = () => {
+                setScanTarget('teacher');
+                setShowDirectScanner(true);
+            };
+
             const handleSeedData = async () => {
                 if(!confirm('ต้องการลงข้อมูลตัวอย่างใช่หรือไม่? ข้อมูลเก่าจะถูกลบ')) return;
                 setLoading(true);
@@ -335,7 +487,7 @@
             };
 
             const handleLogin = () => {
-                if (password === '65411597') setView('teacher');
+                if (password === 'admin') setView('teacher');
                 else setWarning({ show: true, msg: 'รหัสผ่านผิด (admin)' });
             };
 
@@ -350,27 +502,21 @@
             };
 
             const addNewColumn = async () => {
-                // Determine name based on Type
                 let finalColName = newColName;
                 if (newColType === 'sum') finalColName = 'รวม';
                 if (newColType === 'percent') finalColName = 'คิดเป็น %';
 
                 if (!finalColName) return setWarning({ show: true, msg: 'กรุณาระบุชื่องาน' });
 
-                // Check constraints
                 const targetSection = sections.find(s => s.id === targetSectionId);
                 if(!targetSection) return;
 
-                // Find or create group logic needs to be robust
-                // For simplicity, we find the group in current section state
                 let targetGroup = targetSection.groups.find(g => g.title === targetGroupName);
                 
-                // Rule 1: No duplicate names within the SAME group (even if auto) - makes it confusing
                 if (targetGroup && targetGroup.columns.includes(finalColName)) {
                     return setWarning({ show: true, msg: 'มีชื่องานนี้ในกลุ่มนี้แล้ว (ห้ามซ้ำในกลุ่มเดียวกัน)' });
                 }
 
-                // Rule 2: Manual columns must be globally unique to prevent key collision
                 if (newColType === 'manual') {
                     const allCols = getAllColumns();
                     if (allCols.includes(finalColName)) {
@@ -378,14 +524,11 @@
                     }
                 }
 
-                // Proceed to Add
                 let newGroups = [...(targetSection.groups || [])];
                 if (targetGroup) {
-                    // Update existing group
                     targetGroup.columns.push(finalColName);
                     targetGroup.includedCols = [...(targetGroup.includedCols || []), finalColName];
                 } else {
-                    // Create new group
                     newGroups.push({
                         id: `g_${Date.now()}`,
                         title: targetGroupName,
@@ -397,17 +540,6 @@
                 const updatedSections = sections.map(sec => 
                     sec.id === targetSectionId ? { ...sec, groups: newGroups } : sec
                 );
-                
-                // Update Max Scores
-                // Note: Even if multiple "Total" columns exist, they can share the same Max Score key IF they have the same max score. 
-                // But typically "Total" max score depends on the sum of items. 
-                // Currently maxScores is a simple key-value map. If "Total" in Ch1 is 20 and "Total" in Ch2 is 30, we have a problem with `maxScores['Total']`.
-                // However, since we bypassed unique check for Auto columns, we need to accept that MaxScore might be ambiguous if stored by name.
-                // For Auto-Sum ("รวม"), max score is usually derived, not stored? The code uses `maxScores['รวม']`.
-                // If we want different max scores for "รวม", we need unique keys or a better structure.
-                // LIMITATION: With current data structure (Map<String, Number>), all columns named "รวม" will share the same Max Score.
-                // WORKAROUND: For "Auto Sum", we don't really use maxScores for calculation (we sum values). But for display (header), we do.
-                // Let's just update it. The user accepts duplicate names, implying they might accept shared max score settings or understand the limitation.
                 
                 const updatedMaxScores = { ...maxScores, [finalColName]: parseInt(newColMax) };
                 
@@ -434,16 +566,13 @@
                     const { sectionId, groupId, oldName } = columnToEdit;
                     const batch = writeBatch(db);
                     
-                    // 1. Update Structure & MaxScores
                     const newSections = JSON.parse(JSON.stringify(sections));
                     const section = newSections.find(s => s.id === sectionId);
                     const group = section.groups.find(g => g.id === groupId);
                     
-                    // Rename in columns array
                     const colIdx = group.columns.indexOf(oldName);
                     if (colIdx !== -1) group.columns[colIdx] = editColName;
                     
-                    // Rename in includedCols
                     if (group.includedCols) {
                         const incIdx = group.includedCols.indexOf(oldName);
                         if (incIdx !== -1) group.includedCols[incIdx] = editColName;
@@ -455,7 +584,6 @@
 
                     batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
 
-                    // 2. Update Student Scores (Migrate data if name changed)
                     if (oldName !== editColName) {
                         students.forEach(student => {
                             if (student.scores && student.scores[oldName] !== undefined) {
@@ -491,7 +619,6 @@
                 try {
                     const batch = writeBatch(db);
 
-                    // 1. Update Config (Remove from sections & maxScores)
                     const newSections = JSON.parse(JSON.stringify(sections));
                     const section = newSections.find(s => s.id === sectionId);
                     const group = section.groups.find(g => g.id === groupId);
@@ -506,7 +633,6 @@
 
                     batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
 
-                    // 2. Remove scores from students
                     students.forEach(student => {
                         if (student.scores && student.scores[oldName] !== undefined) {
                             const newScores = { ...student.scores };
@@ -637,6 +763,16 @@
                 });
             }, [students, selectedRoom, sortConfig, teacherSearchId]);
 
+            // Mobile Scanner Rendering
+            if (isMobileScannerActive) {
+                return <MobileScanner sessionId={scannerSessionId} onClose={() => { setIsMobileScannerActive(false); window.history.replaceState(null, '', window.location.pathname); }} />;
+            }
+            
+            // Direct Scanner Rendering
+            if (showDirectScanner) {
+                return <DirectScannerModal onClose={() => setShowDirectScanner(false)} onScan={handleDirectScan} />;
+            }
+
             if (loading && !students.length && !sections.length) return <div className="min-h-screen flex items-center justify-center text-blue-600">กำลังโหลดข้อมูล...</div>;
 
             return (
@@ -665,7 +801,7 @@
                                     <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-blue-600" /></div>
                                     <h3 className="text-xl font-bold text-gray-800">ยืนยันตัวตนครู</h3>
                                 </div>
-                                <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
                                 <button onClick={handleLogin} className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition">เข้าสู่ระบบ</button>
                                 <button onClick={() => setView('student')} className="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">กลับไปหน้านักเรียน</button>
                             </div>
@@ -680,8 +816,13 @@
                                         <h2 className="text-3xl font-extrabold text-gray-800 mb-2">ตรวจสอบคะแนน</h2>
                                         <p className="text-gray-500">กรอกรหัสนักเรียนเพื่อดูผลการเรียนรายวิชา</p>
                                     </div>
-                                    <div className="flex gap-2 mb-6">
-                                        <input ref={studentSearchInputRef} type="text" placeholder="เลขประจำตัว (เช่น 66001)" className="flex-1 p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none text-lg transition" value={searchId} onChange={(e) => setSearchId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                                    <div className="flex gap-2 mb-6 relative">
+                                        <div className="relative flex-1">
+                                            <input ref={studentSearchInputRef} type="text" placeholder="เลขประจำตัว (เช่น 66001)" className="w-full p-4 pr-12 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none text-lg transition" value={searchId} onChange={(e) => setSearchId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                                            <button onClick={startScanStudent} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 p-2 rounded-full hover:bg-gray-100 transition" title="สแกนบาร์โค้ด">
+                                                <Icons.Camera size={24}/>
+                                            </button>
+                                        </div>
                                         <button onClick={handleSearch} className="bg-blue-600 text-white px-6 rounded-2xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition flex items-center justify-center"><Icons.Search className="w-6 h-6" /></button>
                                     </div>
                                     {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center font-medium border border-red-100 animate-pulse flex items-center justify-center gap-2"><Icons.AlertCircle size={20}/> {error}</div>}
@@ -787,7 +928,11 @@
                                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 flex-1 md:flex-none">
                                             <Icons.Search size={18} className="text-gray-500"/>
                                             <input ref={teacherSearchInputRef} type="text" placeholder="ค้นหารหัส/ชื่อ..." className="bg-transparent text-sm outline-none w-full md:w-48" value={teacherSearchId} onChange={(e) => setTeacherSearchId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleTeacherSearch()} />
+                                            <button onClick={startScanTeacher} className="text-gray-400 hover:text-blue-600 transition" title="สแกนบาร์โค้ด">
+                                                <Icons.Camera size={18}/>
+                                            </button>
                                         </div>
+                                        <button onClick={handleGenerateScanner} className="flex items-center gap-2 bg-purple-600 text-white px-3 py-2 rounded-xl hover:bg-purple-700 transition shadow-md whitespace-nowrap"><Icons.QrCode size={18}/> Mobile Pair</button>
                                         <div className="text-xs text-gray-400 ml-auto whitespace-nowrap">แสดงผล: {processedStudents.length} คน</div>
                                     </div>
                                 )}
@@ -866,7 +1011,7 @@
                                         </div>
                                     </div>
                                 )}
-
+                                {/* ... (Tab 2 & 3 content unchanged) ... */}
                                 {teacherTab === 'students' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
                                         <div className="card">
@@ -1057,7 +1202,7 @@
                                                                         <div key={group.id} className="flex items-center text-xs bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
                                                                             <div className="px-2 py-1 bg-gray-100 font-semibold text-gray-600 border-r">{group.title}</div>
                                                                             <div className="px-2 py-1 text-gray-500 flex gap-1">
-                                                                                {group.columns.map(c => (
+                                                                                {group.columns.length > 0 ? group.columns.map(c => (
                                                                                     <span 
                                                                                         key={c} 
                                                                                         title={`เต็ม ${maxScores[c]}`}
@@ -1066,7 +1211,7 @@
                                                                                     >
                                                                                         {c}
                                                                                     </span>
-                                                                                )).reduce((prev, curr) => [prev, ', ', curr])}
+                                                                                )).reduce((prev, curr) => [prev, ', ', curr]) : <span className="italic text-gray-300">-</span>}
                                                                             </div>
                                                                         </div>
                                                                     ))}
