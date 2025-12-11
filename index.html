@@ -119,9 +119,7 @@
             Database: (props) => <Icon {...props} path={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
             ArrowUp: (props) => <Icon {...props} path={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
             Users: (props) => <Icon {...props} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />,
-            Calculator: (props) => <Icon {...props} path={<><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
-            Percent: (props) => <Icon {...props} path={<><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></>} />
+            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />
         };
 
         const SEED_DATA = [
@@ -337,7 +335,7 @@
             };
 
             const handleLogin = () => {
-                if (password === 'admin') setView('teacher');
+                if (password === '65411597') setView('teacher');
                 else setWarning({ show: true, msg: 'รหัสผ่านผิด (admin)' });
             };
 
@@ -660,19 +658,20 @@
                     </nav>
 
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
-                        {/* TEACHER LOGIN, STUDENT VIEW, TEACHER DASHBOARD, TAB 1 & 2 ... (Unchanged logic sections) */}
+                        {/* TEACHER LOGIN */}
                         {view === 'teacher_login' && (
                             <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 animate-fade-in">
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-blue-600" /></div>
                                     <h3 className="text-xl font-bold text-gray-800">ยืนยันตัวตนครู</h3>
                                 </div>
-                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+                                <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
                                 <button onClick={handleLogin} className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition">เข้าสู่ระบบ</button>
                                 <button onClick={() => setView('student')} className="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">กลับไปหน้านักเรียน</button>
                             </div>
                         )}
 
+                        {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <div className="max-w-xl mx-auto mt-8 animate-fade-in">
                                 <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-white/50 relative overflow-hidden">
@@ -1283,6 +1282,11 @@
                             </div>
                         )}
                     </div>
+                    
+                    {/* Footer Credit */}
+                    <footer className="text-center py-6 text-slate-400 text-sm">
+                        <p>© 2024 GradePro Cloud | พัฒนาโดย Nawarat K.</p>
+                    </footer>
                 </div>
             );
         }
