@@ -13,7 +13,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- HTML5-QRCode Library for Barcode Scanning -->
+    <!-- HTML5-QRCode Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <script>
@@ -57,7 +57,6 @@
             @apply bg-gray-100 text-gray-600 cursor-not-allowed font-bold;
         }
 
-        /* Scanner Styles */
         #reader, #direct-reader { width: 100%; border-radius: 1rem; overflow: hidden; background: #000; }
         #reader video, #direct-reader video { object-fit: cover; border-radius: 1rem; }
     </style>
@@ -73,9 +72,8 @@
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        // --- CONFIG & ICONS ---
         let firebaseConfig;
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
@@ -99,7 +97,6 @@
         const PUBLIC_DATA_PATH = `artifacts/${appId}/public/data`;
         const STUDENTS_COLLECTION = `${PUBLIC_DATA_PATH}/students`;
         const CONFIG_DOC = `${PUBLIC_DATA_PATH}/config/main`;
-        const SCANNER_SESSIONS_COLLECTION = `${PUBLIC_DATA_PATH}/scanner_sessions`;
 
         const Icon = ({ path, size = 20, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>
@@ -181,10 +178,19 @@
 
         const { useState, useMemo, useEffect, useRef } = React;
 
+        // Sound Helper
+        const playBeep = () => {
+            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            audio.volume = 0.5;
+            audio.play().catch(e => {}); 
+        };
+
         // --- Mobile Scanner Component ---
         function MobileScanner({ sessionId, onClose }) {
             const [scanStatus, setScanStatus] = useState('กำลังเปิดกล้อง...');
             const [lastScanned, setLastScanned] = useState(null);
+            const [errorMsg, setErrorMsg] = useState(null);
+            const [manualInput, setManualInput] = useState('');
 
             useEffect(() => {
                 const scanner = new Html5Qrcode("reader");
@@ -194,52 +200,92 @@
                     { facingMode: "environment" }, 
                     config, 
                     (decodedText, decodedResult) => {
-                        // On Success
-                        if (lastScanned === decodedText) return; 
-                        
-                        setLastScanned(decodedText);
-                        setScanStatus(`สแกนสำเร็จ: ${decodedText}`);
-                        
-                        // Send to Firestore
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId);
-                        updateDoc(docRef, { 
-                            lastScanned: decodedText,
-                            timestamp: Date.now()
-                        }).catch(e => console.error(e));
-
-                        if (navigator.vibrate) navigator.vibrate(200);
-                        setTimeout(() => setLastScanned(null), 3000);
+                        const cleanText = decodedText.trim();
+                        if (cleanText.includes("scan_session=")) {
+                            setErrorMsg("⚠️ กรุณาสแกนบัตรนักเรียน (ไม่ใช่ QR Code เชื่อมต่อ)");
+                            return;
+                        }
+                        if (lastScanned === cleanText) return; 
+                        handleSend(cleanText);
                     },
                     (errorMessage) => { }
-                ).catch(err => {
-                    setScanStatus("ไม่สามารถเปิดกล้องได้: " + err);
-                });
+                ).catch(err => setScanStatus("ไม่สามารถเปิดกล้องได้: " + err));
 
-                return () => {
-                    scanner.stop().then(ignore => {}).catch(err => {});
-                };
+                return () => { scanner.stop().then(ignore => {}).catch(err => {}); };
             }, [sessionId]);
+
+            const handleSend = (text) => {
+                setErrorMsg(null);
+                setLastScanned(text);
+                setScanStatus(`กำลังส่ง: ${text}`);
+                playBeep();
+                
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId);
+                setDoc(docRef, { 
+                    lastScanned: text,
+                    timestamp: Date.now()
+                }, { merge: true }).then(() => {
+                     setScanStatus(`✅ ส่งข้อมูลสำเร็จ: ${text}`);
+                }).catch(e => setErrorMsg("ส่งข้อมูลไม่สำเร็จ"));
+
+                if (navigator.vibrate) navigator.vibrate(200);
+                setTimeout(() => { setLastScanned(null); setScanStatus("พร้อมสแกน..."); }, 2000);
+            };
+
+            const handleManualSubmit = (e) => {
+                e.preventDefault();
+                if(manualInput.trim()) {
+                    handleSend(manualInput.trim());
+                    setManualInput('');
+                }
+            };
 
             return (
                 <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    <div id="reader" className="bg-white"></div>
-                    <p className="text-white mt-4 text-center">{scanStatus}</p>
-                    {lastScanned && <div className="mt-2 bg-green-500 text-white px-4 py-2 rounded-full animate-bounce font-bold">{lastScanned}</div>}
-                    <button onClick={onClose} className="mt-8 bg-red-600 text-white px-6 py-3 rounded-full font-bold">ปิดสแกนเนอร์</button>
-                    <p className="text-gray-500 text-xs mt-4">Session: {sessionId.substring(0,6)}...</p>
+                    <div id="reader" className="bg-white rounded-xl overflow-hidden border-2 border-gray-700 w-full max-w-sm"></div>
+                    
+                    {errorMsg ? <div className="bg-red-500 text-white p-3 rounded-lg mt-4 animate-pulse font-bold text-center w-full max-w-sm">{errorMsg}</div> : <p className="text-gray-300 mt-4 text-center font-mono">{scanStatus}</p>}
+                    
+                    {lastScanned && (
+                        <div className="mt-4 flex flex-col items-center animate-bounce">
+                            <div className="bg-green-500 text-white w-12 h-12 rounded-full flex items-center justify-center mb-2"><span className="text-2xl font-bold">✓</span></div>
+                            <div className="text-green-400 font-bold text-lg">{lastScanned}</div>
+                        </div>
+                    )}
+                    
+                    <form onSubmit={handleManualSubmit} className="flex gap-2 w-full max-w-sm mt-6">
+                        <input type="text" placeholder="หรือพิมพ์รหัสที่นี่..." className="flex-1 p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none" value={manualInput} onChange={(e) => setManualInput(e.target.value)} />
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-3 rounded-lg font-bold">ส่ง</button>
+                    </form>
+                    <button onClick={onClose} className="mt-6 bg-red-600 text-white px-8 py-2 rounded-full font-bold shadow-lg text-sm">ปิดสแกนเนอร์</button>
+                    <div className="mt-4 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <p className="text-gray-500 text-xs">Session: {sessionId.substring(0,6)}...</p>
+                    </div>
                 </div>
             );
         }
 
-        // --- NEW: Direct Scanner Modal for Same-Device Scanning ---
-        function DirectScannerModal({ onClose, onScan }) {
+        // --- Direct Scanner Modal ---
+        function DirectScannerModal({ onClose, onScan, onSwitchToMobileMode }) {
             useEffect(() => {
                 const scanner = new Html5Qrcode("direct-reader");
                 const config = { fps: 10, qrbox: 250 };
                 scanner.start({ facingMode: "environment" }, config, 
                     (text) => {
-                        onScan(text);
+                        const cleanText = text.trim();
+                        // Smart Check: Is this a scan session QR?
+                        if (cleanText.includes("scan_session=")) {
+                             const urlParams = new URLSearchParams(cleanText.split('?')[1]);
+                             const session = urlParams.get('scan_session');
+                             if (session) {
+                                 onSwitchToMobileMode(session);
+                                 return;
+                             }
+                        }
+                        playBeep();
+                        onScan(cleanText);
                         scanner.stop().then(() => onClose()).catch(() => onClose());
                     }, 
                     () => {}
@@ -252,12 +298,14 @@
                 <div className="fixed inset-0 bg-black/90 z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 flex items-center gap-2"><Icons.Camera/> สแกนบาร์โค้ด</h3>
                     <div id="direct-reader" className="w-full max-w-sm bg-black rounded-xl overflow-hidden"></div>
-                    <button onClick={onClose} className="mt-8 bg-white text-black px-6 py-2 rounded-full font-bold">ยกเลิก</button>
+                    <p className="text-gray-400 text-xs mt-4 text-center">สแกนบัตรนักเรียนเพื่อค้นหา <br/> หรือสแกน QR Mobile Pair เพื่อเปลี่ยนโหมด</p>
+                    <button onClick={onClose} className="mt-6 bg-white text-black px-6 py-2 rounded-full font-bold">ยกเลิก</button>
                 </div>
             )
         }
 
         function App() {
+            // ... (Core Logic Same as Before) ... 
             const [user, setUser] = useState(null);
             const [view, setView] = useState('student');
             const [students, setStudents] = useState([]);
@@ -279,7 +327,6 @@
             // Refs
             const teacherSearchInputRef = useRef(null);
             const studentSearchInputRef = useRef(null);
-            
             const [teacherTab, setTeacherTab] = useState('scores'); 
 
             // Modal States
@@ -287,8 +334,6 @@
             const [editMode, setEditMode] = useState('full');
             const [isEditModalOpen, setIsEditModalOpen] = useState(false);
             const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-            
-            // Settings Page States
             const [newColName, setNewColName] = useState('');
             const [newColMax, setNewColMax] = useState(10);
             const [newColType, setNewColType] = useState('manual');
@@ -297,24 +342,18 @@
             const [newSectionTitle, setNewSectionTitle] = useState('');
             const [newSectionColor, setNewSectionColor] = useState('blue');
             const [importText, setImportText] = useState('');
-            
-            // Edit Column Modal State
             const [isEditColumnModalOpen, setIsEditColumnModalOpen] = useState(false);
             const [columnToEdit, setColumnToEdit] = useState(null);
             const [editColName, setEditColName] = useState('');
             const [editColMax, setEditColMax] = useState(0);
-
-            // Modals
             const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
             const [sectionSettings, setSectionSettings] = useState(null);
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
-            const [isScannerModalOpen, setIsScannerModalOpen] = useState(false); // For PC displaying QR
-            const [isMobileScannerActive, setIsMobileScannerActive] = useState(false); // For Phone showing camera (Session mode)
-            
-            // NEW: Direct Scanner State
+            const [isScannerModalOpen, setIsScannerModalOpen] = useState(false); 
+            const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
             const [showDirectScanner, setShowDirectScanner] = useState(false);
-            const [scanTarget, setScanTarget] = useState('student'); // 'student' or 'teacher'
+            const [scanTarget, setScanTarget] = useState('student'); 
 
             // Auth & Init
             useEffect(() => {
@@ -324,7 +363,6 @@
                     setIsMobileScannerActive(true);
                     setScannerSessionId(scanSession); 
                 }
-
                 const initAuth = async () => {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
                     else await signInAnonymously(auth);
@@ -341,9 +379,7 @@
                         setSections(data.sections || []);
                         setMaxScores(data.maxScores || {});
                         if (data.sections?.length > 0 && !targetSectionId) setTargetSectionId(data.sections[0].id);
-                    } else {
-                        setSections([]); setMaxScores({});
-                    }
+                    } else { setSections([]); setMaxScores({}); }
                 });
                 const unsubStudents = onSnapshot(collection(db, STUDENTS_COLLECTION), (snapshot) => {
                     setStudents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -355,21 +391,20 @@
             // Scanner Listener (PC Side)
             useEffect(() => {
                 if (!scannerSessionId || isMobileScannerActive) return; 
-
                 const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
-                
                 setDoc(sessionDoc, { created: Date.now() }, { merge: true });
-
                 const unsub = onSnapshot(sessionDoc, (doc) => {
                     const data = doc.data();
                     if (data && data.lastScanned) {
-                        setTeacherSearchId(data.lastScanned);
+                        const scannedId = data.lastScanned.trim();
+                        setTeacherSearchId(scannedId);
+                        handleTeacherSearch(scannedId); // Auto Open
                     }
                 });
                 return () => unsub();
-            }, [scannerSessionId, isMobileScannerActive]); 
+            }, [scannerSessionId, isMobileScannerActive, students]); 
 
-            // Auto Focus Logic
+            // Auto Focus
             useEffect(() => {
                 if (view === 'teacher' && teacherSearchInputRef.current) teacherSearchInputRef.current.focus();
                 if (view === 'student' && studentSearchInputRef.current) studentSearchInputRef.current.focus();
@@ -378,9 +413,8 @@
                 }
             }, [view, isEditModalOpen, isAddStudentModalOpen, isImportModalOpen, isEditColumnModalOpen, isScannerModalOpen, showDirectScanner, teacherTab]);
 
-            // Helpers
+            // ... (Helpers and Actions same as before) ...
             const isCalculatedCol = (colName) => colName === 'รวม' || colName.includes('%') || colName === 'คิดเป็น %';
-
             const calculateColumnValue = (student, group, colName, maxScore) => {
                 if (!isCalculatedCol(colName)) return student.scores?.[colName];
                 if (colName === 'รวม') {
@@ -402,21 +436,17 @@
                         const sourceCol = group.columns[idx - 1];
                         const sourceVal = parseFloat(calculateColumnValue(student, group, sourceCol, maxScores[sourceCol]));
                         const sourceMax = maxScores[sourceCol] || 100;
-                        if (!isNaN(sourceVal) && sourceMax > 0) {
-                            return parseFloat(((sourceVal / sourceMax) * maxScore).toFixed(2));
-                        }
+                        if (!isNaN(sourceVal) && sourceMax > 0) return parseFloat(((sourceVal / sourceMax) * maxScore).toFixed(2));
                     }
                     return '-';
                 }
                 return '-';
             };
-
             const getAllColumns = () => sections.flatMap(sec => (sec.groups || []).flatMap(g => g.columns));
             const uniqueRooms = useMemo(() => {
                 const rooms = students.map(s => s.room).filter(Boolean);
                 return [...new Set(rooms)].sort();
             }, [students]);
-
             const calculateSectionTotal = (studentScores, section) => {
                 let total = 0;
                 let maxTotal = 0;
@@ -434,33 +464,38 @@
                 }
                 return { total: parseFloat(total.toFixed(2)), maxTotal };
             };
-
-            // Actions
+            
             const handleGenerateScanner = () => {
                 const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 setScannerSessionId(newSessionId);
                 setIsScannerModalOpen(true);
             };
-
+            
+            // SMART DIRECT SCAN HANDLER
             const handleDirectScan = (text) => {
-                if (scanTarget === 'student') {
-                    setSearchId(text);
-                    // Optionally auto-search if needed, but let's just fill for now to let user confirm
-                } else if (scanTarget === 'teacher') {
-                    setTeacherSearchId(text);
-                }
                 setShowDirectScanner(false);
+                const cleanText = text.trim();
+                
+                if (scanTarget === 'student') {
+                    setSearchId(cleanText);
+                    handleSearch(cleanText);
+                } else if (scanTarget === 'teacher') {
+                    setTeacherSearchId(cleanText);
+                    handleTeacherSearch(cleanText);
+                }
+            };
+            
+            const handleSwitchToMobileMode = (sessionId) => {
+                setShowDirectScanner(false);
+                setScannerSessionId(sessionId);
+                setIsMobileScannerActive(true);
+                // Also update URL to be persistent (optional)
+                const newUrl = window.location.pathname + '?scan_session=' + sessionId;
+                window.history.pushState({path: newUrl}, '', newUrl);
             };
 
-            const startScanStudent = () => {
-                setScanTarget('student');
-                setShowDirectScanner(true);
-            };
-
-            const startScanTeacher = () => {
-                setScanTarget('teacher');
-                setShowDirectScanner(true);
-            };
+            const startScanStudent = () => { setScanTarget('student'); setShowDirectScanner(true); };
+            const startScanTeacher = () => { setScanTarget('teacher'); setShowDirectScanner(true); };
 
             const handleSeedData = async () => {
                 if(!confirm('ต้องการลงข้อมูลตัวอย่างใช่หรือไม่? ข้อมูลเก่าจะถูกลบ')) return;
@@ -475,53 +510,50 @@
                 finally { setLoading(false); }
             };
 
-            const handleSearch = () => {
-                const student = students.find(s => s.id === searchId);
+            const handleSearch = (idToSearch) => {
+                const queryId = idToSearch || searchId;
+                const student = students.find(s => s.id === queryId);
                 if (student) { setSearchResult(student); setError(''); } else { setSearchResult(null); setError('❌ ไม่พบรหัสนักเรียนนี้'); }
             };
 
-            const handleTeacherSearch = () => {
-                const target = students.find(s => s.id === teacherSearchId);
-                if (target) { setEditingStudent(JSON.parse(JSON.stringify(target))); setEditMode('full'); setIsEditModalOpen(true); setTeacherSearchId(''); }
-                else { setWarning({ show: true, msg: 'ไม่พบรหัสนักเรียนนี้' }); setTeacherSearchId(''); }
+            const handleTeacherSearch = (idToSearch) => {
+                const queryId = idToSearch || teacherSearchId;
+                const target = students.find(s => s.id === queryId);
+                if (target) { 
+                    setEditingStudent(JSON.parse(JSON.stringify(target))); 
+                    setEditMode('full'); 
+                    setIsEditModalOpen(true); 
+                    setTeacherSearchId(''); 
+                    playBeep();
+                }
+                else if (idToSearch) { 
+                    setWarning({ show: true, msg: `ไม่พบรหัสนักเรียน: ${idToSearch}` }); 
+                    setTeacherSearchId(''); 
+                }
             };
 
-            const handleLogin = () => {
-                if (password === 'admin') setView('teacher');
-                else setWarning({ show: true, msg: 'รหัสผ่านผิด (admin)' });
-            };
-
+            const handleLogin = () => { if (password === '65411597') setView('teacher'); else setWarning({ show: true, msg: 'รหัสผ่านผิด (admin)' }); };
             const addNewSection = async () => {
                 if (!newSectionTitle) return setWarning({ show: true, msg: 'กรุณาใส่ชื่อบท' });
                 const newId = `sec_${Date.now()}`;
                 const newSection = { id: newId, title: newSectionTitle, color: newSectionColor, groups: [] };
                 const updatedSections = [...sections, newSection];
                 await setDoc(doc(db, CONFIG_DOC), { sections: updatedSections, maxScores }, { merge: true });
-                setNewSectionTitle(''); 
-                setWarning({ show: true, msg: 'เพิ่มบทเรียบร้อย' });
+                setNewSectionTitle(''); setWarning({ show: true, msg: 'เพิ่มบทเรียบร้อย' });
             };
-
             const addNewColumn = async () => {
                 let finalColName = newColName;
                 if (newColType === 'sum') finalColName = 'รวม';
                 if (newColType === 'percent') finalColName = 'คิดเป็น %';
-
                 if (!finalColName) return setWarning({ show: true, msg: 'กรุณาระบุชื่องาน' });
 
                 const targetSection = sections.find(s => s.id === targetSectionId);
                 if(!targetSection) return;
-
                 let targetGroup = targetSection.groups.find(g => g.title === targetGroupName);
-                
-                if (targetGroup && targetGroup.columns.includes(finalColName)) {
-                    return setWarning({ show: true, msg: 'มีชื่องานนี้ในกลุ่มนี้แล้ว (ห้ามซ้ำในกลุ่มเดียวกัน)' });
-                }
-
+                if (targetGroup && targetGroup.columns.includes(finalColName)) return setWarning({ show: true, msg: 'มีชื่องานนี้ในกลุ่มนี้แล้ว (ห้ามซ้ำในกลุ่มเดียวกัน)' });
                 if (newColType === 'manual') {
                     const allCols = getAllColumns();
-                    if (allCols.includes(finalColName)) {
-                        return setWarning({ show: true, msg: 'ชื่องาน "กรอกเอง" ห้ามซ้ำกับที่มีอยู่แล้ว (เพื่อป้องกันข้อมูลทับซ้อน)' });
-                    }
+                    if (allCols.includes(finalColName)) return setWarning({ show: true, msg: 'ชื่องาน "กรอกเอง" ห้ามซ้ำกับที่มีอยู่แล้ว' });
                 }
 
                 let newGroups = [...(targetSection.groups || [])];
@@ -529,25 +561,12 @@
                     targetGroup.columns.push(finalColName);
                     targetGroup.includedCols = [...(targetGroup.includedCols || []), finalColName];
                 } else {
-                    newGroups.push({
-                        id: `g_${Date.now()}`,
-                        title: targetGroupName,
-                        columns: [finalColName],
-                        includedCols: [finalColName]
-                    });
+                    newGroups.push({ id: `g_${Date.now()}`, title: targetGroupName, columns: [finalColName], includedCols: [finalColName] });
                 }
-
-                const updatedSections = sections.map(sec => 
-                    sec.id === targetSectionId ? { ...sec, groups: newGroups } : sec
-                );
-                
+                const updatedSections = sections.map(sec => sec.id === targetSectionId ? { ...sec, groups: newGroups } : sec);
                 const updatedMaxScores = { ...maxScores, [finalColName]: parseInt(newColMax) };
-                
                 await setDoc(doc(db, CONFIG_DOC), { sections: updatedSections, maxScores: updatedMaxScores }, { merge: true });
-                
-                if (newColType === 'manual') setNewColName(''); 
-                setNewColMax(10);
-                setWarning({ show: true, msg: 'เพิ่มงานเรียบร้อย' });
+                if (newColType === 'manual') setNewColName(''); setNewColMax(10); setWarning({ show: true, msg: 'เพิ่มงานเรียบร้อย' });
             };
 
             const openEditColumnModal = (sectionId, groupId, colName) => {
@@ -561,29 +580,22 @@
             const handleSaveColumnEdit = async () => {
                 if (!editColName || !columnToEdit) return;
                 setLoading(true);
-                
                 try {
                     const { sectionId, groupId, oldName } = columnToEdit;
                     const batch = writeBatch(db);
-                    
                     const newSections = JSON.parse(JSON.stringify(sections));
                     const section = newSections.find(s => s.id === sectionId);
                     const group = section.groups.find(g => g.id === groupId);
-                    
                     const colIdx = group.columns.indexOf(oldName);
                     if (colIdx !== -1) group.columns[colIdx] = editColName;
-                    
                     if (group.includedCols) {
                         const incIdx = group.includedCols.indexOf(oldName);
                         if (incIdx !== -1) group.includedCols[incIdx] = editColName;
                     }
-
                     const newMaxScores = { ...maxScores };
                     newMaxScores[editColName] = parseInt(editColMax);
                     if (oldName !== editColName) delete newMaxScores[oldName];
-
                     batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
-
                     if (oldName !== editColName) {
                         students.forEach(student => {
                             if (student.scores && student.scores[oldName] !== undefined) {
@@ -596,43 +608,27 @@
                             }
                         });
                     }
-
                     await batch.commit();
                     setIsEditColumnModalOpen(false);
                     setWarning({ show: true, msg: 'บันทึกการแก้ไขเรียบร้อย' });
-
-                } catch (e) {
-                    console.error(e);
-                    setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการบันทึก' });
-                } finally {
-                    setLoading(false);
-                }
+                } catch (e) { console.error(e); setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการบันทึก' }); } finally { setLoading(false); }
             };
             
             const handleDeleteColumn = async () => {
                 if (!columnToEdit) return;
                 const { sectionId, groupId, oldName } = columnToEdit;
-                
                 if (!confirm(`ยืนยันการลบงาน "${oldName}"?\nคะแนนของนักเรียนทุกคนในงานนี้จะถูกลบถาวร`)) return;
-
                 setLoading(true);
                 try {
                     const batch = writeBatch(db);
-
                     const newSections = JSON.parse(JSON.stringify(sections));
                     const section = newSections.find(s => s.id === sectionId);
                     const group = section.groups.find(g => g.id === groupId);
-                    
                     group.columns = group.columns.filter(c => c !== oldName);
-                    if (group.includedCols) {
-                        group.includedCols = group.includedCols.filter(c => c !== oldName);
-                    }
-
+                    if (group.includedCols) group.includedCols = group.includedCols.filter(c => c !== oldName);
                     const newMaxScores = { ...maxScores };
                     delete newMaxScores[oldName];
-
                     batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
-
                     students.forEach(student => {
                         if (student.scores && student.scores[oldName] !== undefined) {
                             const newScores = { ...student.scores };
@@ -641,64 +637,37 @@
                             batch.update(studentRef, { scores: newScores });
                         }
                     });
-
                     await batch.commit();
                     setIsEditColumnModalOpen(false);
                     setWarning({ show: true, msg: 'ลบงานเรียบร้อยแล้ว' });
-
-                } catch (e) {
-                    console.error(e);
-                    setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการลบ' });
-                } finally {
-                    setLoading(false);
-                }
+                } catch (e) { console.error(e); setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการลบ' }); } finally { setLoading(false); }
             };
 
             const saveEditedStudent = async () => {
                 if (!editingStudent) return;
-                try {
-                    await setDoc(doc(db, STUDENTS_COLLECTION, editingStudent.id), editingStudent, { merge: true });
-                    setIsEditModalOpen(false); setEditingStudent(null);
-                } catch (e) { alert('บันทึกไม่สำเร็จ'); }
+                try { await setDoc(doc(db, STUDENTS_COLLECTION, editingStudent.id), editingStudent, { merge: true }); setIsEditModalOpen(false); setEditingStudent(null); } catch (e) { alert('บันทึกไม่สำเร็จ'); }
             };
-
-            const handleDeleteStudent = async (id) => {
-                if(!confirm(`ยืนยันการลบนักเรียนรหัส ${id}?`)) return;
-                try {
-                    await deleteDoc(doc(db, STUDENTS_COLLECTION, id));
-                    setWarning({show: true, msg: 'ลบข้อมูลเรียบร้อย'});
-                } catch(e) { console.error(e); setWarning({show: true, msg: 'ลบไม่สำเร็จ'}); }
-            };
-
+            const handleDeleteStudent = async (id) => { if(!confirm(`ยืนยันการลบนักเรียนรหัส ${id}?`)) return; try { await deleteDoc(doc(db, STUDENTS_COLLECTION, id)); setWarning({show: true, msg: 'ลบข้อมูลเรียบร้อย'}); } catch(e) { console.error(e); setWarning({show: true, msg: 'ลบไม่สำเร็จ'}); } };
             const handleAddStudentSubmit = async () => {
                 if (!newStudent.id || !newStudent.name) return alert("กรุณากรอกรหัสและชื่อ");
                 const existing = students.find(s => s.id === newStudent.id);
                 if (existing) return alert(`รหัส ${newStudent.id} มีอยู่แล้ว`);
                 setLoading(true);
-                try {
-                    await setDoc(doc(db, STUDENTS_COLLECTION, newStudent.id), { ...newStudent, scores: {} });
-                    setNewStudent({ id: '', no: '', name: '', room: '' });
-                    setIsAddStudentModalOpen(false);
-                    setWarning({ show: true, msg: 'เพิ่มนักเรียนเรียบร้อย' });
-                } catch (e) { console.error(e); alert("เกิดข้อผิดพลาด"); } finally { setLoading(false); }
+                try { await setDoc(doc(db, STUDENTS_COLLECTION, newStudent.id), { ...newStudent, scores: {} }); setNewStudent({ id: '', no: '', name: '', room: '' }); setIsAddStudentModalOpen(false); setWarning({ show: true, msg: 'เพิ่มนักเรียนเรียบร้อย' }); } catch (e) { console.error(e); alert("เกิดข้อผิดพลาด"); } finally { setLoading(false); }
             };
-
             const saveSectionSettings = async () => {
                 const updatedSections = sections.map(sec => sec.id === sectionSettings.id ? sectionSettings : sec);
                 await setDoc(doc(db, CONFIG_DOC), { sections: updatedSections, maxScores }, { merge: true });
                 setIsSectionSettingsOpen(false);
             };
-
             const toggleColumnInclusion = (groupIndex, colName) => {
                 const newSettings = { ...sectionSettings };
                 const group = newSettings.groups[groupIndex];
                 let newIncluded = [...(group.includedCols || [])];
-                if (newIncluded.includes(colName)) newIncluded = newIncluded.filter(c => c !== colName);
-                else newIncluded.push(colName);
+                if (newIncluded.includes(colName)) newIncluded = newIncluded.filter(c => c !== colName); else newIncluded.push(colName);
                 group.includedCols = newIncluded;
                 setSectionSettings(newSettings);
             };
-
             const handleImportStudents = async () => {
                 if (!importText.trim()) return;
                 setLoading(true);
@@ -722,7 +691,6 @@
                 catch (e) { console.error(e); setWarning({ show: true, msg: 'เกิดข้อผิดพลาด' }); } 
                 finally { setLoading(false); }
             };
-
             const handleExportCSV = () => {
                 const allCols = getAllColumns();
                 const headers = ['เลขที่', 'รหัส', 'ชื่อ-นามสกุล', 'ห้อง', ...allCols];
@@ -736,7 +704,6 @@
                 const link = document.createElement('a'); link.href = url; link.setAttribute('download', 'grade_export.csv');
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
             };
-
             const handleEditScore = (colName, value) => {
                 if (isCalculatedCol(colName)) return;
                 const max = maxScores[colName] || 100;
@@ -770,7 +737,7 @@
             
             // Direct Scanner Rendering
             if (showDirectScanner) {
-                return <DirectScannerModal onClose={() => setShowDirectScanner(false)} onScan={handleDirectScan} />;
+                return <DirectScannerModal onClose={() => setShowDirectScanner(false)} onScan={handleDirectScan} onSwitchToMobileMode={handleSwitchToMobileMode} />;
             }
 
             if (loading && !students.length && !sections.length) return <div className="min-h-screen flex items-center justify-center text-blue-600">กำลังโหลดข้อมูล...</div>;
@@ -794,20 +761,19 @@
                     </nav>
 
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
-                        {/* TEACHER LOGIN */}
+                        {/* TEACHER LOGIN, STUDENT VIEW, ETC REMAIN UNCHANGED */}
                         {view === 'teacher_login' && (
                             <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 animate-fade-in">
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-blue-600" /></div>
                                     <h3 className="text-xl font-bold text-gray-800">ยืนยันตัวตนครู</h3>
                                 </div>
-                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+                                <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
                                 <button onClick={handleLogin} className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition">เข้าสู่ระบบ</button>
                                 <button onClick={() => setView('student')} className="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">กลับไปหน้านักเรียน</button>
                             </div>
                         )}
 
-                        {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <div className="max-w-xl mx-auto mt-8 animate-fade-in">
                                 <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-white/50 relative overflow-hidden">
@@ -823,7 +789,7 @@
                                                 <Icons.Camera size={24}/>
                                             </button>
                                         </div>
-                                        <button onClick={handleSearch} className="bg-blue-600 text-white px-6 rounded-2xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition flex items-center justify-center"><Icons.Search className="w-6 h-6" /></button>
+                                        <button onClick={() => handleSearch()} className="bg-blue-600 text-white px-6 rounded-2xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition flex items-center justify-center"><Icons.Search className="w-6 h-6" /></button>
                                     </div>
                                     {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center font-medium border border-red-100 animate-pulse flex items-center justify-center gap-2"><Icons.AlertCircle size={20}/> {error}</div>}
 
@@ -1011,7 +977,7 @@
                                         </div>
                                     </div>
                                 )}
-                                {/* ... (Tab 2 & 3 content unchanged) ... */}
+                                {/* ... (Tab 2 & 3 content unchanged, only showing relevant parts for update) ... */}
                                 {teacherTab === 'students' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
                                         <div className="card">
@@ -1062,7 +1028,6 @@
 
                                 {teacherTab === 'settings' && (
                                     <div className="animate-fade-in max-w-5xl mx-auto space-y-8">
-                                        
                                         <div className="card">
                                             <div className="p-6 border-b border-gray-100">
                                                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -1095,9 +1060,8 @@
                                                 </button>
                                             </div>
                                         </div>
-
+                                        {/* Structure Config Section (Same as before) */}
                                         <div className="grid lg:grid-cols-3 gap-6">
-                                            
                                             <div className="lg:col-span-1 space-y-6">
                                                 <div className="card p-5 border-l-4 border-l-indigo-500">
                                                     <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><Icons.FolderPlus size={18} className="text-indigo-500"/> สร้างบทเรียนใหม่</h4>
@@ -1227,8 +1191,22 @@
                                 )}
                             </div>
                         )}
-
-                        {/* Modals are kept same as previous version */}
+                        {/* Modals - (QR Scanner Modal) */}
+                        {isScannerModalOpen && (
+                            <div className="fixed inset-0 bg-black/90 z-[200] flex flex-col items-center justify-center p-4 animate-fade-in">
+                                <div className="bg-white p-6 rounded-2xl shadow-2xl text-center max-w-sm w-full">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">สแกนด้วยมือถือ</h3>
+                                    <div className="bg-gray-100 p-4 rounded-xl mb-4 flex justify-center">
+                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href.split('?')[0] + '?scan_session=' + scannerSessionId)}`} alt="Scan QR" className="w-48 h-48" />
+                                    </div>
+                                    <p className="text-gray-600 text-sm mb-6">1. เปิดแอปกล้อง (Camera) หรือ Line บนมือถือ<br/>2. สแกน QR Code นี้เพื่อเชื่อมต่อ<br/><span class="text-xs text-blue-500 font-bold">*อย่าใช้ปุ่มสแกนในแอปนี้สแกน QR นี้นะครับ</span></p>
+                                    <div className="flex justify-center">
+                                        <button onClick={() => setIsScannerModalOpen(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-full font-bold transition">ปิดหน้าต่าง</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {/* ... (Other modals are same) ... */}
                         {isEditColumnModalOpen && columnToEdit && (
                             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in p-4">
                                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
@@ -1298,6 +1276,7 @@
                                                                                 </div>
                                                                                 <input 
                                                                                     type="text" 
+                                                                                    autoFocus={!isAuto && editMode === 'full' && group === sec.groups[0] && col === group.columns[0]}
                                                                                     disabled={isAuto}
                                                                                     className={`w-full p-2 border rounded-lg text-center font-medium focus:ring-2 focus:ring-blue-500 outline-none ${isAuto ? 'bg-gray-100 text-gray-500' : ''}`} 
                                                                                     value={val} 
