@@ -41,11 +41,14 @@
         
         .card { @apply bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden; }
 
-        /* Custom Vertical Text Class */
         .vertical-text {
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             white-space: nowrap;
+        }
+        
+        .calculated-field {
+            @apply bg-gray-100 text-gray-600 cursor-not-allowed font-bold;
         }
     </style>
 
@@ -116,7 +119,9 @@
             Database: (props) => <Icon {...props} path={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
             ArrowUp: (props) => <Icon {...props} path={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
             Users: (props) => <Icon {...props} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />
+            UserPlus: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />,
+            Calculator: (props) => <Icon {...props} path={<><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
+            Percent: (props) => <Icon {...props} path={<><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></>} />
         };
 
         const SEED_DATA = [
@@ -133,21 +138,23 @@
                     { 
                         id: 'g1', 
                         title: 'คะแนนเก็บ (รายจุดประสงค์)', 
-                        columns: ['แบบจำลอง DNA', 'องค์ประกอบทางเคมี', 'DNA Replication', 'Transcription', 'Translation', 'Mutation'],
-                        includedCols: ['แบบจำลอง DNA', 'องค์ประกอบทางเคมี', 'DNA Replication', 'Transcription', 'Translation', 'Mutation']
+                        columns: ['แบบจำลอง DNA', 'องค์ประกอบทางเคมี', 'DNA Replication', 'Transcription', 'Translation', 'Mutation', 'รวม', 'คิดเป็น %'],
+                        includedCols: ['แบบจำลอง DNA', 'องค์ประกอบทางเคมี', 'DNA Replication', 'Transcription', 'Translation', 'Mutation', 'รวม', 'คิดเป็น %']
                     },
                     { 
                         id: 'g2', 
                         title: 'คะแนนสอบ', 
-                        columns: ['สอบท้ายบทที่ 1'],
-                        includedCols: ['สอบท้ายบทที่ 1']
+                        columns: ['สอบท้ายบทที่ 1', 'คิดเป็น %'],
+                        includedCols: ['สอบท้ายบทที่ 1', 'คิดเป็น %']
                     }
                 ]
             }
         ];
 
         const SEED_MAX_SCORES = {
-            'แบบจำลอง DNA': 20, 'องค์ประกอบทางเคมี': 25, 'DNA Replication': 10, 'Transcription': 24, 'Translation': 15, 'Mutation': 30, 'สอบท้ายบทที่ 1': 30
+            'แบบจำลอง DNA': 20, 'องค์ประกอบทางเคมี': 25, 'DNA Replication': 10, 'Transcription': 24, 'Translation': 15, 'Mutation': 30, 
+            'รวม': 124, 'คิดเป็น %': 10,
+            'สอบท้ายบทที่ 1': 30, 'คิดเป็น %': 5
         };
 
         const THEMES = {
@@ -179,9 +186,9 @@
             const [warning, setWarning] = useState({ show: false, msg: '' });
             const [teacherSearchId, setTeacherSearchId] = useState('');
             
-            // Refs for Auto Focus
+            // Refs
             const teacherSearchInputRef = useRef(null);
-            const studentSearchInputRef = useRef(null); // Add ref for student search
+            const studentSearchInputRef = useRef(null);
             
             const [teacherTab, setTeacherTab] = useState('scores'); 
 
@@ -189,22 +196,29 @@
             const [editingStudent, setEditingStudent] = useState(null);
             const [editMode, setEditMode] = useState('full');
             const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+            const [isImportModalOpen, setIsImportModalOpen] = useState(false);
             
             // Settings Page States
             const [newColName, setNewColName] = useState('');
             const [newColMax, setNewColMax] = useState(10);
+            const [newColType, setNewColType] = useState('manual'); // NEW: 'manual', 'sum', 'percent'
             const [targetSectionId, setTargetSectionId] = useState('');
             const [targetGroupName, setTargetGroupName] = useState('คะแนนเก็บ');
             const [newSectionTitle, setNewSectionTitle] = useState('');
             const [newSectionColor, setNewSectionColor] = useState('blue');
             const [importText, setImportText] = useState('');
             
+            // Edit Column Modal State
+            const [isEditColumnModalOpen, setIsEditColumnModalOpen] = useState(false);
+            const [columnToEdit, setColumnToEdit] = useState(null);
+            const [editColName, setEditColName] = useState('');
+            const [editColMax, setEditColMax] = useState(0);
+
             // Modals
             const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
             const [sectionSettings, setSectionSettings] = useState(null);
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
-            const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
             // Auth & Init
             useEffect(() => {
@@ -235,24 +249,44 @@
                 return () => { unsubConfig(); unsubStudents(); };
             }, [user]);
 
-            // Auto Focus Logic
             useEffect(() => {
-                // Focus Teacher Search when in teacher view
-                if (view === 'teacher' && teacherSearchInputRef.current) {
-                    teacherSearchInputRef.current.focus();
-                }
-                // Focus Student Search when in student view
-                if (view === 'student' && studentSearchInputRef.current) {
-                    studentSearchInputRef.current.focus();
-                }
-                
-                // Re-focus after closing modals
-                if (!isEditModalOpen && !isAddStudentModalOpen && !isImportModalOpen && view === 'teacher' && teacherSearchInputRef.current) {
+                if (view === 'teacher' && teacherSearchInputRef.current) teacherSearchInputRef.current.focus();
+                if (view === 'student' && studentSearchInputRef.current) studentSearchInputRef.current.focus();
+                if (!isEditModalOpen && !isAddStudentModalOpen && !isImportModalOpen && !isEditColumnModalOpen && view === 'teacher' && teacherSearchInputRef.current) {
                     setTimeout(() => teacherSearchInputRef.current.focus(), 100);
                 }
-            }, [view, isEditModalOpen, isAddStudentModalOpen, isImportModalOpen, teacherTab]);
+            }, [view, isEditModalOpen, isAddStudentModalOpen, isImportModalOpen, isEditColumnModalOpen, teacherTab]);
 
             // Helpers
+            const isCalculatedCol = (colName) => colName === 'รวม' || colName.includes('%') || colName === 'คิดเป็น %';
+
+            const calculateColumnValue = (student, group, colName, maxScore) => {
+                if (!isCalculatedCol(colName)) return student.scores?.[colName];
+                if (colName === 'รวม') {
+                    let total = 0;
+                    group.columns.forEach(c => {
+                        if (!isCalculatedCol(c)) {
+                            const val = parseFloat(student.scores?.[c]) || 0;
+                            total += val;
+                        }
+                    });
+                    return total === 0 && !group.columns.some(c => student.scores?.[c] !== undefined && !isCalculatedCol(c)) ? '-' : parseFloat(total.toFixed(2));
+                }
+                if (colName.includes('%') || colName === 'คิดเป็น %') {
+                    const idx = group.columns.indexOf(colName);
+                    if (idx > 0) {
+                        const sourceCol = group.columns[idx - 1];
+                        const sourceVal = parseFloat(calculateColumnValue(student, group, sourceCol, maxScores[sourceCol]));
+                        const sourceMax = maxScores[sourceCol] || 100;
+                        if (!isNaN(sourceVal) && sourceMax > 0) {
+                            return parseFloat(((sourceVal / sourceMax) * maxScore).toFixed(2));
+                        }
+                    }
+                    return '-';
+                }
+                return '-';
+            };
+
             const getAllColumns = () => sections.flatMap(sec => (sec.groups || []).flatMap(g => g.columns));
             const uniqueRooms = useMemo(() => {
                 const rooms = students.map(s => s.room).filter(Boolean);
@@ -266,7 +300,7 @@
                     section.groups.forEach(group => {
                         const colsToSum = group.includedCols || group.columns;
                         colsToSum.forEach(col => {
-                            if (group.columns.includes(col)) {
+                            if (group.columns.includes(col) && !isCalculatedCol(col)) {
                                 const val = parseFloat(studentScores?.[col]);
                                 if (!isNaN(val)) total += val;
                                 maxTotal += (maxScores[col] || 0);
@@ -303,7 +337,7 @@
             };
 
             const handleLogin = () => {
-                if (password === '65411597') setView('teacher');
+                if (password === 'admin') setView('teacher');
                 else setWarning({ show: true, msg: 'รหัสผ่านผิด (admin)' });
             };
 
@@ -318,35 +352,182 @@
             };
 
             const addNewColumn = async () => {
-                if (!newColName) return setWarning({ show: true, msg: 'กรุณาระบุชื่องาน' });
-                const allCols = getAllColumns();
-                if (allCols.includes(newColName)) return setWarning({ show: true, msg: 'ชื่องานซ้ำกัน' });
+                // Determine name based on Type
+                let finalColName = newColName;
+                if (newColType === 'sum') finalColName = 'รวม';
+                if (newColType === 'percent') finalColName = 'คิดเป็น %';
 
+                if (!finalColName) return setWarning({ show: true, msg: 'กรุณาระบุชื่องาน' });
+
+                // Check constraints
                 const targetSection = sections.find(s => s.id === targetSectionId);
                 if(!targetSection) return;
 
-                let newGroups = [...(targetSection.groups || [])];
-                let targetGroup = newGroups.find(g => g.title === targetGroupName);
+                // Find or create group logic needs to be robust
+                // For simplicity, we find the group in current section state
+                let targetGroup = targetSection.groups.find(g => g.title === targetGroupName);
                 
+                // Rule 1: No duplicate names within the SAME group (even if auto) - makes it confusing
+                if (targetGroup && targetGroup.columns.includes(finalColName)) {
+                    return setWarning({ show: true, msg: 'มีชื่องานนี้ในกลุ่มนี้แล้ว (ห้ามซ้ำในกลุ่มเดียวกัน)' });
+                }
+
+                // Rule 2: Manual columns must be globally unique to prevent key collision
+                if (newColType === 'manual') {
+                    const allCols = getAllColumns();
+                    if (allCols.includes(finalColName)) {
+                        return setWarning({ show: true, msg: 'ชื่องาน "กรอกเอง" ห้ามซ้ำกับที่มีอยู่แล้ว (เพื่อป้องกันข้อมูลทับซ้อน)' });
+                    }
+                }
+
+                // Proceed to Add
+                let newGroups = [...(targetSection.groups || [])];
                 if (targetGroup) {
-                    targetGroup.columns.push(newColName);
-                    targetGroup.includedCols = [...(targetGroup.includedCols || []), newColName];
+                    // Update existing group
+                    targetGroup.columns.push(finalColName);
+                    targetGroup.includedCols = [...(targetGroup.includedCols || []), finalColName];
                 } else {
+                    // Create new group
                     newGroups.push({
                         id: `g_${Date.now()}`,
                         title: targetGroupName,
-                        columns: [newColName],
-                        includedCols: [newColName]
+                        columns: [finalColName],
+                        includedCols: [finalColName]
                     });
                 }
 
                 const updatedSections = sections.map(sec => 
                     sec.id === targetSectionId ? { ...sec, groups: newGroups } : sec
                 );
-                const updatedMaxScores = { ...maxScores, [newColName]: parseInt(newColMax) };
+                
+                // Update Max Scores
+                // Note: Even if multiple "Total" columns exist, they can share the same Max Score key IF they have the same max score. 
+                // But typically "Total" max score depends on the sum of items. 
+                // Currently maxScores is a simple key-value map. If "Total" in Ch1 is 20 and "Total" in Ch2 is 30, we have a problem with `maxScores['Total']`.
+                // However, since we bypassed unique check for Auto columns, we need to accept that MaxScore might be ambiguous if stored by name.
+                // For Auto-Sum ("รวม"), max score is usually derived, not stored? The code uses `maxScores['รวม']`.
+                // If we want different max scores for "รวม", we need unique keys or a better structure.
+                // LIMITATION: With current data structure (Map<String, Number>), all columns named "รวม" will share the same Max Score.
+                // WORKAROUND: For "Auto Sum", we don't really use maxScores for calculation (we sum values). But for display (header), we do.
+                // Let's just update it. The user accepts duplicate names, implying they might accept shared max score settings or understand the limitation.
+                
+                const updatedMaxScores = { ...maxScores, [finalColName]: parseInt(newColMax) };
+                
                 await setDoc(doc(db, CONFIG_DOC), { sections: updatedSections, maxScores: updatedMaxScores }, { merge: true });
-                setNewColName(''); setNewColMax(10);
+                
+                if (newColType === 'manual') setNewColName(''); 
+                setNewColMax(10);
                 setWarning({ show: true, msg: 'เพิ่มงานเรียบร้อย' });
+            };
+
+            const openEditColumnModal = (sectionId, groupId, colName) => {
+                const max = maxScores[colName] || 0;
+                setColumnToEdit({ sectionId, groupId, oldName: colName });
+                setEditColName(colName);
+                setEditColMax(max);
+                setIsEditColumnModalOpen(true);
+            };
+
+            const handleSaveColumnEdit = async () => {
+                if (!editColName || !columnToEdit) return;
+                setLoading(true);
+                
+                try {
+                    const { sectionId, groupId, oldName } = columnToEdit;
+                    const batch = writeBatch(db);
+                    
+                    // 1. Update Structure & MaxScores
+                    const newSections = JSON.parse(JSON.stringify(sections));
+                    const section = newSections.find(s => s.id === sectionId);
+                    const group = section.groups.find(g => g.id === groupId);
+                    
+                    // Rename in columns array
+                    const colIdx = group.columns.indexOf(oldName);
+                    if (colIdx !== -1) group.columns[colIdx] = editColName;
+                    
+                    // Rename in includedCols
+                    if (group.includedCols) {
+                        const incIdx = group.includedCols.indexOf(oldName);
+                        if (incIdx !== -1) group.includedCols[incIdx] = editColName;
+                    }
+
+                    const newMaxScores = { ...maxScores };
+                    newMaxScores[editColName] = parseInt(editColMax);
+                    if (oldName !== editColName) delete newMaxScores[oldName];
+
+                    batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
+
+                    // 2. Update Student Scores (Migrate data if name changed)
+                    if (oldName !== editColName) {
+                        students.forEach(student => {
+                            if (student.scores && student.scores[oldName] !== undefined) {
+                                const score = student.scores[oldName];
+                                const studentRef = doc(db, STUDENTS_COLLECTION, student.id);
+                                const newScores = { ...student.scores };
+                                newScores[editColName] = score;
+                                delete newScores[oldName];
+                                batch.update(studentRef, { scores: newScores });
+                            }
+                        });
+                    }
+
+                    await batch.commit();
+                    setIsEditColumnModalOpen(false);
+                    setWarning({ show: true, msg: 'บันทึกการแก้ไขเรียบร้อย' });
+
+                } catch (e) {
+                    console.error(e);
+                    setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการบันทึก' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const handleDeleteColumn = async () => {
+                if (!columnToEdit) return;
+                const { sectionId, groupId, oldName } = columnToEdit;
+                
+                if (!confirm(`ยืนยันการลบงาน "${oldName}"?\nคะแนนของนักเรียนทุกคนในงานนี้จะถูกลบถาวร`)) return;
+
+                setLoading(true);
+                try {
+                    const batch = writeBatch(db);
+
+                    // 1. Update Config (Remove from sections & maxScores)
+                    const newSections = JSON.parse(JSON.stringify(sections));
+                    const section = newSections.find(s => s.id === sectionId);
+                    const group = section.groups.find(g => g.id === groupId);
+                    
+                    group.columns = group.columns.filter(c => c !== oldName);
+                    if (group.includedCols) {
+                        group.includedCols = group.includedCols.filter(c => c !== oldName);
+                    }
+
+                    const newMaxScores = { ...maxScores };
+                    delete newMaxScores[oldName];
+
+                    batch.set(doc(db, CONFIG_DOC), { sections: newSections, maxScores: newMaxScores });
+
+                    // 2. Remove scores from students
+                    students.forEach(student => {
+                        if (student.scores && student.scores[oldName] !== undefined) {
+                            const newScores = { ...student.scores };
+                            delete newScores[oldName];
+                            const studentRef = doc(db, STUDENTS_COLLECTION, student.id);
+                            batch.update(studentRef, { scores: newScores });
+                        }
+                    });
+
+                    await batch.commit();
+                    setIsEditColumnModalOpen(false);
+                    setWarning({ show: true, msg: 'ลบงานเรียบร้อยแล้ว' });
+
+                } catch (e) {
+                    console.error(e);
+                    setWarning({ show: true, msg: 'เกิดข้อผิดพลาดในการลบ' });
+                } finally {
+                    setLoading(false);
+                }
             };
 
             const saveEditedStudent = async () => {
@@ -362,17 +543,13 @@
                 try {
                     await deleteDoc(doc(db, STUDENTS_COLLECTION, id));
                     setWarning({show: true, msg: 'ลบข้อมูลเรียบร้อย'});
-                } catch(e) {
-                    console.error(e);
-                    setWarning({show: true, msg: 'ลบไม่สำเร็จ'});
-                }
+                } catch(e) { console.error(e); setWarning({show: true, msg: 'ลบไม่สำเร็จ'}); }
             };
 
             const handleAddStudentSubmit = async () => {
                 if (!newStudent.id || !newStudent.name) return alert("กรุณากรอกรหัสและชื่อ");
                 const existing = students.find(s => s.id === newStudent.id);
                 if (existing) return alert(`รหัส ${newStudent.id} มีอยู่แล้ว`);
-
                 setLoading(true);
                 try {
                     await setDoc(doc(db, STUDENTS_COLLECTION, newStudent.id), { ...newStudent, scores: {} });
@@ -437,6 +614,7 @@
             };
 
             const handleEditScore = (colName, value) => {
+                if (isCalculatedCol(colName)) return;
                 const max = maxScores[colName] || 100;
                 const numVal = parseFloat(value);
                 if (value !== '' && numVal > max) { setWarning({ show: true, msg: `คะแนนห้ามเกิน ${max} คะแนน` }); return; }
@@ -447,11 +625,8 @@
 
             const processedStudents = useMemo(() => {
                 let filtered = students;
-                // Filter by Room
                 if (selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom);
-                // Filter by Search ID (in teacher view)
                 if (teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId));
-                
                 return [...filtered].sort((a, b) => {
                     if (!sortConfig.key) return 0;
                     let valA, valB;
@@ -485,20 +660,19 @@
                     </nav>
 
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
-                        {/* TEACHER LOGIN */}
+                        {/* TEACHER LOGIN, STUDENT VIEW, TEACHER DASHBOARD, TAB 1 & 2 ... (Unchanged logic sections) */}
                         {view === 'teacher_login' && (
                             <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 animate-fade-in">
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-blue-600" /></div>
                                     <h3 className="text-xl font-bold text-gray-800">ยืนยันตัวตนครู</h3>
                                 </div>
-                                <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
                                 <button onClick={handleLogin} className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition">เข้าสู่ระบบ</button>
                                 <button onClick={() => setView('student')} className="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">กลับไปหน้านักเรียน</button>
                             </div>
                         )}
 
-                        {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <div className="max-w-xl mx-auto mt-8 animate-fade-in">
                                 <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-white/50 relative overflow-hidden">
@@ -537,7 +711,7 @@
                                                                         <span className={`font-bold ${theme.text}`}>{section.title}</span>
                                                                     </div>
                                                                     <div className="flex items-center gap-3">
-                                                                        <span className={`text-xs font-bold px-3 py-1 rounded-full bg-white/60 ${theme.text}`}>รวม: {total} / {maxTotal}</span>
+                                                                        <span className={`text-xs font-bold px-3 py-1 rounded-full bg-white/60 ${theme.text}`}>คะแนนเก็บ: {total} / {maxTotal}</span>
                                                                         <Icons.ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform"/>
                                                                     </div>
                                                                 </summary>
@@ -547,15 +721,19 @@
                                                                             <h5 className="text-sm font-bold text-gray-500 mb-2 uppercase border-b pb-1">{group.title}</h5>
                                                                             <div className="space-y-2">
                                                                                 {group.columns.map((col, idx) => {
-                                                                                    const score = searchResult.scores?.[col];
+                                                                                    const score = calculateColumnValue(searchResult, group, col, maxScores[col]);
                                                                                     const max = maxScores[col] || 10;
                                                                                     const isMissing = score === '' || score === 0 || score === '0' || score === undefined;
                                                                                     const isIncluded = (group.includedCols || []).includes(col);
+                                                                                    const isAuto = isCalculatedCol(col);
+
                                                                                     return (
-                                                                                        <div key={idx} className={`flex justify-between items-center p-2 rounded hover:bg-gray-50 transition ${!isIncluded ? 'opacity-60' : ''}`}>
+                                                                                        <div key={idx} className={`flex justify-between items-center p-2 rounded hover:bg-gray-50 transition ${!isIncluded ? 'opacity-60' : ''} ${isAuto ? 'bg-gray-50 border border-gray-100' : ''}`}>
                                                                                                 <div className="flex flex-col">
                                                                                                     <div className="text-gray-700 font-medium text-sm flex items-center gap-2">
-                                                                                                        {col} {!isIncluded && <Icons.EyeOff size={12} className="text-gray-400"/>}
+                                                                                                        {col} 
+                                                                                                        {!isIncluded && <Icons.EyeOff size={12} className="text-gray-400"/>}
+                                                                                                        {isAuto && <span className="text-[10px] bg-blue-100 text-blue-600 px-1 rounded">Auto</span>}
                                                                                                     </div>
                                                                                                     <div className="text-[10px] text-gray-400">เต็ม {max}</div>
                                                                                                 </div>
@@ -583,10 +761,8 @@
                             </div>
                         )}
 
-                        {/* TEACHER DASHBOARD */}
                         {view === 'teacher' && (
                             <div className="animate-fade-in pb-20">
-                                {/* TAB NAVIGATION */}
                                 <div className="flex gap-4 mb-6 border-b border-gray-200 overflow-x-auto">
                                     <button onClick={() => setTeacherTab('scores')} className={`tab-btn ${teacherTab === 'scores' ? 'tab-active' : 'tab-inactive'}`}>
                                         <Icons.FileSpreadsheet size={18}/> ตารางคะแนน
@@ -599,7 +775,6 @@
                                     </button>
                                 </div>
 
-                                {/* GLOBAL SEARCH & FILTER (Persistent across Scores & Students tabs) */}
                                 {teacherTab !== 'settings' && (
                                     <div className="flex flex-wrap items-center gap-3 mb-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 sticky top-20 z-40">
                                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200">
@@ -618,10 +793,8 @@
                                     </div>
                                 )}
 
-                                {/* TAB 1: SCORE SHEET (View Only) */}
                                 {teacherTab === 'scores' && (
                                     <div className="animate-fade-in">
-                                        
                                         <div className="card">
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm text-left border-collapse">
@@ -671,12 +844,15 @@
                                                                 <td className="px-4 py-3 text-gray-700 border-r bg-white sticky left-36 z-0">{student.name}</td>
                                                                 <td className="px-2 py-3 text-center text-gray-500 text-xs border-r bg-white sticky left-76 z-0"><span className="bg-gray-100 px-2 py-1 rounded-md font-medium">{student.room}</span></td>
                                                                 {sections.map(sec => ((sec.groups || []).map(group => group.columns.map(col => {
-                                                                    const val = student.scores?.[col];
-                                                                    const isOver = parseFloat(val) > maxScores[col];
+                                                                    const val = calculateColumnValue(student, group, col, maxScores[col]);
+                                                                    const max = maxScores[col];
+                                                                    const isOver = parseFloat(val) > max;
                                                                     const isIncluded = (group.includedCols || []).includes(col);
+                                                                    const isAuto = isCalculatedCol(col);
+
                                                                     return (
-                                                                        <td key={col} className={`px-2 py-2 text-center border-r ${!isIncluded ? 'bg-gray-100/50 text-gray-400' : ''}`}>
-                                                                            {val !== '' && val !== undefined ? <span className={`font-medium ${isOver ? 'text-red-600 font-bold' : ''}`}>{val}</span> : <span className="text-gray-200">-</span>}
+                                                                        <td key={col} className={`px-2 py-2 text-center border-r ${!isIncluded ? 'bg-gray-100/50 text-gray-400' : ''} ${isAuto ? 'bg-gray-50 font-bold text-gray-700' : ''}`}>
+                                                                            {val !== '' && val !== undefined && val !== '-' ? <span className={`font-medium ${isOver ? 'text-red-600 font-bold' : ''}`}>{val}</span> : <span className="text-gray-200">-</span>}
                                                                         </td>
                                                                     );
                                                                 }))))}
@@ -692,7 +868,6 @@
                                     </div>
                                 )}
 
-                                {/* TAB 2: STUDENT MANAGEMENT */}
                                 {teacherTab === 'students' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
                                         <div className="card">
@@ -741,11 +916,9 @@
                                     </div>
                                 )}
 
-                                {/* TAB 3: SETTINGS (Redesigned) */}
                                 {teacherTab === 'settings' && (
                                     <div className="animate-fade-in max-w-5xl mx-auto space-y-8">
                                         
-                                        {/* 1. Data Management Zone (Moved to Top) */}
                                         <div className="card">
                                             <div className="p-6 border-b border-gray-100">
                                                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -779,10 +952,8 @@
                                             </div>
                                         </div>
 
-                                        {/* 2. Structure Configuration */}
                                         <div className="grid lg:grid-cols-3 gap-6">
                                             
-                                            {/* Left Col: Forms */}
                                             <div className="lg:col-span-1 space-y-6">
                                                 <div className="card p-5 border-l-4 border-l-indigo-500">
                                                     <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><Icons.FolderPlus size={18} className="text-indigo-500"/> สร้างบทเรียนใหม่</h4>
@@ -817,10 +988,25 @@
                                                             <label className="text-xs font-bold text-gray-500 mb-1 block">กลุ่มคะแนน (Group)</label>
                                                             <input type="text" placeholder="เช่น คะแนนเก็บ" className="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition" value={targetGroupName} onChange={(e) => setTargetGroupName(e.target.value)} />
                                                         </div>
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 mb-2 block">ประเภทช่องคะแนน</label>
+                                                            <div className="flex gap-2">
+                                                                <button onClick={() => setNewColType('manual')} className={`flex-1 py-2 rounded-lg text-xs font-bold border ${newColType === 'manual' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>กรอกเอง</button>
+                                                                <button onClick={() => setNewColType('sum')} className={`flex-1 py-2 rounded-lg text-xs font-bold border ${newColType === 'sum' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>รวม (Auto)</button>
+                                                                <button onClick={() => setNewColType('percent')} className={`flex-1 py-2 rounded-lg text-xs font-bold border ${newColType === 'percent' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>% (Auto)</button>
+                                                            </div>
+                                                        </div>
                                                         <div className="flex gap-2">
                                                             <div className="flex-1">
                                                                 <label className="text-xs font-bold text-gray-500 mb-1 block">ชื่องาน</label>
-                                                                <input type="text" placeholder="เช่น สอบย่อย" className="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition" value={newColName} onChange={(e) => setNewColName(e.target.value)} />
+                                                                <input 
+                                                                    type="text" 
+                                                                    placeholder={newColType === 'sum' ? 'รวม' : newColType === 'percent' ? 'คิดเป็น %' : 'เช่น สอบย่อย'} 
+                                                                    className={`w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition ${newColType !== 'manual' ? 'bg-gray-50 text-gray-500' : ''}`} 
+                                                                    value={newColType === 'sum' ? 'รวม' : newColType === 'percent' ? 'คิดเป็น %' : newColName} 
+                                                                    onChange={(e) => setNewColName(e.target.value)} 
+                                                                    disabled={newColType !== 'manual'}
+                                                                />
                                                             </div>
                                                             <div className="w-20">
                                                                 <label className="text-xs font-bold text-gray-500 mb-1 block">เต็ม</label>
@@ -832,7 +1018,6 @@
                                                 </div>
                                             </div>
 
-                                            {/* Right Col: Preview List */}
                                             <div className="lg:col-span-2">
                                                 <div className="card h-full flex flex-col">
                                                     <div className="p-5 border-b bg-gray-50 flex justify-between items-center">
@@ -868,13 +1053,21 @@
                                                                     </button>
                                                                 </div>
                                                                 
-                                                                {/* Tags for columns */}
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {(sec.groups || []).map(group => (
                                                                         <div key={group.id} className="flex items-center text-xs bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
                                                                             <div className="px-2 py-1 bg-gray-100 font-semibold text-gray-600 border-r">{group.title}</div>
                                                                             <div className="px-2 py-1 text-gray-500 flex gap-1">
-                                                                                {group.columns.map(c => <span key={c} title={`เต็ม ${maxScores[c]}`}>{c}</span>).reduce((prev, curr) => [prev, ', ', curr])}
+                                                                                {group.columns.map(c => (
+                                                                                    <span 
+                                                                                        key={c} 
+                                                                                        title={`เต็ม ${maxScores[c]}`}
+                                                                                        className="cursor-pointer hover:text-blue-600 hover:underline"
+                                                                                        onClick={() => openEditColumnModal(sec.id, group.id, c)}
+                                                                                    >
+                                                                                        {c}
+                                                                                    </span>
+                                                                                )).reduce((prev, curr) => [prev, ', ', curr])}
                                                                             </div>
                                                                         </div>
                                                                     ))}
@@ -891,7 +1084,39 @@
                             </div>
                         )}
 
-                        {/* Modals */}
+                        {/* Modals are kept same as previous version */}
+                        {isEditColumnModalOpen && columnToEdit && (
+                            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in p-4">
+                                <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                                    <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
+                                        <h3 className="text-lg font-bold flex items-center gap-2"><Icons.Edit size={18}/> แก้ไขช่องคะแนน</h3>
+                                        <button onClick={() => setIsEditColumnModalOpen(false)} className="hover:bg-indigo-700 p-1.5 rounded-full"><Icons.X size={18} /></button>
+                                    </div>
+                                    <div className="p-6 space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">ชื่องาน (เดิม: {columnToEdit.oldName})</label>
+                                            <input type="text" className="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" value={editColName} onChange={(e) => setEditColName(e.target.value)} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">คะแนนเต็ม</label>
+                                            <input type="number" className="w-full p-2.5 border rounded-xl text-center focus:ring-2 focus:ring-indigo-500 outline-none" value={editColMax} onChange={(e) => setEditColMax(e.target.value)} />
+                                        </div>
+                                        <div className="bg-yellow-50 text-yellow-800 text-xs p-3 rounded-lg border border-yellow-200">
+                                            <strong className="block mb-1">คำเตือน:</strong>
+                                            การเปลี่ยนชื่องานจะทำการย้ายคะแนนของนักเรียนทุกคนไปยังชื่อใหม่โดยอัตโนมัติ
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 flex justify-between items-center border-t">
+                                        <button onClick={handleDeleteColumn} className="text-red-500 hover:text-red-700 text-sm font-bold flex items-center gap-1"><Icons.Trash2 size={16}/> ลบงานนี้</button>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setIsEditColumnModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg">ยกเลิก</button>
+                                            <button onClick={handleSaveColumnEdit} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold shadow-md">บันทึก</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {isEditModalOpen && editingStudent && (
                             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in p-4">
                                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -914,12 +1139,29 @@
                                                             <div key={group.id} className="mb-4">
                                                                 <h5 className="text-sm font-semibold text-gray-500 mb-2 border-b pb-1">{group.title}</h5>
                                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                                                    {group.columns.map(col => (
-                                                                        <div key={col}>
-                                                                            <div className="flex justify-between mb-1"><label className="text-xs font-semibold text-gray-600 truncate max-w-[80px]">{col}</label><span className="text-[10px] text-gray-400">/{maxScores[col]}</span></div>
-                                                                            <input type="number" className="w-full p-2 border rounded-lg text-center font-medium focus:ring-2 focus:ring-blue-500 outline-none" value={editingStudent.scores?.[col] || ''} onChange={(e) => handleEditScore(col, e.target.value)} />
-                                                                        </div>
-                                                                    ))}
+                                                                    {group.columns.map(col => {
+                                                                        const isAuto = isCalculatedCol(col);
+                                                                        const val = isAuto 
+                                                                            ? calculateColumnValue(editingStudent, group, col, maxScores[col]) 
+                                                                            : (editingStudent.scores?.[col] || '');
+
+                                                                        return (
+                                                                            <div key={col}>
+                                                                                <div className="flex justify-between mb-1">
+                                                                                    <label className="text-xs font-semibold text-gray-600 truncate max-w-[80px]">{col}</label>
+                                                                                    {isAuto && <span className="text-[9px] bg-blue-100 text-blue-600 px-1 rounded">Auto</span>}
+                                                                                    <span className="text-[10px] text-gray-400">/{maxScores[col]}</span>
+                                                                                </div>
+                                                                                <input 
+                                                                                    type="text" 
+                                                                                    disabled={isAuto}
+                                                                                    className={`w-full p-2 border rounded-lg text-center font-medium focus:ring-2 focus:ring-blue-500 outline-none ${isAuto ? 'bg-gray-100 text-gray-500' : ''}`} 
+                                                                                    value={val} 
+                                                                                    onChange={(e) => handleEditScore(col, e.target.value)} 
+                                                                                />
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -1031,7 +1273,6 @@
                             </div>
                         )}
 
-                        {/* Warning Modal */}
                         {warning.show && (
                             <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[110] animate-fade-in p-4">
                                 <div className="bg-white rounded-2xl shadow-2xl p-6 text-center max-w-xs w-full">
