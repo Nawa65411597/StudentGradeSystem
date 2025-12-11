@@ -40,6 +40,13 @@
         .tab-inactive { @apply border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50; }
         
         .card { @apply bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden; }
+
+        /* Custom Vertical Text Class */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+        }
     </style>
 
     <!-- React & ReactDOM -->
@@ -640,10 +647,16 @@
                                                             <th className="px-4 py-3 bg-gray-50 border-b border-r font-bold text-gray-600 sticky left-36 z-10 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('name')}>ชื่อ-สกุล {sortConfig.key === 'name' && <Icons.ArrowUp size={12}/>}</th>
                                                             <th className="px-2 py-3 bg-gray-50 border-b border-r font-bold text-gray-600 sticky left-76 z-10 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('room')}>ห้อง {sortConfig.key === 'room' && <Icons.ArrowUp size={12}/>}</th>
                                                             {sections.map(sec => ((sec.groups || []).map(group => group.columns.map(col => (
-                                                                <th key={col} className={`px-2 py-3 border-b border-r min-w-[80px] text-center bg-white`}>
-                                                                    <div className="flex flex-col items-center">
-                                                                        <span className="font-semibold text-gray-700 text-xs">{col}</span>
-                                                                        <span className="text-[10px] opacity-60">({maxScores[col]})</span>
+                                                                <th key={col} className={`px-1 py-3 border-b border-r text-center bg-white align-bottom group hover:bg-gray-50 transition-colors relative`}>
+                                                                    <div className="flex flex-col items-center justify-end w-full h-40 pb-2">
+                                                                        <span 
+                                                                            className="text-xs font-semibold text-gray-700 whitespace-nowrap tracking-wide vertical-text" 
+                                                                        >
+                                                                            {col}
+                                                                        </span>
+                                                                        <span className="mt-2 text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                                                                            {maxScores[col]}
+                                                                        </span>
                                                                     </div>
                                                                 </th>
                                                             )))))}
