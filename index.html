@@ -36,7 +36,7 @@
         * { font-family: 'Sarabun', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Prompt', sans-serif !important; }
         body { background-color: #f8fafc; color: #1e293b; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -44,9 +44,9 @@
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f0fdfa; }
-        ::-webkit-scrollbar-thumb { background: #99f6e4; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
         
@@ -56,6 +56,15 @@
         .sticky-left-2 { position: sticky; left: 128px; z-index: 20; }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
+        /* Vertical Text for Headers */
+        .vertical-header { 
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg); 
+            white-space: nowrap; 
+            text-align: left;
+            max-height: 120px;
+        }
+
         #reader video, #scanner-video video { object-fit: cover; border-radius: 0.75rem; }
     </style>
 </head>
@@ -746,9 +755,9 @@
                                             <table className="w-full text-sm text-left border-collapse">
                                                 <thead className="sticky-header shadow-sm">
                                                     <tr className="bg-white text-gray-700 font-display border-b">
-                                                        <th className="p-3 border-r bg-white sticky-left-0 w-12 text-center shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">#</th>
-                                                        <th className="p-3 border-r bg-white sticky-left-1 w-24 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">รหัส</th>
-                                                        <th className="p-3 border-r bg-white sticky-left-2 min-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">ชื่อ-สกุล</th>
+                                                        <th className="p-3 border-r bg-white sticky-left-0 w-12 text-center shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-30">#</th>
+                                                        <th className="p-3 border-r bg-white sticky-left-1 w-24 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-30">รหัส</th>
+                                                        <th className="p-3 border-r bg-white sticky-left-2 min-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-30">ชื่อ-สกุล</th>
                                                         {sections.map((sec, idx) => {
                                                             const isCollapsed = collapsedSections[sec.id];
                                                             const colsCount = isCollapsed ? 1 : (sec.groups?.reduce((a, b) => a + (b.columns?.length||0), 0) || 0);
@@ -762,22 +771,26 @@
                                                                 </th>
                                                             );
                                                         })}
-                                                        <th className="p-3 text-center w-20 bg-white">แก้ไข</th>
+                                                        <th className="p-3 text-center w-20 bg-white z-20">แก้ไข</th>
                                                     </tr>
                                                     <tr className="bg-gray-50 text-gray-500 text-xs border-b">
-                                                        <th className="p-2 border-r bg-gray-50 sticky-left-0"></th>
-                                                        <th className="p-2 border-r bg-gray-50 sticky-left-1"></th>
-                                                        <th className="p-2 border-r bg-gray-50 sticky-left-2"></th>
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-0 z-30"></th>
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-1 z-30"></th>
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-2 z-30"></th>
                                                         {sections.map((sec, idx) => {
                                                             const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             if (collapsedSections[sec.id]) {
-                                                                return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic">ยุบแล้ว</th>
+                                                                return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic h-40 align-middle">ยุบแล้ว</th>
                                                             }
                                                             return sec.groups?.map(g => g.columns?.map(col => (
-                                                                <th key={col.id} className="p-2 border-r text-center min-w-[80px] font-normal group relative bg-white hover:bg-gray-50" title={`กลุ่ม: ${g.title}`}>
-                                                                    <div className={`mb-1 truncate max-w-[80px] mx-auto font-bold ${theme.subHeader}`}>{col.name}</div>
-                                                                    <div className="bg-gray-100 border rounded px-1.5 inline-block text-[10px] font-mono text-gray-500">{col.max}</div>
-                                                                    {col.type!=='manual' && <div className={`text-[9px] ${theme.icon} mt-0.5`}>{col.type}</div>}
+                                                                <th key={col.id} className="p-1 border-r text-center font-normal group relative bg-white hover:bg-gray-50 align-bottom h-48 min-w-[40px] max-w-[50px]" title={`กลุ่ม: ${g.title}`}>
+                                                                     <div className="flex flex-col items-center justify-end h-full pb-1 w-full">
+                                                                        <div className={`mb-2 font-bold text-xs ${theme.subHeader} vertical-header tracking-wide leading-none`}>
+                                                                            {col.name}
+                                                                        </div>
+                                                                        <div className="bg-gray-50 border rounded px-0.5 w-full text-center text-[10px] font-mono text-gray-500 mb-0.5">{col.max}</div>
+                                                                        {col.type!=='manual' && <div className={`text-[8px] ${theme.icon} uppercase`}>{col.type === 'sum' ? 'SUM' : '%'}</div>}
+                                                                     </div>
                                                                 </th>
                                                             )))
                                                         })}
@@ -787,9 +800,9 @@
                                                 <tbody>
                                                     {processedStudents.map((s, sIdx) => (
                                                         <tr key={s.id} className={`border-b hover:bg-indigo-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                                                            <td className="p-3 text-center border-r bg-inherit sticky-left-0">{s.no}</td>
-                                                            <td className="p-3 font-mono border-r bg-inherit sticky-left-1 text-xs font-bold text-gray-600">{s.id}</td>
-                                                            <td className="p-3 border-r bg-inherit sticky-left-2 font-medium text-gray-700 truncate max-w-[200px]">{s.name}</td>
+                                                            <td className="p-2 text-center border-r bg-inherit sticky-left-0 group-hover:bg-indigo-50 z-20 font-mono">{s.no}</td>
+                                                            <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-indigo-50 z-20 text-xs font-bold text-gray-600">{s.id}</td>
+                                                            <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-indigo-50 z-20 font-medium text-gray-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
                                                                 const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
@@ -798,8 +811,8 @@
                                                                 return sec.groups?.map(g => g.columns?.map(col => {
                                                                     const val = calculateColumnValue(s, g, col);
                                                                     return (
-                                                                        <td key={col.id} className={`p-2 text-center border-r group-hover:bg-indigo-50 ${col.type!=='manual'?'bg-gray-50 text-gray-500 font-bold': theme.text + ' font-medium'}`}>
-                                                                            {val && val !== '-' ? val : <span className="text-gray-300 font-light">-</span>}
+                                                                        <td key={col.id} className={`p-1 text-center border-r group-hover:bg-indigo-50 ${col.type!=='manual'?'bg-gray-50 text-gray-500 font-bold text-xs': theme.text + ' font-medium'}`}>
+                                                                            {val && val !== '-' ? val : <span className="text-gray-200 font-light">-</span>}
                                                                         </td>
                                                                     );
                                                                 }))
