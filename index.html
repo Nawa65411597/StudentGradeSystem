@@ -5,695 +5,972 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบประกาศคะแนน (GradePro Cloud)</title>
     
-    <!-- Google Fonts: Prompt -->
+    <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- HTML5-QRCode Library -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
-                },
-            },
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
+                    colors: { 
+                        // Base Brand Color (Teal)
+                        primary: { 50:'#f0fdfa', 100:'#ccfbf1', 200:'#99f6e4', 300:'#5eead4', 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488', 700:'#0f766e', 800:'#115e59', 900:'#134e4a' } 
+                    }
+                }
+            }
         }
     </script>
     
-    <style>
-        * { font-family: 'Prompt', sans-serif !important; }
-        body { background-color: #f8fafc; color: #1e293b; }
-        .vertical-text { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .modal-backdrop { background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        #reader video, #direct-reader video { object-fit: cover; border-radius: 1rem; }
-    </style>
-
-    <!-- React & Babel -->
+    <!-- Libraries -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * { font-family: 'Sarabun', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Prompt', sans-serif !important; }
+        body { background-color: #f8fafc; color: #334155; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
+        
+        /* Sticky Headers */
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; }
+        .sticky-header { position: sticky; top: 0; z-index: 30; }
+        
+        #reader video, #scanner-video video { object-fit: cover; border-radius: 0.75rem; }
+    </style>
 </head>
 <body>
+    <div id="error-display"></div>
     <div id="root"></div>
 
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const el = document.getElementById('error-display');
+            if(message.includes("permission-denied")) return; 
+            el.style.display = 'block';
+            el.innerHTML = `<h3>⚠️ Application Error</h3><p>${message}</p>`;
+        };
+    </script>
+
     <script type="text/babel" data-type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- CONFIG ---
-        let firebaseConfig;
-        try { firebaseConfig = JSON.parse(__firebase_config); } catch(e) {
-            firebaseConfig = { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" };
-        }
+        const getFirebaseConfig = () => {
+            try { return typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; } 
+            catch (e) { return { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; }
+        };
 
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(getFirebaseConfig());
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'grade-pro-final-fixed';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'grade-pro-v4-colorful'; // Bump Version
+        const useLocalStorage = typeof __firebase_config === 'undefined';
         
-        const PUBLIC_DATA_PATH = `artifacts/${appId}/public/data`;
-        const STUDENTS_COLLECTION = `${PUBLIC_DATA_PATH}/students`;
-        const CONFIG_DOC = `${PUBLIC_DATA_PATH}/config/main`;
-        const SCANNER_COL_PATH = `artifacts/${appId}/public/data/scanner_sessions`;
+        const LOCAL_KEY = 'gradepro_local_data';
+        const loadLocalData = () => JSON.parse(localStorage.getItem(LOCAL_KEY) || '{"students":[], "sections":[]}');
+        const saveLocalData = (data) => localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
 
         // --- ICONS ---
-        const Icon = ({ p }) => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{p}</svg>;
+        const Icon = ({ p, size=18, className="", onClick }) => (
+            <svg onClick={onClick} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{cursor: onClick ? 'pointer' : 'inherit'}}>{p}</svg>
+        );
         const Icons = {
-            Search: <Icon p={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
-            User: <Icon p={<><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
-            Lock: <Icon p={<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
-            LogOut: <Icon p={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>} />,
-            Edit: <Icon p={<><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></>} />,
-            Trash: <Icon p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
-            Plus: <Icon p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
-            Camera: <Icon p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
-            QrCode: <Icon p={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            Settings: <Icon p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Table: <Icon p={<><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></>} />,
-            Trash2: <Icon p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
-            AlertTriangle: <Icon p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
-            FolderPlus: <Icon p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
-            EyeOff: <Icon p={<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>} />,
-            CheckSquare: <Icon p={<><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>} />,
-            Square: <Icon p={<><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></>} />,
-            Filter: <Icon p={<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>} />,
-            Upload: <Icon p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>} />,
-            Download: <Icon p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>} />,
-            Database: <Icon p={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
-            ArrowUp: <Icon p={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
-            Users: <Icon p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            UserPlus: <Icon p={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />
+            Search: (p) => <Icon {...p} p={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
+            User: (p) => <Icon {...p} p={<><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
+            Lock: (p) => <Icon {...p} p={<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
+            LogOut: (p) => <Icon {...p} p={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>} />,
+            Edit: (p) => <Icon {...p} p={<><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></>} />,
+            Trash: (p) => <Icon {...p} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
+            Plus: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
+            Camera: (p) => <Icon {...p} p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
+            Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
+            AlertTriangle: (p) => <Icon {...p} p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
+            FolderPlus: (p) => <Icon {...p} p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
+            Upload: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>} />,
+            Download: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>} />,
+            Database: (p) => <Icon {...p} p={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
+            ArrowUp: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
+            Users: (p) => <Icon {...p} p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            UserPlus: (p) => <Icon {...p} p={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />,
+            ChevronDown: (p) => <Icon {...p} p={<><polyline points="6 9 12 15 18 9"/></>} />,
+            X: (p) => <Icon {...p} p={<><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>} />,
+            FileSpreadsheet: (p) => <Icon {...p} p={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></>} />,
+            Filter: (p) => <Icon {...p} p={<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>} />,
+            Save: (p) => <Icon {...p} p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>} />,
+            ChevronRight: (p) => <Icon {...p} p={<><polyline points="9 18 15 12 9 6"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} p={<><polyline points="15 18 9 12 15 6"/></>} />,
+            QrCode: (p) => <Icon {...p} p={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Minus: (p) => <Icon {...p} p={<><line x1="5" y1="12" x2="19" y2="12"/></>} />
         };
 
-        const SEED_SECTIONS = [{ id: 'sec1', title: 'บทที่ 1', color: 'blue', groups: [{ id: 'g1', title: 'คะแนนเก็บ', columns: [{ id: 'c1', name: 'งาน 1', max: 10, type: 'manual' }, { id: 'c2', name: 'รวม', max: 10, type: 'sum' }] }] }];
-        const SEED_DATA = [{ id: '66001', no: '1', name: 'สมชาย', room: '1/1', scores: { 'c1': 8 } }];
-        const THEMES = { blue: { bg: 'bg-blue-50', text: 'text-blue-800' }, green: { bg: 'bg-green-50', text: 'text-green-800' }, orange: { bg: 'bg-orange-50', text: 'text-orange-800' }, purple: { bg: 'bg-purple-50', text: 'text-purple-800' }, pink: { bg: 'bg-pink-50', text: 'text-pink-800' }, gray: { bg: 'bg-gray-50', text: 'text-gray-800' } };
+        const SEED_SECTIONS = [
+            { 
+                id: 'sec1', title: 'บทที่ 1: สารพันธุกรรม', color: 'primary', 
+                groups: [
+                    { 
+                        id: 'g1', title: 'คะแนนเก็บ (20)', 
+                        columns: [
+                           { id: 'c1', name: 'สมุด', max: 10, type: 'manual' },
+                           { id: 'c2', name: 'ใบงาน', max: 10, type: 'manual' }
+                        ]
+                    }
+                ]
+            }
+        ];
+        const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        const { useState, useEffect, useRef, useMemo } = React;
+        // --- THEME PALETTES ---
+        const SECTION_THEMES = [
+            { name: 'Teal', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-800', header: 'bg-teal-100', icon: 'text-teal-600', subHeader: 'text-teal-700' },
+            { name: 'Blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', header: 'bg-blue-100', icon: 'text-blue-600', subHeader: 'text-blue-700' },
+            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-800', header: 'bg-rose-100', icon: 'text-rose-600', subHeader: 'text-rose-700' },
+            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', header: 'bg-amber-100', icon: 'text-amber-600', subHeader: 'text-amber-700' },
+            { name: 'Violet', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-800', header: 'bg-violet-100', icon: 'text-violet-600', subHeader: 'text-violet-700' },
+        ];
 
-        const MobileScanner = ({ sessionId, onClose }) => {
-            const [status, setStatus] = useState("กำลังเริ่มกล้อง...");
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- SUB-COMPONENTS ---
+        function ScannerController({ isOpen, onScan }) {
             useEffect(() => {
-                const scanner = new Html5Qrcode("reader");
+                if(!isOpen) return;
+                const scanner = new Html5Qrcode("scanner-video");
+                const startScanner = async () => {
+                    try {
+                        await scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+                            (text) => {
+                                const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                                audio.volume = 0.3; audio.play().catch(()=>{});
+                                onScan(text.trim());
+                            }, 
+                            () => {}
+                        );
+                    } catch(e) { console.error(e); }
+                };
+                startScanner();
+                return () => { try { scanner.stop(); } catch(e){} };
+            }, [isOpen]);
+            return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
+        }
+
+        // Mobile Scanner (Phone View)
+        function MobileScanner({ sessionId, onClose }) {
+            const [status, setStatus] = useState('กำลังเปิดกล้อง...');
+            const [lastScanned, setLastScanned] = useState(null);
+
+            useEffect(() => {
+                const scanner = new Html5Qrcode("mobile-reader");
                 scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
                     (text) => {
-                        const code = text.trim();
-                        if(code.includes("scan_session")) return;
-                        setDoc(doc(db, SCANNER_COL_PATH, sessionId), { lastScanned: code, timestamp: Date.now() }, { merge: true })
-                            .then(() => setStatus(`ส่ง: ${code}`))
-                            .catch(e => setStatus("Error: " + e.message));
+                        if (text.includes("scan_session")) return; // Ignore session QR
+                        if (lastScanned === text) return;
+                        setLastScanned(text);
+                        setStatus(`ส่ง: ${text}`);
+                        // Update Firestore
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { lastScanned: text, timestamp: Date.now() }, { merge: true });
                         if(navigator.vibrate) navigator.vibrate(200);
-                    },
-                    (err) => {}
-                ).catch(e => setStatus("เปิดกล้องไม่ได้"));
-                return () => { scanner.stop().catch(e=>{}); };
-            }, []);
-            return (
-                <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center p-4">
-                    <h3 className="text-white font-bold mb-4 text-lg">Mobile Scanner</h3>
-                    <div id="reader" className="bg-white w-full rounded-lg overflow-hidden"></div>
-                    <div className="text-white mt-4 text-center font-mono">{status}</div>
-                    <button onClick={onClose} className="mt-8 bg-red-600 text-white px-6 py-2 rounded-full">ปิด</button>
-                    <div className="text-gray-500 text-xs mt-2">Session: {sessionId}</div>
-                </div>
-            );
-        };
-
-        const WebScanner = ({ onClose, onScan }) => {
-            useEffect(() => {
-                const scanner = new Html5Qrcode("web-reader");
-                scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-                    (text) => {
-                        const code = text.trim();
-                        if(!code.startsWith("http")) {
-                            onScan(code);
-                            scanner.stop().then(()=>onClose()).catch(()=>onClose());
-                        }
+                        setTimeout(() => { setLastScanned(null); setStatus("พร้อมสแกน..."); }, 2000);
                     }, 
                     () => {}
-                );
-                return () => { scanner.stop().catch(e=>{}); };
-            }, []);
+                ).catch(e => setStatus("Error: " + e));
+                return () => { scanner.stop().catch(()=>{}); };
+            }, [sessionId]);
+
             return (
-                <div className="fixed inset-0 modal-backdrop z-50 flex flex-col items-center justify-center p-4">
-                    <div className="bg-white p-4 rounded-xl shadow-xl w-full max-w-sm text-center">
-                        <h3 className="font-bold mb-4">สแกนบาร์โค้ด</h3>
-                        <div id="web-reader" className="bg-black rounded-lg overflow-hidden w-full"></div>
-                        <button onClick={onClose} className="mt-4 text-red-500 font-bold">ยกเลิก</button>
+                <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
+                    <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
+                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-teal-500 shadow-2xl"></div>
+                    <div className="mt-6 flex flex-col items-center gap-2">
+                        <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
+                            {status}
+                        </div>
+                        <button onClick={onClose} className="mt-4 bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold shadow-lg transition-transform transform active:scale-95">ปิดการทำงาน</button>
                     </div>
                 </div>
             );
-        };
+        }
 
+        // --- MAIN APP ---
         function App() {
-            const [view, setView] = useState('student'); 
-            const [tab, setTab] = useState('scores'); 
-            const [password, setPassword] = useState('');
+            const [view, setView] = useState('student');
             const [students, setStudents] = useState([]);
             const [sections, setSections] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [searchQuery, setSearchQuery] = useState('');
+            const [user, setUser] = useState(null);
+            
+            // UI States
+            const [searchId, setSearchId] = useState('');
             const [searchResult, setSearchResult] = useState(null);
-            const [activeModal, setActiveModal] = useState(null); 
-            const [editingStudent, setEditingStudent] = useState(null);
-            const [editColData, setEditColData] = useState(null); 
-            const [sessionId, setSessionId] = useState(null);
-            const [isMobileMode, setIsMobileMode] = useState(false);
+            const [password, setPassword] = useState('');
+            const [teacherTab, setTeacherTab] = useState('scores'); 
+            const [selectedRoom, setSelectedRoom] = useState('All');
+            const [teacherSearchId, setTeacherSearchId] = useState('');
+            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
+            const [warning, setWarning] = useState({ show: false, msg: '' });
+            
+            // Collapsible Logic
+            const [collapsedSections, setCollapsedSections] = useState({}); // { secId: true/false }
+
+            // Modals & Scanner
+            const [scoreModalData, setScoreModalData] = useState(null); 
+            const [studentModalData, setStudentModalData] = useState(null);
+            const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+            const [isImportOpen, setIsImportOpen] = useState(false);
+            const [importText, setImportText] = useState('');
+            const [isScannerOpen, setIsScannerOpen] = useState(false);
+            const [scanTarget, setScanTarget] = useState('');
+            const [returnToScanner, setReturnToScanner] = useState(false);
+            
+            // Mobile Pair
+            const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
+            const [scannerSessionId, setScannerSessionId] = useState(null);
+            const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
+
+            // Settings Input
             const [newSectionTitle, setNewSectionTitle] = useState('');
             const [targetSectionId, setTargetSectionId] = useState('');
+            const [targetGroupName, setTargetGroupName] = useState('คะแนนเก็บ');
             const [newColName, setNewColName] = useState('');
             const [newColMax, setNewColMax] = useState(10);
             const [newColType, setNewColType] = useState('manual');
-            const [importText, setImportText] = useState('');
-            const [selectedRoom, setSelectedRoom] = useState('All');
             
-            const searchInputRef = useRef(null);
+            // Settings Modals
+            const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
+            const [sectionSettings, setSectionSettings] = useState({});
+            const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+            const [groupModalData, setGroupModalData] = useState({});
+            const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
+            const [columnModalData, setColumnModalData] = useState({});
+            
+            // New Student
+            const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
+            // --- AUTH & DATA ---
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
-                if (params.get('scan_session')) {
-                    setSessionId(params.get('scan_session'));
-                    setIsMobileMode(true);
+                const scanSession = params.get('scan_session');
+                if (scanSession) {
+                    setIsMobileScannerActive(true);
+                    setScannerSessionId(scanSession); 
                 }
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) signInWithCustomToken(auth, __initial_auth_token);
-                else signInAnonymously(auth);
-
-                const unsub1 = onSnapshot(doc(db, CONFIG_DOC), (s) => setSections(s.exists() ? s.data().sections || [] : []));
-                const unsub2 = onSnapshot(collection(db, STUDENTS_COLLECTION), (s) => {
-                    setStudents(s.docs.map(d => d.data()));
-                    setLoading(false);
-                });
-                return () => { unsub1(); unsub2(); };
+                if(useLocalStorage) {
+                    setUser({uid: 'offline'});
+                    const d = loadLocalData();
+                    if(!d.sections.length) { d.sections = SEED_SECTIONS; d.students = SEED_DATA; saveLocalData(d); }
+                    setSections(d.sections); setStudents(d.students); setLoading(false);
+                } else {
+                    const initAuth = async () => {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    };
+                    initAuth();
+                    return onAuthStateChanged(auth, setUser);
+                }
             }, []);
 
             useEffect(() => {
-                if(!sessionId || isMobileMode) return;
-                const unsub = onSnapshot(doc(db, SCANNER_COL_PATH, sessionId), (s) => {
-                    const d = s.data();
-                    if(d && d.lastScanned) {
-                        const code = d.lastScanned.trim();
-                        if(view === 'teacher') handleEditStudent(code);
-                        else handleSearch(code);
+                if(!user || useLocalStorage) return;
+                const unsub1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), d => d.exists() && setSections(d.data().sections || []));
+                const unsub2 = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'students'), s => {
+                    setStudents(s.docs.map(d => ({id: d.id, ...d.data()})));
+                    setLoading(false);
+                });
+                return () => { unsub1(); unsub2(); };
+            }, [user]);
+
+            // Scanner Listener (PC listening to Mobile)
+            useEffect(() => {
+                if (!scannerSessionId || isMobileScannerActive) return; 
+                const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
+                const unsub = onSnapshot(sessionDoc, (doc) => {
+                    const data = doc.data();
+                    if (data && data.lastScanned) {
+                        handleTeacherSearch(data.lastScanned.trim());
                     }
                 });
                 return () => unsub();
-            }, [sessionId, view, students]);
+            }, [scannerSessionId, isMobileScannerActive, students]);
 
-            const getColValue = (student, group, col) => {
-                if(!group || !student) return '-';
-                if(col.type === 'manual') return student.scores?.[col.id];
-
-                if(col.type === 'sum') {
-                    let sum = 0;
-                    let count = 0;
-                    group.columns.forEach(c => {
-                        if(c.type === 'manual') {
-                            const v = parseFloat(student.scores?.[c.id]);
-                            if(!isNaN(v)) { sum += v; count++; }
-                        }
-                    });
-                    return count > 0 ? parseFloat(sum.toFixed(2)) : '-';
+            // --- LOGIC ---
+            const saveData = (newS, newSec) => {
+                if(useLocalStorage) {
+                    const d = loadLocalData();
+                    if(newS) d.students = newS; if(newSec) d.sections = newSec;
+                    saveLocalData(d);
+                    if(newS) setStudents(newS); if(newSec) setSections(newSec);
+                } else {
+                    if(newSec) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), {sections: newSec}, {merge:true});
                 }
+            };
 
-                if(col.type === 'percent') {
-                    const idx = group.columns.findIndex(c => c.id === col.id);
-                    if(idx > 0) {
-                        const srcCol = group.columns[idx-1];
-                        const srcVal = parseFloat(getColValue(student, group, srcCol));
-                        let srcMax = srcCol.max || 100;
-                        if(srcCol.type === 'sum') {
-                            srcMax = group.columns.filter(c => c.type === 'manual').reduce((a,b) => a + (parseInt(b.max)||0), 0);
-                            if(srcMax === 0) srcMax = 1;
-                        }
-                        if(!isNaN(srcVal)) return parseFloat(((srcVal/srcMax)*col.max).toFixed(2));
-                    }
+            const updateStudent = async (studentData) => {
+                Object.keys(studentData).forEach(key => studentData[key] === undefined && delete studentData[key]);
+                if(useLocalStorage) {
+                    const newS = students.map(s => s.id === studentData.id ? studentData : s);
+                    if(!newS.find(s => s.id === studentData.id)) newS.push(studentData);
+                    saveData(newS, null);
+                } else {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', studentData.id), studentData, {merge:true});
                 }
+            };
+
+            const handleTeacherSearch = (scannedId) => {
+                const id = scannedId || teacherSearchId;
+                const s = students.find(x => x.id === id || x.name.includes(id));
+                if (s) {
+                    if(isScannerOpen) setReturnToScanner(true); 
+                    setScoreModalData(JSON.parse(JSON.stringify(s)));
+                    setTeacherSearchId('');
+                    setIsScannerOpen(false);
+                    // Also close mobile pair modal if open
+                    setIsMobilePairOpen(false);
+                } else {
+                    setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
+                }
+            };
+
+            const navigateStudent = (direction) => {
+                if(!scoreModalData) return;
+                const currentIndex = processedStudents.findIndex(s => s.id === scoreModalData.id);
+                const nextIndex = currentIndex + direction;
+                if(nextIndex >= 0 && nextIndex < processedStudents.length) {
+                    updateStudent(scoreModalData); 
+                    setScoreModalData(JSON.parse(JSON.stringify(processedStudents[nextIndex])));
+                }
+            };
+
+            // Structure Management
+            const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
+            const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
+            const handleSaveGroup = () => { if(!groupModalData.title) return; const newSecs = sections.map(s => { if(s.id === groupModalData.sectionId) { const groups = [...(s.groups || [])]; if(groupModalData.id) { const idx = groups.findIndex(g => g.id === groupModalData.id); groups[idx] = {...groups[idx], title: groupModalData.title}; } else { groups.push({id: `g_${Date.now()}`, title: groupModalData.title, columns: []}); } return {...s, groups}; } return s; }); saveData(null, newSecs); setIsGroupModalOpen(false); };
+            const handleDeleteGroup = (secId, groupId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => s.id === secId ? {...s, groups: s.groups.filter(g => g.id !== groupId)} : s); saveData(null, newSecs); };
+            const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
+            const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
+
+            // Calculations
+            const calculateColumnValue = (student, group, col) => {
+                if (!group || !group.columns) return '-';
+                if (col.type === 'manual') return student.scores?.[col.id];
+                const manualCols = group.columns.filter(c => c.type === 'manual');
+                const totalMax = manualCols.reduce((acc, c) => acc + (parseInt(c.max) || 0), 0);
+                let currentTotal = 0; let hasScore = false;
+                manualCols.forEach(c => { const val = parseFloat(student.scores?.[c.id]); if (!isNaN(val)) { currentTotal += val; hasScore = true; } });
+                if (col.type === 'sum') return hasScore ? parseFloat(currentTotal.toFixed(2)) : '-';
+                if (col.type === 'percent') { if (!hasScore || totalMax === 0) return '-'; const weight = parseInt(col.max) || 100; return parseFloat(((currentTotal / totalMax) * weight).toFixed(2)); }
                 return '-';
             };
 
-            const handleSearch = (code) => {
-                const target = code || searchQuery;
-                const found = students.find(s => s.id === target.trim());
-                if(found) { setSearchResult(found); setSearchQuery(target.trim()); }
-                else alert('ไม่พบรหัส: ' + target);
-            };
+            const processedStudents = useMemo(() => {
+                let filtered = students;
+                if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom);
+                if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId));
+                return filtered.sort((a,b) => {
+                    if(sortConfig.key === 'no') return (parseInt(a.no)||0) - (parseInt(b.no)||0) * (sortConfig.direction==='asc'?1:-1);
+                    return a.id.localeCompare(b.id);
+                });
+            }, [students, selectedRoom, teacherSearchId, sortConfig]);
 
-            const handleEditStudent = (code) => {
-                const target = code || searchQuery;
-                const found = students.find(s => s.id === target.trim());
-                if(found) {
-                    setEditingStudent(JSON.parse(JSON.stringify(found)));
-                    setActiveModal('edit');
-                    setSearchQuery('');
-                } else if(code) alert('ไม่พบรหัส: ' + code);
-            };
+            const uniqueRooms = useMemo(() => [...new Set(students.map(s => s.room).filter(Boolean))].sort(), [students]);
 
-            const saveStudent = async () => {
-                await setDoc(doc(db, STUDENTS_COLLECTION, editingStudent.id), editingStudent);
-                setActiveModal(null);
-            };
+            const totalScorePreview = useMemo(() => {
+                if(!scoreModalData) return 0;
+                let total = 0;
+                sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(scoreModalData.scores?.[c.id] || 0); })));
+                return parseFloat(total.toFixed(2));
+            }, [scoreModalData]);
 
-            const addSection = async () => {
-                if(!newSectionTitle) return;
-                const newSec = { id: `s_${Date.now()}`, title: newSectionTitle, color: 'blue', groups: [] };
-                await setDoc(doc(db, CONFIG_DOC), { sections: [...sections, newSec] });
-                setNewSectionTitle('');
-                alert('เพิ่มบทเรียนแล้ว');
-            };
-
-            const addColumn = async () => {
-                if(!targetSectionId || !newColName) return;
-                const newSections = [...sections];
-                const sec = newSections.find(s => s.id === targetSectionId);
-                
-                let group = sec.groups.find(g => g.title === 'คะแนนเก็บ');
-                if(!group) {
-                    group = { id: `g_${Date.now()}`, title: 'คะแนนเก็บ', columns: [] };
-                    sec.groups.push(group);
+            // --- MOBILE PAIR LOGIC ---
+            const handleGenerateScanner = () => {
+                const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                setScannerSessionId(newSessionId);
+                setIsMobilePairOpen(true);
+                // Create session doc
+                if(!useLocalStorage) {
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', newSessionId), { created: Date.now() });
                 }
-
-                group.columns.push({
-                    id: `c_${Date.now()}`,
-                    name: newColName,
-                    max: parseInt(newColMax),
-                    type: newColType
-                });
-
-                await setDoc(doc(db, CONFIG_DOC), { sections: newSections });
-                setNewColName('');
-                alert('เพิ่มช่องคะแนนแล้ว');
             };
 
-            const handleImport = async () => {
-                const lines = importText.trim().split('\n');
-                const batch = writeBatch(db);
-                let count = 0;
-                lines.forEach(l => {
-                    const p = l.split(/[\t,]+|\s{2,}/).map(s => s.trim());
-                    if(p.length >= 2) {
-                        let id = p[0], name = p[1], room = p[2] || '-';
-                        if(p[0].length < 4 && p[1].length >= 4) { id = p[1]; name = p[2]; room = p[3] || '-'; }
-                        if(id && name) {
-                            const old = students.find(s => s.id === id);
-                            batch.set(doc(db, STUDENTS_COLLECTION, id), { id, name, room, scores: old ? old.scores : {} });
-                            count++;
-                        }
-                    }
-                });
-                await batch.commit();
-                alert(`นำเข้า ${count} คน`);
-                setActiveModal(null);
-            };
-
-            const saveColumnEdit = async () => {
-                if(!editColData) return;
-                const newSections = [...sections];
-                const sec = newSections.find(s => s.id === editColData.sectionId);
-                const grp = sec.groups.find(g => g.id === editColData.groupId);
-                const col = grp.columns.find(c => c.id === editColData.col.id);
-                
-                col.name = editColData.col.name;
-                col.max = parseInt(editColData.col.max);
-
-                await setDoc(doc(db, CONFIG_DOC), { sections: newSections });
-                setActiveModal(null);
-            };
-            
-            const deleteColumn = async () => {
-                if(!editColData || !confirm('ลบช่องนี้? ข้อมูลคะแนนจะหายไป')) return;
-                const newSections = [...sections];
-                const sec = newSections.find(s => s.id === editColData.sectionId);
-                const grp = sec.groups.find(g => g.id === editColData.groupId);
-                grp.columns = grp.columns.filter(c => c.id !== editColData.col.id);
-
-                const batch = writeBatch(db);
-                batch.set(doc(db, CONFIG_DOC), { sections: newSections });
-                
-                students.forEach(s => {
-                    if(s.scores && s.scores[editColData.col.id]) {
-                        const newScores = {...s.scores};
-                        delete newScores[editColData.col.id];
-                        batch.update(doc(db, STUDENTS_COLLECTION, s.id), { scores: newScores });
-                    }
-                });
-
-                await batch.commit();
-                setActiveModal(null);
-            };
-
-            const resetSystem = async () => {
-                if(!confirm('ล้างข้อมูลทั้งหมด?')) return;
-                const batch = writeBatch(db);
-                batch.set(doc(db, CONFIG_DOC), { sections: SEED_SECTIONS });
-                batch.set(doc(db, STUDENTS_COLLECTION, '66001'), SEED_DATA[0]);
-                await batch.commit();
-                window.location.reload();
-            };
-
-            if(isMobileMode) return <MobileScanner sessionId={sessionId} onClose={() => { setIsMobileMode(false); window.location.search = ''; }} />;
-            if(loading) return <div className="h-screen flex items-center justify-center text-gray-400">Loading...</div>;
-
-            const sortedStudents = students
-                .filter(s => selectedRoom === 'All' || s.room === selectedRoom)
-                .sort((a,b) => a.id.localeCompare(b.id));
+            // --- RENDER ---
+            if (loading) return <div className="flex h-screen items-center justify-center font-bold text-primary-600 animate-pulse font-display">กำลังโหลดข้อมูล...</div>;
+            if (isMobileScannerActive) return <MobileScanner sessionId={scannerSessionId} onClose={() => { setIsMobileScannerActive(false); window.history.replaceState(null, '', window.location.pathname); }} />;
 
             return (
-                <div className="min-h-screen pb-20">
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-30 shadow-sm flex justify-between items-center">
-                        <div className="font-bold text-blue-600 flex items-center gap-2 text-lg">
-                            {Icons.FileSpreadsheet} GradePro Cloud
+                <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
+                    {/* NAVBAR */}
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-teal-600 to-emerald-600 border-none">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center">
+                            <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
+                                <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.FileSpreadsheet className="w-5 h-5" /></div>
+                                <span>GradePro {useLocalStorage ? '(Offline)' : ''}</span>
+                            </div>
+                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-white/80 hover:text-white transition bg-white/10 px-3 py-1 rounded-full">
+                                {view === 'student' ? 'เข้าสู่ระบบครู' : 'หน้าหลักนักเรียน'}
+                            </button>
                         </div>
-                        {view === 'student' ? 
-                            <button onClick={() => setView('teacher_login')} className="text-sm text-gray-500 flex items-center gap-1">{Icons.Lock} ครู</button> : 
-                            <button onClick={() => setView('student')} className="text-sm text-red-500 flex items-center gap-1">{Icons.LogOut} ออก</button>
-                        }
                     </nav>
 
-                    <main className="max-w-6xl mx-auto p-4">
+                    {/* CONTENT */}
+                    <div className="max-w-7xl mx-auto p-4 md:p-6">
+                        
+                        {/* STUDENT VIEW */}
                         {view === 'student' && (
-                            <div className="max-w-md mx-auto mt-10">
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 text-center">
-                                    <h1 className="text-2xl font-bold text-gray-800 mb-2">ตรวจสอบคะแนน</h1>
-                                    <div className="flex gap-2 mb-4 relative">
-                                        <input type="text" className="w-full p-3 pl-4 pr-10 border rounded-xl outline-none focus:border-blue-500" placeholder="รหัสนักเรียน..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key==='Enter'&&handleSearch()}/>
-                                        <button onClick={() => setActiveModal('scanner')} className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">{Icons.Camera}</button>
-                                        <button onClick={() => handleSearch()} className="bg-blue-600 text-white px-4 rounded-xl">{Icons.Search}</button>
+                            <div className="max-w-xl mx-auto mt-8 animate-slide-up">
+                                <div className="bg-white p-8 rounded-3xl shadow-xl border relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-emerald-500"></div>
+                                    <h2 className="text-3xl font-extrabold text-gray-800 mb-6 text-center font-display">ตรวจสอบคะแนน</h2>
+                                    <div className="flex gap-2">
+                                        <input className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-teal-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
+                                        <button id="search-btn" onClick={() => {
+                                            const s = students.find(x => x.id === searchId);
+                                            if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
+                                        }} className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
                                     </div>
-                                    
                                     {searchResult && (
-                                        <div className="animate-fade-in text-left mt-6">
-                                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
-                                                <h2 className="font-bold text-xl text-blue-800">{searchResult.name}</h2>
-                                                <p className="text-blue-600 text-sm">{searchResult.id} | {searchResult.room}</p>
+                                        <div className="mt-8 space-y-6 animate-fade-in">
+                                            <div className="bg-teal-50 p-4 rounded-xl flex items-center gap-4 border border-teal-100">
+                                                <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-teal-600"/></div>
+                                                <div>
+                                                    <div className="font-bold text-xl text-gray-800">{searchResult.name}</div>
+                                                    <div className="text-sm text-gray-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
+                                                </div>
                                             </div>
-                                            <div className="space-y-4">
-                                                {sections.map(sec => (
-                                                    <div key={sec.id} className="border rounded-xl overflow-hidden bg-white">
-                                                        <div className="bg-gray-50 p-3 font-bold text-gray-700">{sec.title}</div>
-                                                        <div className="divide-y">
-                                                            {sec.groups.flatMap(g => g.columns).map(col => (
-                                                                <div key={col.id} className="flex justify-between p-3 text-sm">
-                                                                    <span>{col.name}</span>
-                                                                    <span className="font-bold">
-                                                                        {getColValue(searchResult, sec.groups.find(g => g.columns.includes(col)), col)} 
-                                                                        <span className="text-gray-300 font-normal text-xs"> / {col.max}</span>
-                                                                    </span>
-                                                                </div>
-                                                            ))}
+                                            {sections.map((sec, idx) => {
+                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                return (
+                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                        <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                        <div className="bg-white p-3 space-y-2">
+                                                            {sec.groups?.map(g => g.columns?.map(c => {
+                                                                const val = calculateColumnValue(searchResult, g, c);
+                                                                return (
+                                                                    <div key={c.id} className="flex justify-between py-2 border-b last:border-0 border-gray-100 hover:bg-slate-50 px-2 rounded">
+                                                                        <span className="text-sm text-gray-600">{c.name}</span>
+                                                                        <span className={`font-bold ${theme.text}`}>{val || '-'} <span className="text-gray-300 text-xs font-normal">/{c.max}</span></span>
+                                                                    </div>
+                                                                );
+                                                            }))}
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
                             </div>
                         )}
 
+                        {/* TEACHER LOGIN */}
                         {view === 'teacher_login' && (
-                            <div className="max-w-sm mx-auto mt-20 p-8 bg-white rounded-2xl shadow-xl text-center">
-                                <h2 className="text-xl font-bold mb-4">เข้าสู่ระบบอาจารย์</h2>
-                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 border rounded-lg mb-4 text-center" value={password} onChange={e => setPassword(e.target.value)} />
-                                <button onClick={() => password === 'admin' ? setView('teacher') : alert('รหัสผิด')} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">เข้าใช้งาน</button>
+                            <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border animate-slide-up text-center">
+                                <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-teal-600"/></div>
+                                <h3 className="text-xl font-bold mb-6 font-display text-gray-800">สำหรับครูผู้สอน</h3>
+                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-teal-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
+                                <button id="login-btn" onClick={() => { if(password==='admin') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
                             </div>
                         )}
 
+                        {/* TEACHER DASHBOARD */}
                         {view === 'teacher' && (
-                            <div>
-                                <div className="flex flex-wrap gap-4 mb-6 items-center bg-white p-3 rounded-xl shadow-sm border">
-                                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                                        <button onClick={() => setTab('scores')} className={`px-4 py-1 rounded-md text-sm font-bold ${tab === 'scores' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>คะแนน</button>
-                                        <button onClick={() => setTab('students')} className={`px-4 py-1 rounded-md text-sm font-bold ${tab === 'students' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>รายชื่อ</button>
-                                        <button onClick={() => setTab('settings')} className={`px-4 py-1 rounded-md text-sm font-bold ${tab === 'settings' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>ตั้งค่า</button>
-                                    </div>
-                                    
-                                    <select className="bg-white border rounded-lg px-3 py-1.5 text-sm" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
-                                        <option value="All">ทุกห้อง</option>
-                                        {[...new Set(students.map(s => s.room))].sort().map(r => <option key={r} value={r}>ห้อง {r}</option>)}
-                                    </select>
-
-                                    <div className="flex gap-2 relative flex-1 max-w-xs">
-                                        <input ref={searchInputRef} type="text" placeholder="ค้นหา / สแกน..." className="w-full pl-8 pr-8 py-1.5 border rounded-lg text-sm" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEditStudent()}/>
-                                        <span className="absolute left-2.5 top-2 text-gray-400">{Icons.Search}</span>
-                                        <button onClick={() => setActiveModal('scanner')} className="absolute right-2 top-1.5 text-gray-400 hover:text-blue-500">{Icons.Camera}</button>
-                                    </div>
-
-                                    <button onClick={() => {
-                                        const sid = Math.random().toString(36).substr(2,6).toUpperCase();
-                                        setSessionId(sid);
-                                        setActiveModal('qr');
-                                    }} className="text-xs font-bold px-3 py-1.5 rounded-lg border bg-gray-50 text-gray-600 flex items-center gap-1">
-                                        {Icons.QrCode} Mobile Pair {sessionId && '✅'}
-                                    </button>
+                            <div className="animate-fade-in">
+                                {/* TAB NAVIGATION */}
+                                <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-100 mx-auto md:mx-0">
+                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-teal-100 text-teal-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
+                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
+                                    <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
                                 </div>
 
-                                {tab === 'scores' && (
-                                    <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead>
-                                                <tr className="bg-gray-50 border-b">
-                                                    <th className="p-3 sticky left-0 bg-gray-50 z-10 w-12 text-center">#</th>
-                                                    <th className="p-3 sticky left-12 bg-gray-50 z-10 w-24">รหัส</th>
-                                                    <th className="p-3 sticky left-36 bg-gray-50 z-10 w-48">ชื่อ-สกุล</th>
-                                                    {sections.map(sec => (
-                                                        sec.groups.flatMap(g => g.columns).map(col => (
-                                                            <th key={col.id} className="p-2 border-l text-center min-w-[60px] relative h-32 align-bottom group cursor-pointer hover:bg-blue-50"
-                                                                onClick={() => {
-                                                                    setEditColData({ sectionId: sec.id, groupId: sec.groups.find(g => g.columns.includes(col)).id, col });
-                                                                    setActiveModal('edit_col');
-                                                                }}
-                                                            >
-                                                                <div className="vertical-text absolute bottom-8 left-1/2 -translate-x-1/2">{col.name}</div>
-                                                                <span className="text-[10px] bg-gray-200 px-1 rounded">{col.max}</span>
-                                                            </th>
-                                                        ))
-                                                    ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {sortedStudents.map((s, i) => (
-                                                    <tr key={s.id} className="border-b hover:bg-gray-50">
-                                                        <td className="p-3 text-center sticky left-0 bg-white">{i+1}</td>
-                                                        <td className="p-3 sticky left-12 bg-white font-mono">{s.id}</td>
-                                                        <td className="p-3 sticky left-36 bg-white cursor-pointer hover:text-blue-600" onClick={() => handleEditStudent(s.id)}>{s.name}</td>
-                                                        {sections.map(sec => (
-                                                            sec.groups.map(g => (
-                                                                g.columns.map(col => {
-                                                                    const val = getColValue(s, g, col);
-                                                                    const isAuto = col.type !== 'manual';
-                                                                    return (
-                                                                        <td key={col.id} className={`p-2 border-l text-center ${isAuto ? 'bg-gray-50 text-gray-500 font-bold' : ''}`}>
-                                                                            {val}
-                                                                        </td>
-                                                                    );
-                                                                })
-                                                            ))
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-
-                                {tab === 'students' && (
-                                    <div className="max-w-4xl mx-auto space-y-4">
-                                        <div className="flex justify-end gap-3">
-                                            <button onClick={() => setActiveModal('import')} className="bg-white border hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">{Icons.Settings} นำเข้า (Excel)</button>
-                                            <button onClick={() => {
-                                                setEditingStudent({ id:'', name:'', room:'', scores:{} });
-                                                setActiveModal('add_student');
-                                            }} className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">{Icons.Plus} เพิ่มนักเรียน</button>
-                                        </div>
-                                        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                            {sortedStudents.map(s => (
-                                                <div key={s.id} className="flex justify-between items-center p-4 border-b last:border-0 hover:bg-gray-50">
-                                                    <div>
-                                                        <div className="font-bold">{s.name}</div>
-                                                        <div className="text-xs text-gray-500">{s.id} | ห้อง {s.room}</div>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => handleEditStudent(s.id)} className="text-blue-500 hover:bg-blue-50 p-2 rounded-full">{Icons.Edit}</button>
-                                                        <button onClick={async () => {
-                                                            if(confirm('ลบ?')) {
-                                                                await deleteDoc(doc(db, STUDENTS_COLLECTION, s.id));
-                                                            }
-                                                        }} className="text-red-500 hover:bg-red-50 p-2 rounded-full">{Icons.Trash}</button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {tab === 'settings' && (
-                                    <div className="max-w-4xl mx-auto space-y-6">
-                                        <div className="bg-white p-6 rounded-xl border shadow-sm">
-                                            <h3 className="font-bold text-lg mb-4">จัดการโครงสร้างคะแนน</h3>
-                                            <div className="grid md:grid-cols-2 gap-4 mb-6">
-                                                <div>
-                                                    <label className="text-xs font-bold text-gray-500">สร้างบทเรียนใหม่</label>
-                                                    <div className="flex gap-2 mt-1">
-                                                        <input className="w-full p-2 border rounded-lg" placeholder="ชื่อบท..." value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} />
-                                                        <button onClick={addSection} className="bg-blue-600 text-white px-3 rounded-lg text-sm font-bold">สร้าง</button>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-gray-500">เพิ่มช่องคะแนน</label>
-                                                    <select className="w-full p-2 border rounded-lg mt-1 mb-2" onChange={e => setTargetSectionId(e.target.value)} value={targetSectionId}>
-                                                        <option value="">-- เลือกบทเรียน --</option>
-                                                        {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                                {/* SCORES TAB */}
+                                {teacherTab === 'scores' && (
+                                    <div className="space-y-4">
+                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between sticky top-20 z-40 glass-card">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
+                                                    <Icons.Filter size={16} className="text-gray-400"/><span className="text-sm font-bold text-gray-600">ห้อง:</span>
+                                                    <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-teal-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
+                                                        <option value="All">ทั้งหมด</option>
+                                                        {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
                                                     </select>
-                                                    <div className="flex gap-2 mb-2">
-                                                        {['manual', 'sum', 'percent'].map(t => (
-                                                            <button key={t} onClick={() => setNewColType(t)} className={`flex-1 py-1 rounded border text-xs ${newColType===t ? 'bg-blue-600 text-white' : 'bg-white'}`}>{t}</button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <input className="flex-1 p-2 border rounded-lg" placeholder="ชื่อช่อง" value={newColName} onChange={e => setNewColName(e.target.value)} />
-                                                        <input className="w-16 p-2 border rounded-lg text-center" placeholder="เต็ม" value={newColMax} onChange={e => setNewColMax(e.target.value)} />
-                                                        <button onClick={addColumn} className="bg-green-600 text-white px-3 rounded-lg text-sm font-bold">เพิ่ม</button>
-                                                    </div>
                                                 </div>
+                                                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
+                                                    <Icons.Search size={16} className="text-gray-400"/>
+                                                    <input className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
+                                                </div>
+                                                <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
+                                                <button onClick={handleGenerateScanner} className="bg-white border border-teal-200 text-teal-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-teal-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
                                             </div>
+                                            <div className="text-xs text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded border">นักเรียน: {processedStudents.length}</div>
                                         </div>
-                                        <button onClick={resetSystem} className="w-full bg-red-50 text-red-600 py-3 rounded-xl border border-red-200 hover:bg-red-100 font-bold">⚠ ล้างข้อมูลและลงตัวอย่างใหม่</button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        
-                        {/* --- MODALS --- */}
-                        
-                        {activeModal === 'qr' && (
-                            <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setActiveModal(null)}>
-                                <div className="bg-white p-6 rounded-2xl max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-                                    <h3 className="font-bold text-lg mb-4">Mobile Pair</h3>
-                                    <div className="bg-white p-2 inline-block rounded-xl border mb-4">
-                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href.split('?')[0] + '?scan_session=' + sessionId)}`} className="w-48 h-48"/>
-                                    </div>
-                                    <p className="text-sm text-gray-500">ใช้มือถือสแกนเพื่อเชื่อมต่อ</p>
-                                </div>
-                            </div>
-                        )}
 
-                        {activeModal === 'scanner' && (
-                            <WebScanner onClose={() => setActiveModal(null)} onScan={(code) => {
-                                setActiveModal(null);
-                                if(view === 'teacher') handleEditStudent(code);
-                                else handleSearch(code);
-                            }}/>
-                        )}
-
-                        {activeModal === 'edit' && editingStudent && (
-                            <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setActiveModal(null)}>
-                                <div className="bg-white rounded-2xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                                    <div className="bg-blue-600 p-4 text-white font-bold flex justify-between">
-                                        <span>แก้ไขคะแนน: {editingStudent.name}</span>
-                                        <button onClick={() => setActiveModal(null)}>{Icons.X}</button>
-                                    </div>
-                                    <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
-                                        <div className="grid gap-6">
-                                            {sections.map(sec => (
-                                                <div key={sec.id} className="bg-white p-4 rounded-xl border shadow-sm">
-                                                    <h4 className="font-bold text-blue-600 mb-3 border-b pb-2">{sec.title}</h4>
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                        {sec.groups.flatMap(g => g.columns).map(col => {
-                                                            const isAuto = col.type !== 'manual';
-                                                            const val = isAuto ? getColValue(editingStudent, sec.groups.find(g => g.columns.includes(col)), col) : (editingStudent.scores?.[col.id] || '');
-                                                            
-                                                            return (
-                                                                <div key={col.id}>
-                                                                    <div className="flex justify-between text-xs mb-1 text-gray-500">
-                                                                        <span>{col.name}</span>
-                                                                        <span>/{col.max}</span>
+                                        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative" style={{maxHeight: '75vh', overflow: 'auto'}}>
+                                            <table className="w-full text-sm text-left border-collapse">
+                                                <thead className="sticky-header shadow-sm">
+                                                    <tr className="bg-white text-gray-700 font-display border-b">
+                                                        <th className="p-3 border-r bg-white sticky-left-0 w-12 text-center shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">#</th>
+                                                        <th className="p-3 border-r bg-white sticky-left-1 w-24 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">รหัส</th>
+                                                        <th className="p-3 border-r bg-white sticky-left-2 min-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">ชื่อ-สกุล</th>
+                                                        {sections.map((sec, idx) => {
+                                                            const isCollapsed = collapsedSections[sec.id];
+                                                            const colsCount = isCollapsed ? 1 : (sec.groups?.reduce((a, b) => a + (b.columns?.length||0), 0) || 0);
+                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                            return colsCount > 0 && (
+                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center ${theme.header} ${theme.text} font-bold border-b group cursor-pointer hover:brightness-95 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        {sec.title}
+                                                                        <span className={`transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}><Icons.ChevronDown size={14}/></span>
                                                                     </div>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        disabled={isAuto}
-                                                                        className={`w-full p-2 border rounded-lg text-center font-bold outline-none focus:ring-2 focus:ring-blue-500 ${isAuto ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-800'}`}
-                                                                        value={val}
-                                                                        onChange={e => {
-                                                                            if(isAuto) return;
-                                                                            setEditingStudent(prev => ({
-                                                                                ...prev,
-                                                                                scores: { ...prev.scores, [col.id]: e.target.value }
-                                                                            }));
-                                                                        }}
-                                                                    />
-                                                                </div>
+                                                                </th>
                                                             );
                                                         })}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                        <th className="p-3 text-center w-20 bg-white">แก้ไข</th>
+                                                    </tr>
+                                                    <tr className="bg-gray-50 text-gray-500 text-xs border-b">
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-0"></th>
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-1"></th>
+                                                        <th className="p-2 border-r bg-gray-50 sticky-left-2"></th>
+                                                        {sections.map((sec, idx) => {
+                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                            if (collapsedSections[sec.id]) {
+                                                                return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic">ยุบแล้ว</th>
+                                                            }
+                                                            return sec.groups?.map(g => g.columns?.map(col => (
+                                                                <th key={col.id} className="p-2 border-r text-center min-w-[80px] font-normal group relative bg-white hover:bg-gray-50" title={`กลุ่ม: ${g.title}`}>
+                                                                    <div className={`mb-1 truncate max-w-[80px] mx-auto font-bold ${theme.subHeader}`}>{col.name}</div>
+                                                                    <div className="bg-gray-100 border rounded px-1.5 inline-block text-[10px] font-mono text-gray-500">{col.max}</div>
+                                                                    {col.type!=='manual' && <div className={`text-[9px] ${theme.icon} mt-0.5`}>{col.type}</div>}
+                                                                </th>
+                                                            )))
+                                                        })}
+                                                        <th className="bg-gray-50"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {processedStudents.map((s, sIdx) => (
+                                                        <tr key={s.id} className={`border-b hover:bg-blue-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                                                            <td className="p-3 text-center border-r bg-inherit sticky-left-0">{s.no}</td>
+                                                            <td className="p-3 font-mono border-r bg-inherit sticky-left-1 text-xs font-bold text-gray-600">{s.id}</td>
+                                                            <td className="p-3 border-r bg-inherit sticky-left-2 font-medium text-gray-700 truncate max-w-[200px]">{s.name}</td>
+                                                            {sections.map((sec, idx) => {
+                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                                if(collapsedSections[sec.id]) {
+                                                                    return <td key={sec.id} className="p-2 border-r text-center text-gray-300 bg-gray-50 group-hover:bg-blue-50"><Icons.Minus size={12} className="mx-auto"/></td>
+                                                                }
+                                                                return sec.groups?.map(g => g.columns?.map(col => {
+                                                                    const val = calculateColumnValue(s, g, col);
+                                                                    return (
+                                                                        <td key={col.id} className={`p-2 text-center border-r group-hover:bg-blue-50 ${col.type!=='manual'?'bg-gray-50 text-gray-500 font-bold': theme.text + ' font-medium'}`}>
+                                                                            {val && val !== '-' ? val : <span className="text-gray-300 font-light">-</span>}
+                                                                        </td>
+                                                                    );
+                                                                }))
+                                                            })}
+                                                            <td className="p-2 text-center">
+                                                                <button onClick={() => setScoreModalData(JSON.parse(JSON.stringify(s)))} className="bg-white border border-indigo-200 text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-600 hover:text-white transition shadow-sm"><Icons.Edit size={16}/></button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-                                    <div className="p-4 border-t bg-white flex justify-end">
-                                        <button onClick={saveStudent} className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold hover:bg-blue-700 shadow-lg">บันทึก</button>
+                                )}
+
+                                {/* STUDENTS TAB */}
+                                {teacherTab === 'students' && (
+                                    <div className="space-y-4">
+                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex justify-between items-center glass-card">
+                                            <h3 className="font-bold flex gap-2 text-gray-700 font-display"><Icons.Users className="text-indigo-500"/> จัดการรายชื่อ</h3>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => setIsAddStudentOpen(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow hover:bg-indigo-700 flex gap-2 transition active:scale-95"><Icons.Plus/> เพิ่มรายคน</button>
+                                                <button onClick={() => setIsImportOpen(true)} className="bg-white border border-gray-200 px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-50 flex gap-2 transition"><Icons.Upload/> Import Excel</button>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white rounded-xl shadow border overflow-hidden">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-gray-50 text-gray-700 font-display border-b">
+                                                    <tr><th className="p-3 text-center">ที่</th><th className="p-3">รหัส</th><th className="p-3">ชื่อ-นามสกุล</th><th className="p-3 text-center">ห้อง</th><th className="p-3 text-center">จัดการ</th></tr>
+                                                </thead>
+                                                <tbody className="divide-y">
+                                                    {processedStudents.map(s => (
+                                                        <tr key={s.id} className="hover:bg-indigo-50 transition-colors">
+                                                            <td className="p-3 text-center">{s.no}</td>
+                                                            <td className="p-3 font-mono text-gray-500 font-bold">{s.id}</td>
+                                                            <td className="p-3 font-bold text-gray-700">{s.name}</td>
+                                                            <td className="p-3 text-center"><span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">{s.room}</span></td>
+                                                            <td className="p-3 text-center flex justify-center gap-2">
+                                                                <button onClick={() => setStudentModalData({...s})} className="text-indigo-500 hover:bg-indigo-100 p-2 rounded transition"><Icons.Edit/></button>
+                                                                <button onClick={async () => { if(confirm('ยืนยันลบ?')) {
+                                                                    if(useLocalStorage) { saveData(students.filter(x=>x.id!==s.id), null); }
+                                                                    else { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id)); }
+                                                                }}} className="text-rose-400 hover:bg-rose-100 p-2 rounded transition"><Icons.Trash/></button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* SETTINGS TAB (REDESIGNED LIST VIEW) */}
+                                {teacherTab === 'settings' && (
+                                    <div className="max-w-4xl mx-auto animate-fade-in">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 font-display"><Icons.Settings className="text-slate-500"/> โครงสร้างวิชา</h2>
+                                            <button onClick={() => { setSectionSettings({title: '', color: 'primary'}); setIsSectionSettingsOpen(true); }} className="bg-slate-700 text-white px-4 py-2 rounded-xl font-bold shadow hover:bg-slate-800 flex items-center gap-2 transition active:scale-95"><Icons.FolderPlus/> สร้างบทเรียน</button>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {sections.length === 0 && <div className="text-center p-10 border-2 border-dashed border-gray-300 rounded-2xl text-gray-400 bg-gray-50">ยังไม่มีบทเรียน เริ่มสร้างเลย!</div>}
+                                            {sections.map((sec, idx) => {
+                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                return (
+                                                <div key={sec.id} className={`rounded-xl overflow-hidden shadow-sm border ${theme.border} bg-white`}>
+                                                    {/* Chapter Row */}
+                                                    <div className={`${theme.header} p-4 flex justify-between items-center border-b ${theme.border}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-white shadow-sm ${theme.text}`}>
+                                                                <span className="font-bold text-lg">{idx + 1}</span>
+                                                            </div>
+                                                            <h3 className={`font-bold text-lg font-display ${theme.text}`}>{sec.title}</h3>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => { setGroupModalData({title: '', sectionId: sec.id}); setIsGroupModalOpen(true); }} className={`text-xs ${theme.button} px-3 py-1.5 rounded-lg flex items-center gap-1 transition`}><Icons.FolderPlus size={14}/> เพิ่มกลุ่ม</button>
+                                                            <button onClick={() => { setSectionSettings({...sec}); setIsSectionSettingsOpen(true); }} className="text-gray-400 hover:text-gray-600 p-1.5"><Icons.Edit size={18}/></button>
+                                                            <button onClick={() => handleDeleteSection(sec.id)} className="text-rose-300 hover:text-rose-500 p-1.5"><Icons.Trash size={18}/></button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Groups */}
+                                                    <div className="p-4 space-y-4">
+                                                        {(!sec.groups || sec.groups.length === 0) && <div className="text-center text-gray-400 text-sm py-2">-- ยังไม่มีกลุ่มคะแนนในบทนี้ --</div>}
+                                                        {sec.groups?.map((group, gIdx) => (
+                                                            <div key={group.id} className="flex flex-col md:flex-row gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50/50 hover:bg-white hover:shadow-md transition-all duration-300">
+                                                                {/* Group Name */}
+                                                                <div className="w-full md:w-1/4 border-l-4 border-gray-300 pl-3 py-1">
+                                                                    <div className="font-bold text-gray-700 text-sm font-display">{group.title}</div>
+                                                                    <div className="text-xs text-gray-400 mt-1 flex gap-2">
+                                                                        <button onClick={() => { setGroupModalData({id: group.id, title: group.title, sectionId: sec.id}); setIsGroupModalOpen(true); }} className="hover:text-indigo-500">แก้ไข</button>
+                                                                        <button onClick={() => handleDeleteGroup(sec.id, group.id)} className="hover:text-red-500">ลบ</button>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Columns List */}
+                                                                <div className="flex-1 flex flex-wrap gap-2 items-center">
+                                                                    {group.columns?.map(col => (
+                                                                        <div key={col.id} className="group/col relative bg-white border border-gray-200 rounded-lg px-3 py-2 flex items-center gap-3 hover:border-indigo-300 transition cursor-pointer shadow-sm"
+                                                                             onClick={() => { setColumnModalData({id: col.id, name: col.name, max: col.max, type: col.type, sectionId: sec.id, groupId: group.id}); setIsColumnModalOpen(true); }}>
+                                                                            <div>
+                                                                                <div className="text-xs font-bold text-gray-700">{col.name}</div>
+                                                                                <div className="text-[10px] text-gray-400">เต็ม {col.max} {col.type!=='manual' && `(${col.type})`}</div>
+                                                                            </div>
+                                                                            <Icons.Edit size={14} className="text-gray-300 group-hover/col:text-indigo-400"/>
+                                                                        </div>
+                                                                    ))}
+                                                                    <button onClick={() => { setColumnModalData({name: '', max: 10, type: 'manual', sectionId: sec.id, groupId: group.id}); setIsColumnModalOpen(true); }} className="h-full px-3 py-2 border border-dashed border-gray-300 rounded-lg text-gray-400 hover:text-indigo-500 hover:border-indigo-300 flex items-center gap-1 transition text-xs font-bold">
+                                                                        <Icons.Plus size={14}/> เพิ่มช่อง
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );})}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* --- MODALS --- */}
+
+                        {/* MOBILE PAIR MODAL */}
+                        {isMobilePairOpen && (
+                            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
+                                <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative">
+                                    <button onClick={() => setIsMobilePairOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1"><Icons.X size={20}/></button>
+                                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600"><Icons.QrCode size={32}/></div>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">Mobile Pair</h3>
+                                    <p className="text-gray-500 mb-6 text-sm">ใช้มือถือสแกนเพื่อเปลี่ยนเป็นเครื่องยิงบาร์โค้ด</p>
+                                    <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-teal-200 inline-block mb-4 shadow-sm">
+                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href.split('?')[0] + '?scan_session=' + scannerSessionId)}`} alt="Scan QR" className="w-48 h-48 mix-blend-multiply" />
+                                    </div>
+                                    <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100">Session ID: {scannerSessionId}</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SECTION SETTINGS MODAL */}
+                        {isSectionSettingsOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
+                                    <h3 className="font-bold text-lg mb-4 text-gray-800 font-display">{sectionSettings.id ? 'แก้ไขชื่อบทเรียน' : 'สร้างบทเรียนใหม่'}</h3>
+                                    <input className="w-full p-3 border-2 border-gray-100 rounded-xl mb-6 focus:border-teal-500 focus:outline-none transition" placeholder="ชื่อบทเรียน (เช่น บทที่ 1)" value={sectionSettings.title} onChange={e => setSectionSettings({...sectionSettings, title: e.target.value})} autoFocus />
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setIsSectionSettingsOpen(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
+                                        <button onClick={handleSaveSection} className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">บันทึก</button>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {activeModal === 'import' && (
-                            <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setActiveModal(null)}>
-                                <div className="bg-white p-6 rounded-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                                    <h3 className="font-bold text-lg mb-4">นำเข้าข้อมูล (Excel Copy-Paste)</h3>
-                                    <textarea className="w-full h-48 border rounded-lg p-3 text-xs font-mono mb-4" placeholder="รหัส [tab] ชื่อ [tab] ห้อง" id="import-text" value={importText} onChange={e => setImportText(e.target.value)}></textarea>
-                                    <button onClick={() => handleImport()} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">นำเข้า</button>
+                        {/* GROUP MODAL */}
+                        {isGroupModalOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
+                                    <h3 className="font-bold text-lg mb-4 text-gray-800 font-display">{groupModalData.id ? 'แก้ไขชื่อกลุ่ม' : 'เพิ่มกลุ่มคะแนน'}</h3>
+                                    <input className="w-full p-3 border-2 border-gray-100 rounded-xl mb-6 focus:border-indigo-500 focus:outline-none transition" placeholder="ชื่อกลุ่ม (เช่น สอบเก็บคะแนน)" value={groupModalData.title} onChange={e => setGroupModalData({...groupModalData, title: e.target.value})} autoFocus />
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setIsGroupModalOpen(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
+                                        <button onClick={handleSaveGroup} className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition transform active:scale-95">บันทึก</button>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {activeModal === 'add_student' && editingStudent && (
-                            <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setActiveModal(null)}>
-                                <div className="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3" onClick={e => e.stopPropagation()}>
-                                    <h3 className="font-bold text-lg">เพิ่มนักเรียน</h3>
-                                    <input className="w-full p-2 border rounded" placeholder="รหัส" value={editingStudent.id} onChange={e => setEditingStudent({...editingStudent, id: e.target.value})}/>
-                                    <input className="w-full p-2 border rounded" placeholder="ชื่อ-สกุล" value={editingStudent.name} onChange={e => setEditingStudent({...editingStudent, name: e.target.value})}/>
-                                    <input className="w-full p-2 border rounded" placeholder="ห้อง" value={editingStudent.room} onChange={e => setEditingStudent({...editingStudent, room: e.target.value})}/>
-                                    <button onClick={async () => {
-                                        if(editingStudent.id && editingStudent.name) {
-                                            await setDoc(doc(db, STUDENTS_COLLECTION, editingStudent.id), editingStudent);
-                                            setActiveModal(null);
-                                        }
-                                    }} className="w-full bg-green-600 text-white py-2 rounded-lg font-bold">บันทึก</button>
+                        {/* COLUMN MODAL */}
+                        {isColumnModalOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
+                                    <h3 className="font-bold text-lg mb-4 text-gray-800 font-display">{columnModalData.id ? 'แก้ไขช่องคะแนน' : 'เพิ่มช่องคะแนน'}</h3>
+                                    <div className="space-y-4">
+                                        <div><label className="text-xs font-bold text-gray-400">ชื่อช่องคะแนน</label><input className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 focus:border-teal-500 focus:outline-none transition" value={columnModalData.name} onChange={e => setColumnModalData({...columnModalData, name: e.target.value})} autoFocus /></div>
+                                        <div><label className="text-xs font-bold text-gray-400">คะแนนเต็ม</label><input type="number" className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 text-center font-mono focus:border-teal-500 focus:outline-none transition" value={columnModalData.max} onChange={e => setColumnModalData({...columnModalData, max: e.target.value})} /></div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-400">ประเภท</label>
+                                            <div className="flex gap-2 mt-1">
+                                                {['manual', 'sum', 'percent'].map(t => (
+                                                    <button key={t} onClick={() => setColumnModalData({...columnModalData, type: t})} className={`flex-1 py-2 rounded-lg border-2 text-xs font-bold transition ${columnModalData.type === t ? 'bg-teal-50 border-teal-500 text-teal-700' : 'border-gray-100 text-gray-400 hover:border-gray-300'}`}>
+                                                        {t === 'manual' ? 'กรอกเอง' : (t === 'sum' ? 'รวม' : '%')}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-8">
+                                        {columnModalData.id ? <button onClick={() => { setIsColumnModalOpen(false); handleDeleteColumn(columnModalData.sectionId, columnModalData.groupId, columnModalData.id); }} className="text-rose-400 text-sm hover:text-rose-600 font-bold transition">ลบช่องนี้</button> : <div></div>}
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setIsColumnModalOpen(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
+                                            <button onClick={handleSaveColumn} className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">บันทึก</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {activeModal === 'edit_col' && editColData && (
-                            <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setActiveModal(null)}>
-                                <div className="bg-white p-6 rounded-2xl w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
-                                    <h3 className="font-bold text-lg">แก้ไขช่องคะแนน</h3>
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500">ชื่อ</label>
-                                        <input className="w-full p-2 border rounded" value={editColData.col.name} onChange={e => setEditColData({...editColData, col: {...editColData.col, name: e.target.value}})} disabled={editColData.col.type !== 'manual'}/>
+                        {/* --- SCORE ENTRY MODAL --- */}
+                        {scoreModalData && (
+                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                                    <div className="p-6 border-b bg-slate-800 text-white flex justify-between items-center shadow-md z-10">
+                                        <div>
+                                            <h3 className="text-2xl font-bold font-display tracking-tight">{scoreModalData.name}</h3>
+                                            <div className="text-slate-300 text-sm flex gap-3 mt-1 font-mono">
+                                                <span className="bg-white/10 px-2 rounded text-xs py-0.5">ID: {scoreModalData.id}</span>
+                                                <span className="bg-white/10 px-2 rounded text-xs py-0.5">Room: {scoreModalData.room}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-4xl font-bold text-teal-400">{totalScorePreview}</div>
+                                            <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Score</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500">เต็ม</label>
-                                        <input className="w-full p-2 border rounded" value={editColData.col.max} onChange={e => setEditColData({...editColData, col: {...editColData.col, max: e.target.value}})}/>
+                                    <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6">
+                                        {sections.map((sec, idx) => {
+                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                            return (
+                                            <div key={sec.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                                <h4 className={`font-bold ${theme.text} mb-6 font-display flex items-center gap-3 text-lg border-b pb-3`}>
+                                                    <span className={`w-8 h-8 rounded-lg ${theme.bg} flex items-center justify-center text-sm shadow-sm`}>{idx+1}</span>
+                                                    {sec.title}
+                                                </h4>
+                                                {sec.groups?.map(g => (
+                                                    <div key={g.id} className="mb-6 last:mb-0">
+                                                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pl-1">{g.title}</div>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                                            {g.columns?.map(c => {
+                                                                const isAuto = c.type !== 'manual';
+                                                                const displayVal = isAuto ? calculateColumnValue(scoreModalData, g, c) : (scoreModalData.scores?.[c.id] || '');
+                                                                
+                                                                return (
+                                                                    <div key={c.id} className="relative group">
+                                                                        <div className="flex justify-between text-xs mb-1.5 font-bold text-gray-500 px-1">
+                                                                            <span>{c.name}</span>
+                                                                            <span className="text-gray-300">{isAuto ? 'Auto' : `/${c.max}`}</span>
+                                                                        </div>
+                                                                        <input 
+                                                                            type="text"
+                                                                            autoFocus={!isAuto && !scoreModalData.scores?.[c.id]} 
+                                                                            className={`w-full p-4 border-2 rounded-2xl text-center font-bold text-2xl outline-none transition shadow-sm ${isAuto ? 'bg-gray-50 text-gray-500 border-transparent' : 'bg-white border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50/50 text-slate-700'}`}
+                                                                            value={displayVal}
+                                                                            disabled={isAuto}
+                                                                            onChange={e => {
+                                                                                const val = parseFloat(e.target.value);
+                                                                                if (!isNaN(val) && val > c.max) {
+                                                                                    setWarning({show:true, msg:`คะแนนเต็มคือ ${c.max} ครับ`});
+                                                                                    return; 
+                                                                                }
+                                                                                setScoreModalData({...scoreModalData, scores: {...scoreModalData.scores, [c.id]: e.target.value}});
+                                                                            }}
+                                                                            onKeyDown={e => e.key === 'Enter' && document.getElementById('save-next-btn').click()}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );})}
                                     </div>
-                                    <div className="flex justify-between mt-4">
-                                        <button onClick={deleteColumn} className="text-red-500 font-bold">ลบ</button>
-                                        <button onClick={saveColumnEdit} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">บันทึก</button>
+                                    <div className="p-5 border-t bg-white flex justify-between items-center gap-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                                        <div className="flex gap-2">
+                                            <button onClick={() => navigateStudent(-1)} className="p-3.5 rounded-2xl bg-gray-100 text-gray-500 hover:bg-gray-200 font-bold transition active:scale-95"><Icons.ChevronLeft/></button>
+                                            <button onClick={() => navigateStudent(1)} className="p-3.5 rounded-2xl bg-gray-100 text-gray-500 hover:bg-gray-200 font-bold transition active:scale-95"><Icons.ChevronRight/></button>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button onClick={() => { setScoreModalData(null); if(returnToScanner) { setReturnToScanner(false); setIsScannerOpen(true); } }} className="px-6 py-3.5 rounded-2xl text-gray-500 hover:bg-gray-50 font-bold transition text-sm">ยกเลิก</button>
+                                            <button id="save-btn" onClick={async () => {
+                                                await updateStudent(scoreModalData);
+                                                const btn = document.getElementById('save-btn');
+                                                const originalText = btn.innerHTML;
+                                                btn.innerHTML = '✅ บันทึกแล้ว';
+                                                btn.classList.replace('from-teal-600', 'from-green-600');
+                                                btn.classList.replace('to-teal-500', 'to-green-500');
+                                                setTimeout(() => {
+                                                    btn.innerHTML = originalText;
+                                                    btn.classList.replace('from-green-600', 'from-teal-600');
+                                                    btn.classList.replace('to-green-500', 'to-teal-500');
+                                                    
+                                                    // Close modal immediately
+                                                    setScoreModalData(null);
+                                                    
+                                                    if(returnToScanner) {
+                                                        setReturnToScanner(false);
+                                                        setIsScannerOpen(true);
+                                                    }
+                                                }, 500);
+                                            }} className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-teal-600 to-teal-500 text-white font-bold shadow-lg hover:shadow-xl flex items-center gap-2 transition transform active:scale-95 text-sm">
+                                                {returnToScanner ? 'บันทึก & สแกนต่อ' : 'บันทึกและปิด'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         )}
-                    </main>
+
+                        {/* STUDENT INFO MODAL */}
+                        {studentModalData && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-slide-up">
+                                    <h3 className="font-bold text-lg mb-6 text-gray-800 border-b pb-3 font-display">แก้ไขข้อมูลนักเรียน</h3>
+                                    <div className="space-y-4">
+                                        <div><label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">เลขที่</label><input className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 focus:border-indigo-500 focus:outline-none transition bg-gray-50 focus:bg-white" value={studentModalData.no} onChange={e => setStudentModalData({...studentModalData, no: e.target.value})} /></div>
+                                        <div><label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">รหัส</label><input disabled className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 bg-gray-100 text-gray-400 cursor-not-allowed font-mono" value={studentModalData.id} /></div>
+                                        <div><label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">ชื่อ-นามสกุล</label><input className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 focus:border-indigo-500 focus:outline-none transition bg-gray-50 focus:bg-white" value={studentModalData.name} onChange={e => setStudentModalData({...studentModalData, name: e.target.value})} /></div>
+                                        <div><label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">ห้อง</label><input className="w-full p-3 border-2 border-gray-100 rounded-xl mt-1 focus:border-indigo-500 focus:outline-none transition bg-gray-50 focus:bg-white" value={studentModalData.room} onChange={e => setStudentModalData({...studentModalData, room: e.target.value})} /></div>
+                                    </div>
+                                    <div className="mt-8 flex justify-end gap-2">
+                                        <button onClick={() => setStudentModalData(null)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
+                                        <button onClick={async () => { await updateStudent(studentModalData); setStudentModalData(null); }} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg transition transform active:scale-95">บันทึกข้อมูล</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ADD STUDENT MODAL */}
+                        {isAddStudentOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+                                    <h3 className="font-bold text-xl mb-6 text-teal-700 flex items-center gap-2 font-display"><Icons.UserPlus/> เพิ่มนักเรียนใหม่</h3>
+                                    <input className="w-full p-3 border-2 border-gray-100 rounded-xl mb-3 focus:border-teal-500 focus:outline-none transition" placeholder="รหัสประจำตัว (Key)" value={newStudent.id} onChange={e => setNewStudent({...newStudent, id: e.target.value})} />
+                                    <input className="w-full p-3 border-2 border-gray-100 rounded-xl mb-3 focus:border-teal-500 focus:outline-none transition" placeholder="ชื่อ-นามสกุล" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
+                                    <div className="flex gap-3 mb-6">
+                                        <input className="flex-1 p-3 border-2 border-gray-100 rounded-xl focus:border-teal-500 focus:outline-none transition" placeholder="ห้อง (1/1)" value={newStudent.room} onChange={e => setNewStudent({...newStudent, room: e.target.value})} />
+                                        <input className="w-24 p-3 border-2 border-gray-100 rounded-xl focus:border-teal-500 focus:outline-none transition" placeholder="เลขที่" value={newStudent.no} onChange={e => setNewStudent({...newStudent, no: e.target.value})} />
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setIsAddStudentOpen(false)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
+                                        <button onClick={async () => {
+                                            if(!newStudent.id) return alert('ใส่รหัสด้วยครับ');
+                                            await updateStudent({...newStudent, scores: {}});
+                                            setIsAddStudentOpen(false); setNewStudent({id:'', name:'', room:'', no:''});
+                                        }} className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold shadow-lg hover:bg-teal-700 transition transform active:scale-95">บันทึก</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SCANNER MODAL */}
+                        {isScannerOpen && (
+                            <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-[100]">
+                                <div className="absolute top-4 right-4 z-50">
+                                    <button onClick={() => setIsScannerOpen(false)} className="bg-white/20 p-2 rounded-full text-white hover:bg-white/40"><Icons.X size={32}/></button>
+                                </div>
+                                <h3 className="text-white text-2xl font-bold mb-8 flex gap-3 animate-slide-up"><Icons.Camera size={32}/> ส่องบาร์โค้ดเลยครับ</h3>
+                                <div className="w-full max-w-sm aspect-square bg-black rounded-3xl overflow-hidden border-4 border-teal-500 relative shadow-2xl">
+                                    <ScannerController isOpen={isScannerOpen} onScan={handleTeacherSearch} />
+                                    <div className="absolute inset-0 border-2 border-white/30 rounded-2xl m-8 pointer-events-none animate-pulse"></div>
+                                </div>
+                                <p className="text-gray-400 mt-8 text-center px-4">ระบบจะเด้งหน้าต่างกรอกคะแนนขึ้นมา<br/>ทันทีที่สแกนติด</p>
+                            </div>
+                        )}
+
+                        {/* IMPORT MODAL */}
+                        {isImportOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                                <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+                                    <h3 className="font-bold text-lg mb-2 text-gray-800 font-display">นำเข้าข้อมูล (Excel Copy-Paste)</h3>
+                                    <p className="text-xs text-gray-500 mb-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 text-yellow-700">รูปแบบ: รหัส [tab] ชื่อ [tab] ห้อง [tab] เลขที่</p>
+                                    <textarea className="w-full h-48 p-4 border-2 border-gray-100 rounded-xl text-sm font-mono bg-gray-50 focus:bg-white focus:border-teal-500 focus:outline-none transition" placeholder="66001  สมชาย  1/1  1..." value={importText} onChange={e => setImportText(e.target.value)}></textarea>
+                                    <div className="flex justify-end gap-2 mt-6">
+                                        <button onClick={() => setIsImportOpen(false)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ปิด</button>
+                                        <button onClick={() => {
+                                            const lines = importText.trim().split('\n');
+                                            const newS = lines.map(l => {
+                                                const p = l.split(/[\t,]+/);
+                                                if(p.length < 2) return null;
+                                                return { id: p[0].trim(), name: p[1].trim(), room: p[2]?.trim()||'', no: p[3]?.trim()||'', scores: {} };
+                                            }).filter(Boolean);
+                                            saveData([...students, ...newS], null);
+                                            setIsImportOpen(false); setImportText('');
+                                        }} className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold shadow-lg hover:bg-teal-700 transition transform active:scale-95">นำเข้า {importText.split('\n').length} คน</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TOAST WARNING */}
+                        {warning.show && (
+                            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-[200] animate-slide-up flex items-center gap-3 cursor-pointer hover:bg-red-700 transition" onClick={() => setWarning({show:false, msg:''})}>
+                                <Icons.AlertTriangle/> <span className="font-bold">{warning.msg}</span>
+                            </div>
+                        )}
+
+                    </div>
                 </div>
             );
         }
