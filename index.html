@@ -18,8 +18,8 @@
                 extend: {
                     fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
                     colors: { 
-                        // Base Brand Color (Teal)
-                        primary: { 50:'#f0fdfa', 100:'#ccfbf1', 200:'#99f6e4', 300:'#5eead4', 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488', 700:'#0f766e', 800:'#115e59', 900:'#134e4a' } 
+                        // Base Brand Color (Indigo)
+                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' } 
                     }
                 }
             }
@@ -35,8 +35,8 @@
     <style>
         * { font-family: 'Sarabun', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Prompt', sans-serif !important; }
-        body { background-color: #f8fafc; color: #334155; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        body { background-color: #f8fafc; color: #1e293b; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -78,16 +78,25 @@
         import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- CONFIG ---
-        const getFirebaseConfig = () => {
-            try { return typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; } 
-            catch (e) { return { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; }
+        const firebaseConfig = {
+            apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
+            authDomain: "studentgradesystem-2a33f.firebaseapp.com",
+            projectId: "studentgradesystem-2a33f",
+            storageBucket: "studentgradesystem-2a33f.firebasestorage.app",
+            messagingSenderId: "339470940730",
+            appId: "1:339470940730:web:cc60c26a4c209caa6d1303",
+            measurementId: "G-7MZ12J60VQ"
         };
 
-        const app = initializeApp(getFirebaseConfig());
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'grade-pro-v4-colorful'; // Bump Version
-        const useLocalStorage = typeof __firebase_config === 'undefined';
+        
+        // App ID สำหรับแยกข้อมูลใน Database (เปลี่ยนได้ถ้าต้องการ reset database ใหม่)
+        const appId = 'grade-pro-production'; 
+        
+        // ตั้งค่าเป็น false เพื่อใช้ Firebase จริง (ไม่เก็บใน LocalStorage)
+        const useLocalStorage = false;
         
         const LOCAL_KEY = 'gradepro_local_data';
         const loadLocalData = () => JSON.parse(localStorage.getItem(LOCAL_KEY) || '{"students":[], "sections":[]}');
@@ -144,11 +153,11 @@
 
         // --- THEME PALETTES ---
         const SECTION_THEMES = [
-            { name: 'Teal', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-800', header: 'bg-teal-100', icon: 'text-teal-600', subHeader: 'text-teal-700' },
-            { name: 'Blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', header: 'bg-blue-100', icon: 'text-blue-600', subHeader: 'text-blue-700' },
-            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-800', header: 'bg-rose-100', icon: 'text-rose-600', subHeader: 'text-rose-700' },
-            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', header: 'bg-amber-100', icon: 'text-amber-600', subHeader: 'text-amber-700' },
-            { name: 'Violet', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-800', header: 'bg-violet-100', icon: 'text-violet-600', subHeader: 'text-violet-700' },
+            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-800', header: 'bg-indigo-100', icon: 'text-indigo-600', subHeader: 'text-indigo-700' },
+            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-800', header: 'bg-fuchsia-100', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700' },
+            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-800', header: 'bg-sky-100', icon: 'text-sky-600', subHeader: 'text-sky-700' },
+            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', header: 'bg-emerald-100', icon: 'text-emerald-600', subHeader: 'text-emerald-700' },
+            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', header: 'bg-orange-100', icon: 'text-orange-600', subHeader: 'text-orange-700' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -202,7 +211,7 @@
             return (
                 <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-teal-500 shadow-2xl"></div>
+                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-500 shadow-2xl"></div>
                     <div className="mt-6 flex flex-col items-center gap-2">
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
@@ -242,22 +251,14 @@
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
             const [scanTarget, setScanTarget] = useState('');
-            const [returnToScanner, setReturnToScanner] = useState(false);
+            const [returnToScanner, setReturnToScanner] = useState(false); // New: Flow control
             
             // Mobile Pair
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
 
-            // Settings Input
-            const [newSectionTitle, setNewSectionTitle] = useState('');
-            const [targetSectionId, setTargetSectionId] = useState('');
-            const [targetGroupName, setTargetGroupName] = useState('คะแนนเก็บ');
-            const [newColName, setNewColName] = useState('');
-            const [newColMax, setNewColMax] = useState(10);
-            const [newColType, setNewColType] = useState('manual');
-            
-            // Settings Modals
+            // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
             const [sectionSettings, setSectionSettings] = useState({});
             const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -265,7 +266,13 @@
             const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
             const [columnModalData, setColumnModalData] = useState({});
             
-            // New Student
+            // Admin Action States
+            const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
+            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
+            const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+            const fileInputRef = useRef(null);
+
+            // New Student State
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
             // --- AUTH & DATA ---
@@ -363,6 +370,134 @@
                 }
             };
 
+            // Admin Actions Handlers
+            const requestAdminAction = (type) => {
+                setPendingAction(type);
+                setConfirmPasswordInput('');
+                setIsPasswordConfirmOpen(true);
+            };
+
+            const executeAdminAction = () => {
+                if (confirmPasswordInput !== 'admin') {
+                    alert('รหัสผ่านไม่ถูกต้อง');
+                    return;
+                }
+                setIsPasswordConfirmOpen(false);
+
+                if (pendingAction === 'export') {
+                    const dataStr = JSON.stringify({ students, sections });
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
+                    linkElement.click();
+                } else if (pendingAction === 'export_excel') {
+                    // Generate CSV for Excel
+                    let csvContent = "\uFEFF"; // BOM for Thai support
+                    
+                    // 1. Headers
+                    const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
+                    const colIds = [];
+                    
+                    sections.forEach(sec => {
+                        sec.groups.forEach(grp => {
+                            grp.columns.forEach(col => {
+                                headers.push(`${sec.title}-${col.name} (เต็ม ${col.max})`);
+                                colIds.push(col.id);
+                            });
+                        });
+                    });
+                    
+                    csvContent += headers.join(",") + "\n";
+                    
+                    // 2. Rows
+                    // Sort by room then no
+                    const sortedStudents = [...students].sort((a,b) => {
+                        if (a.room !== b.room) return a.room.localeCompare(b.room);
+                        return (parseInt(a.no)||0) - (parseInt(b.no)||0);
+                    });
+
+                    sortedStudents.forEach(s => {
+                        const row = [
+                            `"${s.no || ''}"`,
+                            `"${s.id || ''}"`,
+                            `"${s.name || ''}"`,
+                            `"${s.room || ''}"`
+                        ];
+                        
+                        colIds.forEach(cid => {
+                            // Find score or calc if not manual (simplified logic: prefer stored value for consistency or empty)
+                            // For export, we export what is in 'scores' object usually manual scores.
+                            // If we want calculated columns, we'd need to run calculation logic.
+                            // Here we export stored scores primarily.
+                            let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
+                            
+                            // Try to calculate if empty and it is a calculated column? 
+                            // Complex to find column type here efficiently without lookup map, 
+                            // but let's try to find the column definition to check type.
+                            let foundCol = null;
+                            let foundGroup = null;
+                            for(const sec of sections) {
+                                for(const grp of sec.groups) {
+                                    const c = grp.columns.find(cl => cl.id === cid);
+                                    if(c) { foundCol = c; foundGroup = grp; break; }
+                                }
+                                if(foundCol) break;
+                            }
+
+                            if(foundCol && foundCol.type !== 'manual') {
+                                score = calculateColumnValue(s, foundGroup, foundCol);
+                                if(score === '-') score = "";
+                            }
+
+                            row.push(`"${score}"`);
+                        });
+                        
+                        csvContent += row.join(",") + "\n";
+                    });
+                    
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `gradepro_score_sheet_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                } else if (pendingAction === 'import') {
+                    if (fileInputRef.current) fileInputRef.current.click();
+                } else if (pendingAction === 'clear') {
+                    if(confirm('⚠️ คำเตือน: ข้อมูลนักเรียนและคะแนนทั้งหมดจะถูกลบถาวร ยืนยันหรือไม่?')) {
+                        saveData([], []);
+                        alert('ล้างข้อมูลเรียบร้อยแล้ว');
+                    }
+                }
+            };
+
+            const handleFileImport = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const json = JSON.parse(event.target.result);
+                        if (Array.isArray(json.students) && Array.isArray(json.sections)) {
+                            if(confirm(`ยืนยันการนำเข้าข้อมูล? \n- นักเรียน: ${json.students.length} คน\n- บทเรียน: ${json.sections.length} บท`)) {
+                                saveData(json.students, json.sections);
+                                alert('นำเข้าข้อมูลสำเร็จ');
+                            }
+                        } else {
+                            alert('รูปแบบไฟล์ไม่ถูกต้อง');
+                        }
+                    } catch (err) {
+                        alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null;
+            };
+
             // Structure Management
             const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
             const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
@@ -421,7 +556,7 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
                     {/* NAVBAR */}
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-teal-600 to-emerald-600 border-none">
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-indigo-600 to-purple-600 border-none">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
                                 <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.FileSpreadsheet className="w-5 h-5" /></div>
@@ -440,19 +575,19 @@
                         {view === 'student' && (
                             <div className="max-w-xl mx-auto mt-8 animate-slide-up">
                                 <div className="bg-white p-8 rounded-3xl shadow-xl border relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-emerald-500"></div>
+                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
                                     <h2 className="text-3xl font-extrabold text-gray-800 mb-6 text-center font-display">ตรวจสอบคะแนน</h2>
                                     <div className="flex gap-2">
-                                        <input className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-teal-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
+                                        <input className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-indigo-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
                                         <button id="search-btn" onClick={() => {
                                             const s = students.find(x => x.id === searchId);
                                             if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
-                                        }} className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
+                                        }} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
                                     </div>
                                     {searchResult && (
                                         <div className="mt-8 space-y-6 animate-fade-in">
-                                            <div className="bg-teal-50 p-4 rounded-xl flex items-center gap-4 border border-teal-100">
-                                                <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-teal-600"/></div>
+                                            <div className="bg-indigo-50 p-4 rounded-xl flex items-center gap-4 border border-indigo-100">
+                                                <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-indigo-600"/></div>
                                                 <div>
                                                     <div className="font-bold text-xl text-gray-800">{searchResult.name}</div>
                                                     <div className="text-sm text-gray-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
@@ -486,10 +621,10 @@
                         {/* TEACHER LOGIN */}
                         {view === 'teacher_login' && (
                             <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border animate-slide-up text-center">
-                                <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-teal-600"/></div>
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-indigo-600"/></div>
                                 <h3 className="text-xl font-bold mb-6 font-display text-gray-800">สำหรับครูผู้สอน</h3>
-                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-teal-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
-                                <button id="login-btn" onClick={() => { if(password==='admin') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
+                                <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-indigo-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
+                                <button id="login-btn" onClick={() => { if(password==='admin') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
                             </div>
                         )}
 
@@ -498,8 +633,8 @@
                             <div className="animate-fade-in">
                                 {/* TAB NAVIGATION */}
                                 <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-100 mx-auto md:mx-0">
-                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-teal-100 text-teal-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
-                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
+                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
+                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-fuchsia-100 text-fuchsia-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
                                     <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
                                 </div>
 
@@ -510,7 +645,7 @@
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
                                                     <Icons.Filter size={16} className="text-gray-400"/><span className="text-sm font-bold text-gray-600">ห้อง:</span>
-                                                    <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-teal-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
+                                                    <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-indigo-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
                                                         <option value="All">ทั้งหมด</option>
                                                         {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
                                                     </select>
@@ -519,8 +654,8 @@
                                                     <Icons.Search size={16} className="text-gray-400"/>
                                                     <input className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
                                                 </div>
-                                                <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
-                                                <button onClick={handleGenerateScanner} className="bg-white border border-teal-200 text-teal-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-teal-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
+                                                <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
+                                                <button onClick={handleGenerateScanner} className="bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-indigo-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
                                             </div>
                                             <div className="text-xs text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded border">นักเรียน: {processedStudents.length}</div>
                                         </div>
@@ -569,19 +704,19 @@
                                                 </thead>
                                                 <tbody>
                                                     {processedStudents.map((s, sIdx) => (
-                                                        <tr key={s.id} className={`border-b hover:bg-blue-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                                                        <tr key={s.id} className={`border-b hover:bg-indigo-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
                                                             <td className="p-3 text-center border-r bg-inherit sticky-left-0">{s.no}</td>
                                                             <td className="p-3 font-mono border-r bg-inherit sticky-left-1 text-xs font-bold text-gray-600">{s.id}</td>
                                                             <td className="p-3 border-r bg-inherit sticky-left-2 font-medium text-gray-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
                                                                 const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
-                                                                    return <td key={sec.id} className="p-2 border-r text-center text-gray-300 bg-gray-50 group-hover:bg-blue-50"><Icons.Minus size={12} className="mx-auto"/></td>
+                                                                    return <td key={sec.id} className="p-2 border-r text-center text-gray-300 bg-gray-50 group-hover:bg-indigo-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
                                                                 return sec.groups?.map(g => g.columns?.map(col => {
                                                                     const val = calculateColumnValue(s, g, col);
                                                                     return (
-                                                                        <td key={col.id} className={`p-2 text-center border-r group-hover:bg-blue-50 ${col.type!=='manual'?'bg-gray-50 text-gray-500 font-bold': theme.text + ' font-medium'}`}>
+                                                                        <td key={col.id} className={`p-2 text-center border-r group-hover:bg-indigo-50 ${col.type!=='manual'?'bg-gray-50 text-gray-500 font-bold': theme.text + ' font-medium'}`}>
                                                                             {val && val !== '-' ? val : <span className="text-gray-300 font-light">-</span>}
                                                                         </td>
                                                                     );
@@ -638,6 +773,38 @@
                                 {/* SETTINGS TAB (REDESIGNED LIST VIEW) */}
                                 {teacherTab === 'settings' && (
                                     <div className="max-w-4xl mx-auto animate-fade-in">
+                                        
+                                        {/* Data Management Section */}
+                                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                                            <div className="p-4 bg-gradient-to-r from-gray-50 to-white border-b flex items-center gap-2">
+                                                <div className="bg-primary-100 p-1.5 rounded-lg text-primary-600"><Icons.Database size={20}/></div>
+                                                <h3 className="font-bold text-gray-700">จัดการฐานข้อมูล (Data Management)</h3>
+                                            </div>
+                                            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                <button onClick={() => requestAdminAction('export_excel')} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50/50 hover:bg-green-50 hover:border-green-400 transition group">
+                                                    <div className="mb-2 text-green-600 group-hover:scale-110 transition"><Icons.FileSpreadsheet size={28}/></div>
+                                                    <div className="font-bold text-green-800 text-sm">Excel (CSV)</div>
+                                                    <div className="text-xs text-green-500 mt-1">ไฟล์ตารางคะแนน</div>
+                                                </button>
+                                                <button onClick={() => requestAdminAction('export')} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-primary-200 rounded-xl bg-primary-50/50 hover:bg-primary-50 hover:border-primary-400 transition group">
+                                                    <div className="mb-2 text-primary-600 group-hover:scale-110 transition"><Icons.Download size={28}/></div>
+                                                    <div className="font-bold text-primary-800 text-sm">Backup (.json)</div>
+                                                    <div className="text-xs text-primary-400 mt-1">สำรองข้อมูลระบบ</div>
+                                                </button>
+                                                <button onClick={() => requestAdminAction('import')} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-teal-200 rounded-xl bg-teal-50/50 hover:bg-teal-50 hover:border-teal-400 transition group">
+                                                    <div className="mb-2 text-teal-600 group-hover:scale-110 transition"><Icons.Upload size={28}/></div>
+                                                    <div className="font-bold text-teal-800 text-sm">Restore</div>
+                                                    <div className="text-xs text-teal-400 mt-1">กู้คืนจากไฟล์ Backup</div>
+                                                </button>
+                                                <button onClick={() => requestAdminAction('clear')} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-red-200 rounded-xl bg-red-50/50 hover:bg-red-50 hover:border-red-400 transition group">
+                                                    <div className="mb-2 text-red-500 group-hover:scale-110 transition"><Icons.Trash size={28}/></div>
+                                                    <div className="font-bold text-red-700 text-sm">ล้างข้อมูล (Reset)</div>
+                                                    <div className="text-xs text-red-400 mt-1">ลบทุกอย่าง</div>
+                                                </button>
+                                            </div>
+                                            <input type="file" ref={fileInputRef} onChange={handleFileImport} className="hidden" accept=".json" />
+                                        </div>
+
                                         <div className="flex justify-between items-center mb-6">
                                             <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 font-display"><Icons.Settings className="text-slate-500"/> โครงสร้างวิชา</h2>
                                             <button onClick={() => { setSectionSettings({title: '', color: 'primary'}); setIsSectionSettingsOpen(true); }} className="bg-slate-700 text-white px-4 py-2 rounded-xl font-bold shadow hover:bg-slate-800 flex items-center gap-2 transition active:scale-95"><Icons.FolderPlus/> สร้างบทเรียน</button>
@@ -776,6 +943,30 @@
                                             <button onClick={() => setIsColumnModalOpen(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
                                             <button onClick={handleSaveColumn} className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">บันทึก</button>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* PASSWORD CONFIRM MODAL */}
+                        {isPasswordConfirmOpen && (
+                            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 backdrop-blur-sm animate-fade-in">
+                                <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs text-center">
+                                    <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600"><Icons.Lock size={28}/></div>
+                                    <h3 className="font-bold text-lg text-gray-800 mb-2">ยืนยันรหัสผ่าน</h3>
+                                    <p className="text-sm text-gray-500 mb-4">กรุณากรอกรหัสผ่าน 'admin' เพื่อดำเนินการต่อ</p>
+                                    <input 
+                                        type="password" 
+                                        className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-amber-500 focus:outline-none transition" 
+                                        placeholder="รหัสผ่าน" 
+                                        value={confirmPasswordInput} 
+                                        onChange={e => setConfirmPasswordInput(e.target.value)}
+                                        autoFocus
+                                        onKeyDown={e => e.key === 'Enter' && executeAdminAction()}
+                                    />
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setIsPasswordConfirmOpen(false)} className="flex-1 py-2.5 rounded-xl text-gray-500 font-bold hover:bg-gray-100 transition">ยกเลิก</button>
+                                        <button onClick={executeAdminAction} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition shadow-lg">ยืนยัน</button>
                                     </div>
                                 </div>
                             </div>
@@ -931,7 +1122,7 @@
                                     <button onClick={() => setIsScannerOpen(false)} className="bg-white/20 p-2 rounded-full text-white hover:bg-white/40"><Icons.X size={32}/></button>
                                 </div>
                                 <h3 className="text-white text-2xl font-bold mb-8 flex gap-3 animate-slide-up"><Icons.Camera size={32}/> ส่องบาร์โค้ดเลยครับ</h3>
-                                <div className="w-full max-w-sm aspect-square bg-black rounded-3xl overflow-hidden border-4 border-teal-500 relative shadow-2xl">
+                                <div className="w-full max-w-sm aspect-square bg-black rounded-3xl overflow-hidden border-4 border-indigo-500 relative shadow-2xl">
                                     <ScannerController isOpen={isScannerOpen} onScan={handleTeacherSearch} />
                                     <div className="absolute inset-0 border-2 border-white/30 rounded-2xl m-8 pointer-events-none animate-pulse"></div>
                                 </div>
@@ -945,7 +1136,7 @@
                                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
                                     <h3 className="font-bold text-lg mb-2 text-gray-800 font-display">นำเข้าข้อมูล (Excel Copy-Paste)</h3>
                                     <p className="text-xs text-gray-500 mb-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 text-yellow-700">รูปแบบ: รหัส [tab] ชื่อ [tab] ห้อง [tab] เลขที่</p>
-                                    <textarea className="w-full h-48 p-4 border-2 border-gray-100 rounded-xl text-sm font-mono bg-gray-50 focus:bg-white focus:border-teal-500 focus:outline-none transition" placeholder="66001  สมชาย  1/1  1..." value={importText} onChange={e => setImportText(e.target.value)}></textarea>
+                                    <textarea className="w-full h-48 p-4 border-2 border-gray-100 rounded-xl text-sm font-mono bg-gray-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition" placeholder="66001  สมชาย  1/1  1..." value={importText} onChange={e => setImportText(e.target.value)}></textarea>
                                     <div className="flex justify-end gap-2 mt-6">
                                         <button onClick={() => setIsImportOpen(false)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ปิด</button>
                                         <button onClick={() => {
@@ -957,7 +1148,7 @@
                                             }).filter(Boolean);
                                             saveData([...students, ...newS], null);
                                             setIsImportOpen(false); setImportText('');
-                                        }} className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold shadow-lg hover:bg-teal-700 transition transform active:scale-95">นำเข้า {importText.split('\n').length} คน</button>
+                                        }} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition transform active:scale-95">นำเข้า {importText.split('\n').length} คน</button>
                                     </div>
                                 </div>
                             </div>
