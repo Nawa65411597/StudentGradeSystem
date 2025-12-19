@@ -77,16 +77,25 @@
         import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- CONFIG ---
-        const getFirebaseConfig = () => {
-            try { return typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; } 
-            catch (e) { return { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" }; }
+        const firebaseConfig = {
+            apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
+            authDomain: "studentgradesystem-2a33f.firebaseapp.com",
+            projectId: "studentgradesystem-2a33f",
+            storageBucket: "studentgradesystem-2a33f.firebasestorage.app",
+            messagingSenderId: "339470940730",
+            appId: "1:339470940730:web:cc60c26a4c209caa6d1303",
+            measurementId: "G-7MZ12J60VQ"
         };
 
-        const app = initializeApp(getFirebaseConfig());
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'grade-pro-v3'; 
-        const useLocalStorage = typeof __firebase_config === 'undefined';
+        
+        // App ID สำหรับแยกข้อมูลใน Database (เปลี่ยนได้ถ้าต้องการ reset database ใหม่)
+        const appId = 'grade-pro-v3'; 
+        
+        // ตั้งค่าเป็น false เพื่อใช้ Firebase จริง (เชื่อมต่อฐานข้อมูล studentgradesystem-2a33f)
+        const useLocalStorage = false;
         
         const LOCAL_KEY = 'gradepro_local_data';
         const loadLocalData = () => JSON.parse(localStorage.getItem(LOCAL_KEY) || '{"students":[], "sections":[]}');
