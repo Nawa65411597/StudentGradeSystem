@@ -71,7 +71,7 @@
         .print-only { display: none; }
         
         @media print {
-            @page { size: landscape; margin: 10mm; }
+            @page { size: A4 portrait; margin: 20mm; } /* A4 Portrait for Student Report */
             body { 
                 background-color: white; 
                 color: black; 
@@ -81,40 +81,31 @@
             }
             
             /* Hide UI Elements */
-            .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card { display: none !important; }
+            .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
             
             /* Reset Layout */
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
-            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; }
-            
-            /* Formal Table Styling */
-            table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; }
-            th, td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
-            th { font-weight: bold; background-color: #f0f0f0 !important; } /* Slight grey for header in print */
-            
-            /* Remove decorations */
-            .rounded-xl, .rounded-2xl, .rounded-lg, .rounded { border-radius: 0 !important; }
-            .bg-white { background-color: transparent !important; }
-            input { border: none !important; background: transparent !important; text-align: center; font-family: 'Sarabun', sans-serif; font-size: 10pt; padding: 0; margin: 0; width: 100%; }
             
             /* Print Specific Areas */
             .print-only { display: block !important; }
             
-            /* Header & Footer Layout */
-            .print-header { text-align: center; margin-bottom: 15px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin-bottom: 5px; font-family: 'Sarabun', sans-serif !important; }
-            .print-header p { font-size: 12pt; margin: 2px 0; }
+            /* Formal Table Styling */
+            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 12pt; margin-top: 20px; }
+            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 8px !important; text-align: center; color: #000 !important; }
+            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
+            table.print-table td.text-left { text-align: left !important; }
+
+            /* Student Report Specifics */
+            .student-report-header { text-align: center; margin-bottom: 20px; }
+            .student-report-header h1 { font-size: 18pt; font-weight: bold; margin: 0; }
+            .student-report-header h2 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
+            .student-info { margin-bottom: 20px; font-size: 14pt; line-height: 1.6; }
+            .student-info div { display: flex; justify-content: space-between; }
             
-            .print-footer { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-            .signature-block { text-align: center; width: 30%; }
-            .signature-line { border-bottom: 1px dotted #000; display: inline-block; width: 150px; margin-bottom: 5px; }
-            
-            /* Adjust table content */
-            tr { break-inside: avoid; }
-            .vertical-header { transform: none !important; writing-mode: horizontal-tb !important; white-space: normal !important; height: auto !important; max-height: none !important; }
-            th div { height: auto !important; }
+            .print-footer { margin-top: 50px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+            .signature-block { text-align: center; width: 40%; }
+            .signature-line { border-bottom: 1px dotted #000; display: block; margin: 30px auto 10px; width: 80%; }
         }
     </style>
 </head>
@@ -713,62 +704,164 @@
                     {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
                         
-                        {/* PRINT HEADER SECTION (Hidden on screen) */}
-                        <div className="print-only print-header">
-                            <h1>แบบบันทึกผลการเรียนรายวิชา</h1>
-                            <p><strong>โรงเรียน...........................................................................................</strong></p>
-                            <p>ภาคเรียนที่ ......... ปีการศึกษา ............... ระดับชั้น ....................</p>
-                            <p>รายวิชา ........................................................... รหัสวิชา ..............................</p>
-                        </div>
+                        {/* TEACHER PRINT HEADER (Hidden on screen, visible only in teacher view print) */}
+                        {view === 'teacher' && (
+                            <div className="print-only print-header">
+                                <h1>แบบบันทึกผลการเรียนรายวิชา</h1>
+                                <p><strong>โรงเรียน...........................................................................................</strong></p>
+                                <p>ภาคเรียนที่ ......... ปีการศึกษา ............... ระดับชั้น ....................</p>
+                            </div>
+                        )}
                         
                         {/* STUDENT VIEW */}
                         {view === 'student' && (
-                            <div className="max-w-xl mx-auto mt-8 animate-slide-up">
-                                <div className="bg-white p-8 rounded-3xl shadow-xl border relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
-                                    <div className="flex justify-between items-start mb-6">
-                                        <h2 className="text-3xl font-extrabold text-gray-800 font-display text-center flex-1">ตรวจสอบคะแนน</h2>
-                                        <button onClick={handlePrint} className="no-print bg-gray-100 text-gray-600 p-2 rounded-full hover:bg-gray-200 transition"><Icons.Settings size={20} className="hidden"/><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-indigo-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
-                                        <button id="search-btn" onClick={() => {
-                                            const s = students.find(x => x.id === searchId);
-                                            if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
-                                        }} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
-                                    </div>
-                                    {searchResult && (
-                                        <div className="mt-8 space-y-6 animate-fade-in">
-                                            <div className="bg-indigo-50 p-4 rounded-xl flex items-center gap-4 border border-indigo-100">
-                                                <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-indigo-600"/></div>
-                                                <div>
-                                                    <div className="font-bold text-xl text-gray-800">{searchResult.name}</div>
-                                                    <div className="text-sm text-gray-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
-                                                </div>
-                                            </div>
-                                            {sections.map((sec, idx) => {
-                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
-                                                return (
-                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                        <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
-                                                        <div className="bg-white p-3 space-y-2">
-                                                            {sec.groups?.map(g => g.columns?.map(c => {
-                                                                const val = calculateColumnValue(searchResult, g, c);
-                                                                return (
-                                                                    <div key={c.id} className="flex justify-between py-2 border-b last:border-0 border-gray-100 hover:bg-slate-50 px-2 rounded">
-                                                                        <span className="text-sm text-gray-600">{c.name}</span>
-                                                                        <span className={`font-bold ${theme.text}`}>{val || '-'} <span className="text-gray-300 text-xs font-normal">/{c.max}</span></span>
-                                                                    </div>
-                                                                );
-                                                            }))}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                            <>
+                                {/* SCREEN ONLY CONTENT */}
+                                <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
+                                    <div className="bg-white p-8 rounded-3xl shadow-xl border relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
+                                        <div className="flex justify-between items-start mb-6">
+                                            <h2 className="text-3xl font-extrabold text-gray-800 font-display text-center flex-1">ตรวจสอบคะแนน</h2>
+                                            {searchResult && (
+                                                <button onClick={handlePrint} className="bg-gray-100 text-gray-600 p-2 rounded-full hover:bg-gray-200 transition" title="พิมพ์ใบรายงานผลการเรียน">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                                </button>
+                                            )}
                                         </div>
-                                    )}
+                                        <div className="flex gap-2">
+                                            <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-indigo-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
+                                            <button id="search-btn" onClick={() => {
+                                                const s = students.find(x => x.id === searchId);
+                                                if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
+                                            }} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
+                                        </div>
+                                        {searchResult && (
+                                            <div className="mt-8 space-y-6 animate-fade-in">
+                                                <div className="bg-indigo-50 p-4 rounded-xl flex items-center gap-4 border border-indigo-100">
+                                                    <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-indigo-600"/></div>
+                                                    <div>
+                                                        <div className="font-bold text-xl text-gray-800">{searchResult.name}</div>
+                                                        <div className="text-sm text-gray-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
+                                                    </div>
+                                                </div>
+                                                {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                    return (
+                                                        <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                            <div className="bg-white p-3 space-y-2">
+                                                                {sec.groups?.map(g => g.columns?.map(c => {
+                                                                    const val = calculateColumnValue(searchResult, g, c);
+                                                                    const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                    return (
+                                                                        <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                            <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                                {c.name}
+                                                                                {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                            </span>
+                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : theme.text}`}>
+                                                                                {val || '-'} 
+                                                                                <span className={`${isSpecial ? 'text-slate-400' : 'text-gray-300'} text-xs font-normal ml-1`}>/{c.max}</span>
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                }))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* PRINT ONLY CONTENT (STUDENT REPORT CARD) */}
+                                {searchResult && (
+                                    <div className="print-only">
+                                        <div className="student-report-header">
+                                            <div style={{marginBottom: '10px'}}><Icons.FileSpreadsheet size={40}/></div>
+                                            <h1>รายงานผลการเรียนรายบุคคล</h1>
+                                            <h2>โรงเรียน................................................................</h2>
+                                        </div>
+                                        <div className="student-info">
+                                            <div>
+                                                <span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span>
+                                                <span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span>
+                                                <span><strong>เลขที่:</strong> {searchResult.no}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>ภาคเรียนที่:</strong> ....... / ...........</span>
+                                                <span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH')}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <table className="print-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th>
+                                                    <th style={{width: '20%'}}>คะแนนเต็ม</th>
+                                                    <th style={{width: '20%'}}>คะแนนที่ได้</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {sections.map(sec => (
+                                                    <React.Fragment key={sec.id}>
+                                                        <tr style={{backgroundColor: '#f9fafb'}}>
+                                                            <td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td>
+                                                        </tr>
+                                                        {sec.groups?.map(g => g.columns?.map(c => {
+                                                            const val = calculateColumnValue(searchResult, g, c);
+                                                            return (
+                                                                <tr key={c.id}>
+                                                                    <td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td>
+                                                                    <td>{c.max}</td>
+                                                                    <td>{val || '-'}</td>
+                                                                </tr>
+                                                            );
+                                                        }))}
+                                                    </React.Fragment>
+                                                ))}
+                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
+                                                <tr style={{borderTop: '2px solid black'}}>
+                                                    <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
+                                                    <td></td>
+                                                    <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
+                                                        {(() => {
+                                                            let total = 0;
+                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
+                                                            sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
+                                                                if(c.type === 'manual' || c.type === 'sum') {
+                                                                    // Complex to sum generic, sticking to manual for safe sum or just leave blank
+                                                                    // Let's sum only columns marked as 'sum' if available, else sum all manuals?
+                                                                    // Safest: Sum all 'manual' scores
+                                                                    if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
+                                                                }
+                                                            })));
+                                                            return parseFloat(total.toFixed(2));
+                                                        })()}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div className="print-footer">
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>({searchResult.name})</p>
+                                                <p>นักเรียนผู้รับรอง</p>
+                                            </div>
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>(...........................................................)</p>
+                                                <p>ครูที่ปรึกษา / ครูผู้สอน</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {/* TEACHER LOGIN */}
