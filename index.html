@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบประกาศคะแนน (GradePro Cloud)</title>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
                 extend: {
                     fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
                     colors: { 
+                        // Base Brand Color (Indigo)
                         primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' } 
                     }
                 }
@@ -91,10 +92,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // App ID สำหรับแยกข้อมูลใน Database (เปลี่ยนได้ถ้าต้องการ reset database ใหม่)
+        // App ID สำหรับแยกข้อมูลใน Database
         const appId = 'grade-pro-v3'; 
         
-        // ตั้งค่าเป็น false เพื่อใช้ Firebase จริง (เชื่อมต่อฐานข้อมูล studentgradesystem-2a33f)
+        // ตั้งค่าเป็น false เพื่อใช้ Firebase จริง
         const useLocalStorage = false;
         
         const LOCAL_KEY = 'gradepro_local_data';
@@ -278,6 +279,10 @@
             // New Student State
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
+            // Refs for Auto Focus
+            const studentInputRef = useRef(null);
+            const teacherInputRef = useRef(null);
+
             // --- AUTH & DATA ---
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
@@ -324,6 +329,20 @@
                 });
                 return () => unsub();
             }, [scannerSessionId, isMobileScannerActive, students]);
+
+            // --- AUTO FOCUS LOGIC ---
+            useEffect(() => {
+                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
+
+                if (!isAnyModalOpen) {
+                    if (view === 'student' && studentInputRef.current) {
+                        // Small timeout to ensure DOM is ready and modal closing animation is done
+                        setTimeout(() => studentInputRef.current.focus(), 100);
+                    } else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) {
+                        setTimeout(() => teacherInputRef.current.focus(), 100);
+                    }
+                }
+            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
 
             // --- LOGIC ---
             const saveData = (newS, newSec) => {
@@ -641,7 +660,7 @@
                                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
                                     <h2 className="text-3xl font-extrabold text-gray-800 mb-6 text-center font-display">ตรวจสอบคะแนน</h2>
                                     <div className="flex gap-2">
-                                        <input className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-indigo-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
+                                        <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-indigo-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
                                         <button id="search-btn" onClick={() => {
                                             const s = students.find(x => x.id === searchId);
                                             if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
@@ -715,7 +734,7 @@
                                                 </div>
                                                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
                                                     <Icons.Search size={16} className="text-gray-400"/>
-                                                    <input className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
+                                                    <input ref={teacherInputRef} className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
                                                 </div>
                                                 <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
                                                 <button onClick={handleGenerateScanner} className="bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-indigo-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
