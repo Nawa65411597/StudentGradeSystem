@@ -717,12 +717,67 @@
                     {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
                         
-                        {/* TEACHER PRINT HEADER (Hidden on screen, visible only in teacher view print) */}
+                        {/* TEACHER PRINT VIEW (Visible only when printing in teacher mode) */}
                         {view === 'teacher' && (
-                            <div className="print-only print-header">
-                                <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
-                                <p><strong>โรงเรียน...........................................................................................</strong></p>
-                                <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น ....................</p>
+                            <div className="print-only">
+                                <div className="student-report-header">
+                                    <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
+                                    <p><strong>โรงเรียน...........................................................................................</strong></p>
+                                    <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
+                                </div>
+                                <table className="print-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{width: '5%'}}>เลขที่</th>
+                                            <th style={{width: '15%'}}>รหัส</th>
+                                            <th style={{width: '25%'}}>ชื่อ-นามสกุล</th>
+                                            {sections.map(sec => 
+                                                sec.groups.map(g => 
+                                                    g.columns.map(c => (
+                                                        <th key={c.id} style={{fontSize: '10pt', minWidth: '40px'}}>
+                                                            <div style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)', margin: '0 auto', height: '80px'}}>{c.name}</div>
+                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
+                                                        </th>
+                                                    ))
+                                                )
+                                            )}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {processedStudents.map(s => (
+                                            <tr key={s.id}>
+                                                <td>{s.no}</td>
+                                                <td>{s.id}</td>
+                                                <td className="text-left" style={{paddingLeft: '10px'}}>{s.name}</td>
+                                                {sections.map(sec => 
+                                                    sec.groups.map(g => 
+                                                        g.columns.map(c => {
+                                                            const val = calculateColumnValue(s, g, c);
+                                                            return <td key={c.id}>{val || '-'}</td>;
+                                                        })
+                                                    )
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div className="print-footer">
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>ลงชื่อครูผู้สอน</p>
+                                        <p>(...........................................................)</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>หัวหน้ากลุ่มสาระฯ</p>
+                                        <p>(...........................................................)</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>ผู้อำนวยการสถานศึกษา</p>
+                                        <p>(...........................................................)</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         
@@ -879,7 +934,7 @@
 
                         {/* TEACHER LOGIN */}
                         {view === 'teacher_login' && (
-                            <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border animate-slide-up text-center">
+                            <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border animate-slide-up text-center screen-only">
                                 <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-indigo-600"/></div>
                                 <h3 className="text-xl font-bold mb-6 font-display text-gray-800">สำหรับครูผู้สอน</h3>
                                 <input type="password" placeholder="รหัสผ่าน (admin)" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-indigo-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
@@ -889,7 +944,7 @@
 
                         {/* TEACHER DASHBOARD */}
                         {view === 'teacher' && (
-                            <div className="animate-fade-in">
+                            <div className="animate-fade-in screen-only">
                                 {/* TAB NAVIGATION */}
                                 <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-100 mx-auto md:mx-0">
                                     <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
