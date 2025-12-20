@@ -42,6 +42,7 @@
 
     <style>
         * { font-family: 'Krub', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Krub', sans-serif !important; }
         body { background-color: #f8fafc; color: #334155; }
         
         .glass-card { 
@@ -85,48 +86,59 @@
         .print-only { display: none; }
         
         @media print {
-            /* Force background graphics for colored headers */
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
-            
-            /* Hide non-print elements */
+            @page { size: auto; margin: 10mm; } 
+            body { 
+                background-color: white; 
+                color: black; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                font-family: 'Sarabun', sans-serif !important;
+            }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
-            
-            /* Layout Reset */
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
-            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
+            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; }
             
             .print-only { display: block !important; width: 100%; }
 
-            /* --- Student Report (Portrait) --- */
-            @page { size: A4 portrait; margin: 15mm; }
-            
-            /* --- Teacher Report (Landscape 2-Column) --- */
-            .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
-            .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
-            
-            /* Common Print Table */
-            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
-            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
-            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
+            /* Table Styling */
+            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; table-layout: fixed; }
+            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px 2px !important; text-align: center; color: #000 !important; background-color: transparent !important; overflow: hidden; white-space: nowrap; }
+            table.print-table th { font-weight: bold; background-color: #f0f0f0 !important; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
-            tr { break-inside: avoid; page-break-inside: avoid; }
-
-            /* Header/Footer */
-            .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+            
+            /* Column Widths */
+            .w-no { width: 10%; }
+            .w-id { width: 20%; }
+            .w-name { width: 40%; text-align: left; }
+            .w-score { width: 8%; } 
+            
+            /* Header */
+            .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid black; padding-bottom: 5px; }
             .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Krub', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
-            
+
+            /* Footer */
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
-            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
-
-            /* Student Info Box */
-            .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 80%; }
             
-            /* Vertical Header in Print */
-            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
+            tr { break-inside: avoid; }
+            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; width: 20px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
+            th div { height: auto !important; }
+            
+            /* Student Report Specifics */
+            .student-report-header { text-align: center; margin-bottom: 10px; }
+            .student-report-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
+            .student-report-header h2 { font-size: 14pt; font-weight: bold; margin: 2px 0; }
+            .student-report-header h3 { font-size: 12pt; margin: 2px 0; font-weight: normal; }
+            .student-info { margin-bottom: 10px; font-size: 12pt; line-height: 1.4; border: 1px solid #000; padding: 10px; border-radius: 4px; }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            
+            /* Teacher Report 2-Column */
+            .print-container { display: flex; width: 100%; gap: 10mm; }
+            .print-column { width: 50%; }
         }
     </style>
 </head>
@@ -295,7 +307,7 @@
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
                         </div>
-                        <button onClick={onClose} className="mt-4 bg-rose-500 hover:bg-rose-600 text-white px-8 py-2 rounded-full font-bold shadow-lg transition-transform transform active:scale-95">ปิดการทำงาน</button>
+                        <button onClick={onClose} className="mt-4 bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold shadow-lg transition-transform transform active:scale-95">ปิดการทำงาน</button>
                     </div>
                 </div>
             );
@@ -860,42 +872,53 @@
                                     <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
                                     <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
                                 </div>
-                                <table className="print-table">
-                                    <thead>
-                                        <tr>
-                                            <th style={{width: '5%'}}>เลขที่</th>
-                                            <th style={{width: '15%'}}>รหัส</th>
-                                            <th style={{width: '25%'}}>ชื่อ-นามสกุล</th>
-                                            {sections.map(sec => 
-                                                sec.groups.map(g => 
-                                                    g.columns.map(c => (
-                                                        <th key={c.id} style={{fontSize: '10pt', minWidth: '40px'}}>
-                                                            <div className="vertical-header" style={{margin: '0 auto', height: '80px'}}>{c.name}</div>
-                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
-                                                        </th>
-                                                    ))
-                                                )
-                                            )}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {processedStudents.map(s => (
-                                            <tr key={s.id}>
-                                                <td>{s.no}</td>
-                                                <td>{s.id}</td>
-                                                <td className="text-left" style={{paddingLeft: '10px'}}>{s.name}</td>
-                                                {sections.map(sec => 
-                                                    sec.groups.map(g => 
-                                                        g.columns.map(c => {
-                                                            const val = calculateColumnValue(s, g, c);
-                                                            return <td key={c.id}>{val || '-'}</td>;
-                                                        })
-                                                    )
-                                                )}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="print-container">
+                                    {[0, 1].map(colIndex => {
+                                        const half = Math.ceil(processedStudents.length / 2);
+                                        const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
+                                        if (studentsInCol.length === 0) return null;
+                                        return (
+                                            <div className="print-column" key={colIndex}>
+                                                <table className="print-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th className="w-no">เลขที่</th>
+                                                            <th className="w-id">รหัส</th>
+                                                            <th className="w-name">ชื่อ-นามสกุล</th>
+                                                            {sections.map(sec => 
+                                                                sec.groups.map(g => 
+                                                                    g.columns.map(c => (
+                                                                        <th key={c.id} className="w-score">
+                                                                            <div className="vertical-header-print">{c.name}</div>
+                                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
+                                                                        </th>
+                                                                    ))
+                                                                )
+                                                            )}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {studentsInCol.map(s => (
+                                                            <tr key={s.id}>
+                                                                <td>{s.no}</td>
+                                                                <td>{s.id}</td>
+                                                                <td className="text-left">{s.name}</td>
+                                                                {sections.map(sec => 
+                                                                    sec.groups.map(g => 
+                                                                        g.columns.map(c => {
+                                                                            const val = calculateColumnValue(s, g, c);
+                                                                            return <td key={c.id}>{val && val !== '-' ? val : ''}</td>;
+                                                                        })
+                                                                    )
+                                                                )}
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                                 <div className="print-footer">
                                     <div className="signature-block">
                                         <div className="signature-line"></div>
@@ -1035,15 +1058,21 @@
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                {/* Total Summary Row */}
+                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
                                                 <tr style={{borderTop: '2px solid black'}}>
                                                     <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
                                                     <td></td>
                                                     <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
                                                         {(() => {
                                                             let total = 0;
+                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
                                                             sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
+                                                                if(c.type === 'manual' || c.type === 'sum') {
+                                                                    // Complex to sum generic, sticking to manual for safe sum or just leave blank
+                                                                    // Let's sum only columns marked as 'sum' if available, else sum all manuals?
+                                                                    // Safest: Sum all 'manual' scores
+                                                                    if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
+                                                                }
                                                             })));
                                                             return parseFloat(total.toFixed(2));
                                                         })()}
@@ -1122,9 +1151,8 @@
                                                         {sections.map((sec, idx) => {
                                                             const isCollapsed = collapsedSections[sec.id];
                                                             const colsCount = isCollapsed ? 1 : (sec.groups?.reduce((a, b) => a + (b.columns?.length||0), 0) || 0);
-                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             return colsCount > 0 && (
-                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center ${theme.header} ${theme.text} font-bold border-b group cursor-pointer hover:brightness-95 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
+                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center bg-primary-50 text-primary-700 font-bold border-b border-primary-200 group cursor-pointer hover:bg-primary-100 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
                                                                     <div className="flex items-center justify-center gap-2">
                                                                         {sec.title}
                                                                         <span className={`transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}><Icons.ChevronDown size={14}/></span>
@@ -1139,14 +1167,13 @@
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-1 z-30"></th>
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-2 z-30"></th>
                                                         {sections.map((sec, idx) => {
-                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             if (collapsedSections[sec.id]) {
                                                                 return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic h-40 align-middle">ยุบแล้ว</th>
                                                             }
                                                             return sec.groups?.map(g => g.columns?.map(col => (
                                                                 <th key={col.id} className={`p-1 border-r text-center font-normal group relative align-bottom h-48 min-w-[40px] max-w-[50px] ${col.type!=='manual' ? 'bg-slate-100' : 'bg-white hover:bg-slate-50'}`} title={`กลุ่ม: ${g.title}`}>
                                                                      <div className="flex flex-col items-center justify-end h-full pb-1 w-full">
-                                                                        <div className={`mb-2 font-bold text-xs ${theme.subHeader} vertical-header tracking-wide leading-none`}>
+                                                                        <div className="mb-2 font-bold text-xs text-slate-700 vertical-header tracking-wide leading-none">
                                                                             {col.name}
                                                                         </div>
                                                                         <div className={`border rounded px-0.5 w-full text-center text-[10px] font-mono mb-0.5 ${col.type!=='manual' ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>{col.max}</div>
@@ -1165,7 +1192,6 @@
                                                             <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
                                                             <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
-                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
                                                                     return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
@@ -1393,12 +1419,12 @@
                         {isPasswordConfirmOpen && (
                             <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 backdrop-blur-sm animate-fade-in">
                                 <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs text-center">
-                                    <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600"><Icons.Lock size={28}/></div>
+                                    <div className="w-14 h-14 bg-warning-100 rounded-full flex items-center justify-center mx-auto mb-4 text-warning-600"><Icons.Lock size={28}/></div>
                                     <h3 className="font-bold text-lg text-gray-800 mb-2">ยืนยันรหัสผ่าน</h3>
                                     <p className="text-sm text-gray-500 mb-4">กรุณากรอกรหัสผ่าน 'admin' เพื่อดำเนินการต่อ</p>
                                     <input 
                                         type="password" 
-                                        className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-amber-500 focus:outline-none transition" 
+                                        className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-warning-500 focus:outline-none transition" 
                                         placeholder="รหัสผ่าน" 
                                         value={confirmPasswordInput} 
                                         onChange={e => setConfirmPasswordInput(e.target.value)}
@@ -1407,7 +1433,7 @@
                                     />
                                     <div className="flex gap-2">
                                         <button onClick={() => setIsPasswordConfirmOpen(false)} className="flex-1 py-2.5 rounded-xl text-gray-500 font-bold hover:bg-gray-100 transition">ยกเลิก</button>
-                                        <button onClick={executeAdminAction} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition shadow-lg">ยืนยัน</button>
+                                        <button onClick={executeAdminAction} className="flex-1 py-2.5 rounded-xl bg-warning-500 text-white font-bold hover:bg-warning-600 transition shadow-lg">ยืนยัน</button>
                                     </div>
                                 </div>
                             </div>
@@ -1425,7 +1451,7 @@
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-bold text-emerald-400">{totalScorePreview}</div>
+                                            <div className="text-3xl font-bold text-success-400">{totalScorePreview}</div>
                                             <div className="text-[10px] text-gray-400 uppercase tracking-widest">Total Score</div>
                                         </div>
                                     </div>
@@ -1531,10 +1557,10 @@
                                                 const btn = document.getElementById('save-btn');
                                                 const originalText = btn.innerHTML;
                                                 btn.innerHTML = '✅ บันทึกแล้ว';
-                                                btn.classList.add('bg-green-600');
+                                                btn.classList.add('bg-success-600');
                                                 setTimeout(() => {
                                                     btn.innerHTML = originalText;
-                                                    btn.classList.remove('bg-green-600');
+                                                    btn.classList.remove('bg-success-600');
                                                     
                                                     // Logic: Save and Close immediately
                                                     setScoreModalData(null);
@@ -1615,7 +1641,7 @@
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
                                     <h3 className="font-bold text-lg mb-2">นำเข้าข้อมูล (Excel Copy-Paste)</h3>
-                                    <p className="text-xs text-gray-500 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100">รูปแบบ: รหัส [tab] ชื่อ [tab] ห้อง [tab] เลขที่</p>
+                                    <p className="text-xs text-gray-500 mb-4 bg-warning-50 p-2 rounded border border-warning-100">รูปแบบ: รหัส [tab] ชื่อ [tab] ห้อง [tab] เลขที่</p>
                                     {isImporting ? (
                                         <div className="w-full h-48 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-gray-200">
                                             <div className="w-64 bg-gray-200 rounded-full h-4 mb-2 overflow-hidden"><div className="bg-primary-600 h-4 rounded-full transition-all duration-300 ease-out" style={{width: `${importProgress}%`}}></div></div>
@@ -1634,7 +1660,7 @@
                         )}
 
                         {warning.show && (
-                            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-[200] animate-slide-up flex items-center gap-3 cursor-pointer hover:bg-red-700 transition" onClick={() => setWarning({show:false, msg:''})}>
+                            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-danger-600 text-white px-6 py-3 rounded-full shadow-2xl z-[200] animate-slide-up flex items-center gap-3 cursor-pointer hover:bg-danger-700 transition" onClick={() => setWarning({show:false, msg:''})}>
                                 <Icons.AlertTriangle/> <span className="font-bold">{warning.msg}</span>
                             </div>
                         )}
