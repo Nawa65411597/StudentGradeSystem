@@ -21,8 +21,19 @@
                         display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Pastel Indigo Theme
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
+                        // Soft Pastel Indigo Theme
+                        primary: { 
+                            50: '#f5f3ff', // Very light lavender
+                            100: '#ede9fe', 
+                            200: '#ddd6fe', 
+                            300: '#c4b5fd', 
+                            400: '#a78bfa', 
+                            500: '#8b5cf6', 
+                            600: '#7c3aed', // Main action color (softer purple)
+                            700: '#6d28d9', 
+                            800: '#5b21b6', 
+                            900: '#4c1d95' 
+                        },
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
@@ -42,50 +53,70 @@
     <style>
         * { font-family: 'Krub', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Krub', sans-serif !important; }
-        body { background-color: #f8fafc; color: #334155; }
+        body { background-color: #fffaf5; color: #475569; } /* Creamy white background */
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); 
         }
         
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Pastel Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #fffaf5; }
+        ::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 5px; border: 2px solid #fffaf5; }
+        ::-webkit-scrollbar-thumb:hover { background: #c4b5fd; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
         
         /* Sticky Headers */
-        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #f3e8ff; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #f3e8ff; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #f3e8ff; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.03); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
-        /* Vertical Text */
+        /* Table Styling - Softer Lines */
+        tbody tr { border-bottom: 1px solid #f3f4f6; }
+        tbody tr:last-child { border-bottom: none; }
+        th, td { border-right: 1px solid #f3f4f6; }
+        th:last-child, td:last-child { border-right: none; }
+
+        /* Improved Vertical Header */
+        .vertical-header-container {
+            height: 140px; /* Increased height to prevent overflow */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 8px;
+            width: 100%;
+        }
+
         .vertical-header { 
             writing-mode: vertical-rl; 
             transform: rotate(180deg); 
             white-space: nowrap; 
             text-align: left;
-            max-height: 120px;
+            margin-bottom: 6px;
+            /* Prevent long text from breaking layout */
+            max-height: 110px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
 
         /* --- PRINT STYLES (A4 Optimized) --- */
         .print-only { display: none; }
         
         @media print {
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Sarabun', sans-serif !important; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -93,34 +124,24 @@
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
             .print-only { display: block !important; width: 100%; }
 
-            /* Student Report (Portrait) */
             @page { size: A4 portrait; margin: 15mm; }
-            
-            /* Teacher Report (Landscape 2-Column) */
             .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
             
-            /* Common Table */
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
             tr { break-inside: avoid; page-break-inside: avoid; }
 
-            /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
+            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
             
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
-
-            /* Student Info */
-            .student-info { margin-bottom: 15px; border: 1px solid #000; padding: 10px; border-radius: 4px; }
-            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
-            
-            /* Vertical Header Print */
+            .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -253,7 +274,7 @@
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Mobile Scanner
+        // Mobile Scanner (Phone View)
         function MobileScanner({ sessionId, onClose }) {
             const [status, setStatus] = useState('กำลังเปิดกล้อง...');
             const [lastScanned, setLastScanned] = useState(null);
@@ -262,7 +283,7 @@
                 const scanner = new Html5Qrcode("mobile-reader");
                 scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
                     (text) => {
-                        if (text.includes("scan_session")) return; 
+                        if (text.includes("scan_session")) return; // Ignore session QR
                         if (lastScanned === text) return;
                         setLastScanned(text);
                         setStatus(`ส่ง: ${text}`);
@@ -272,6 +293,7 @@
                         audio.volume = 0.5;
                         audio.play().catch(()=>{});
 
+                        // Update Firestore
                         setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { lastScanned: text, timestamp: Date.now() }, { merge: true });
                         if(navigator.vibrate) navigator.vibrate(200);
                         setTimeout(() => { setLastScanned(null); setStatus("พร้อมสแกน..."); }, 2000);
@@ -284,7 +306,7 @@
             return (
                 <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-300 shadow-2xl"></div>
+                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-500 shadow-2xl"></div>
                     <div className="mt-6 flex flex-col items-center gap-2">
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
@@ -295,7 +317,7 @@
             );
         }
 
-        // Virtual Numpad Component
+        // Virtual Numpad Component (Draggable)
         function VirtualNumpad({ isOpen, target, onInput, onClose, onConfirm }) {
             if (!isOpen || !target) return null;
             
@@ -321,7 +343,7 @@
                 };
                 const handleTouchMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault(); 
+                    e.preventDefault(); // Prevent scrolling while dragging
                     setPosition({ x: e.touches[0].clientX - dragStart.current.x, y: e.touches[0].clientY - dragStart.current.y });
                 };
                 const handleUp = () => setIsDragging(false);
@@ -395,8 +417,11 @@
             const [teacherSearchId, setTeacherSearchId] = useState('');
             const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const [warning, setWarning] = useState({ show: false, msg: '' });
-            const [collapsedSections, setCollapsedSections] = useState({});
+            
+            // Collapsible Logic
+            const [collapsedSections, setCollapsedSections] = useState({}); // { secId: true/false }
 
+            // Modals & Scanner
             const [scoreModalData, setScoreModalData] = useState(null); 
             const [studentModalData, setStudentModalData] = useState(null);
             const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
@@ -404,15 +429,18 @@
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
             const [scanTarget, setScanTarget] = useState('');
-            const [returnToScanner, setReturnToScanner] = useState(false); 
+            const [returnToScanner, setReturnToScanner] = useState(false); // New: Flow control
             
+            // Mobile Pair
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
             
+            // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
-            const [useNumpad, setUseNumpad] = useState(false);
+            const [useNumpad, setUseNumpad] = useState(false); // Default to FALSE (Keyboard Mode)
 
+            // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
             const [sectionSettings, setSectionSettings] = useState({});
             const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -420,19 +448,24 @@
             const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
             const [columnModalData, setColumnModalData] = useState({});
             
+            // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null);
+            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
+            // Import Progress
             const [importProgress, setImportProgress] = useState(0);
             const [isImporting, setIsImporting] = useState(false);
 
+            // New Student State
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
+            // Refs for Auto Focus
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
 
+            // --- AUTH & DATA ---
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
                 const scanSession = params.get('scan_session');
@@ -466,6 +499,7 @@
                 return () => { unsub1(); unsub2(); };
             }, [user]);
 
+            // Scanner Listener (PC listening to Mobile)
             useEffect(() => {
                 if (!scannerSessionId || isMobileScannerActive) return; 
                 const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
@@ -478,11 +512,13 @@
                 return () => unsub();
             }, [scannerSessionId, isMobileScannerActive, students]);
 
+            // --- AUTO FOCUS LOGIC ---
             useEffect(() => {
                 const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
 
                 if (!isAnyModalOpen) {
                     if (view === 'student' && studentInputRef.current) {
+                        // Small timeout to ensure DOM is ready and modal closing animation is done
                         setTimeout(() => studentInputRef.current.focus(), 100);
                     } else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) {
                         setTimeout(() => teacherInputRef.current.focus(), 100);
@@ -490,6 +526,7 @@
                 }
             }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
 
+            // --- LOGIC ---
             const saveData = (newS, newSec) => {
                 if(useLocalStorage) {
                     const d = loadLocalData();
@@ -520,6 +557,7 @@
                     setScoreModalData(JSON.parse(JSON.stringify(s)));
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
+                    // Also close mobile pair modal if open
                     setIsMobilePairOpen(false);
                 } else {
                     setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
@@ -550,12 +588,15 @@
                 if (key === 'Del') {
                     newVal = currentVal.slice(0, -1);
                 } else {
+                    // Prevent multiple dots
                     if (key === '.' && currentVal.includes('.')) return;
                     newVal = currentVal + key;
                 }
 
+                // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
+                    // Optional: Vibrate on error
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     return;
                 }
@@ -566,6 +607,7 @@
                 });
             };
 
+            // Admin Actions Handlers
             const requestAdminAction = (type) => {
                 setPendingAction(type);
                 setConfirmPasswordInput('');
@@ -587,9 +629,13 @@
                     linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
                     linkElement.click();
                 } else if (pendingAction === 'export_excel') {
-                    let csvContent = "\uFEFF"; 
+                    // Generate CSV for Excel
+                    let csvContent = "\uFEFF"; // BOM for Thai support
+                    
+                    // 1. Headers
                     const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
                     const colIds = [];
+                    
                     sections.forEach(sec => {
                         sec.groups.forEach(grp => {
                             grp.columns.forEach(col => {
@@ -598,13 +644,24 @@
                             });
                         });
                     });
+                    
                     csvContent += headers.join(",") + "\n";
+                    
+                    // 2. Rows
+                    // Sort by room then no
                     const sortedStudents = [...students].sort((a,b) => {
                         if (a.room !== b.room) return a.room.localeCompare(b.room);
                         return (parseInt(a.no)||0) - (parseInt(b.no)||0);
                     });
+
                     sortedStudents.forEach(s => {
-                        const row = [`"${s.no || ''}"`, `"${s.id || ''}"`, `"${s.name || ''}"`, `"${s.room || ''}"`];
+                        const row = [
+                            `"${s.no || ''}"`,
+                            `"${s.id || ''}"`,
+                            `"${s.name || ''}"`,
+                            `"${s.room || ''}"`
+                        ];
+                        
                         colIds.forEach(cid => {
                             let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
                             let foundCol = null;
@@ -616,14 +673,18 @@
                                 }
                                 if(foundCol) break;
                             }
+
                             if(foundCol && foundCol.type !== 'manual') {
                                 score = calculateColumnValue(s, foundGroup, foundCol);
                                 if(score === '-') score = "";
                             }
+
                             row.push(`"${score}"`);
                         });
+                        
                         csvContent += row.join(",") + "\n";
                     });
+                    
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -697,10 +758,13 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
+                    
+                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
+                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -1086,9 +1150,8 @@
                                                         {sections.map((sec, idx) => {
                                                             const isCollapsed = collapsedSections[sec.id];
                                                             const colsCount = isCollapsed ? 1 : (sec.groups?.reduce((a, b) => a + (b.columns?.length||0), 0) || 0);
-                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             return colsCount > 0 && (
-                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center ${theme.header} ${theme.text} font-bold border-b group cursor-pointer hover:brightness-95 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
+                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center bg-primary-50 text-primary-700 font-bold border-b border-primary-200 group cursor-pointer hover:bg-primary-100 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
                                                                     <div className="flex items-center justify-center gap-2">
                                                                         {sec.title}
                                                                         <span className={`transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}><Icons.ChevronDown size={14}/></span>
@@ -1103,14 +1166,13 @@
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-1 z-30"></th>
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-2 z-30"></th>
                                                         {sections.map((sec, idx) => {
-                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             if (collapsedSections[sec.id]) {
                                                                 return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic h-40 align-middle">ยุบแล้ว</th>
                                                             }
                                                             return sec.groups?.map(g => g.columns?.map(col => (
                                                                 <th key={col.id} className={`p-1 border-r text-center font-normal group relative align-bottom h-48 min-w-[40px] max-w-[50px] ${col.type!=='manual' ? 'bg-slate-100' : 'bg-white hover:bg-slate-50'}`} title={`กลุ่ม: ${g.title}`}>
                                                                      <div className="flex flex-col items-center justify-end h-full pb-1 w-full">
-                                                                        <div className={`mb-2 font-bold text-xs ${theme.subHeader} vertical-header tracking-wide leading-none`}>
+                                                                        <div className="mb-2 font-bold text-xs text-slate-700 vertical-header tracking-wide leading-none">
                                                                             {col.name}
                                                                         </div>
                                                                         <div className={`border rounded px-0.5 w-full text-center text-[10px] font-mono mb-0.5 ${col.type!=='manual' ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>{col.max}</div>
@@ -1129,7 +1191,6 @@
                                                             <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
                                                             <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
-                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
                                                                     return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
