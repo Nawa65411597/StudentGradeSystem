@@ -339,37 +339,37 @@
             }, [isDragging]);
             
             return (
-                <div className="fixed inset-0 z-[70] pointer-events-none flex items-end justify-center sm:items-center">
+                <div className="fixed top-28 right-4 z-[70] pointer-events-none">
                     <div 
-                        className="bg-white p-5 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-200 pointer-events-auto w-full max-w-sm ring-1 ring-black/5 animate-fade-in"
+                        className="bg-white p-3 rounded-2xl shadow-xl border border-gray-200 pointer-events-auto w-60 ring-1 ring-black/5 animate-fade-in"
                         style={{ transform: `translate(${position.x}px, ${position.y}px)`, transition: isDragging ? 'none' : 'transform 0.1s' }}
                     >
                         <div 
-                            className="flex justify-between items-center mb-4 border-b pb-3 cursor-move bg-gray-50 -m-5 mb-4 p-5 rounded-t-3xl select-none"
+                            className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-gray-50 -m-3 mb-2 p-3 rounded-t-2xl select-none"
                             onMouseDown={handleMouseDown}
                             onTouchStart={handleTouchStart}
                             title="กดค้างเพื่อลากย้าย"
                         >
-                            <div>
-                                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={12}/> ลากเพื่อย้าย (Drag me)</div>
-                                <div className="text-lg font-bold text-primary-700 flex items-center gap-2">
-                                    {target.name} <span className="bg-primary-100 text-primary-600 px-2 py-0.5 rounded text-xs">เต็ม {target.max}</span>
+                            <div className="overflow-hidden">
+                                <div className="text-[9px] text-gray-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={10}/> Drag</div>
+                                <div className="text-sm font-bold text-primary-700 flex items-center gap-2 truncate">
+                                    {target.name}
                                 </div>
                             </div>
-                            <button onClick={onClose} className="bg-white p-2 rounded-full text-gray-500 hover:bg-gray-200 transition shadow-sm pointer-events-auto"><Icons.X size={20}/></button>
+                            <button onClick={onClose} className="bg-white p-1 rounded-full text-gray-500 hover:bg-gray-200 transition shadow-sm pointer-events-auto"><Icons.X size={16}/></button>
                         </div>
-                        <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="grid grid-cols-3 gap-2 mb-2">
                             {keys.map(k => (
                                 <button key={k} 
                                     onClick={() => onInput(k)}
-                                    className={`h-14 rounded-2xl text-2xl font-bold shadow-sm active:scale-90 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-slate-50 text-slate-700 hover:bg-white border border-slate-200'}`}
+                                    className={`h-10 rounded-lg text-lg font-bold shadow-sm active:scale-90 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-slate-50 text-slate-700 hover:bg-white border border-slate-200'}`}
                                 >
-                                    {k === 'Del' ? <Icons.Backspace size={28}/> : k}
+                                    {k === 'Del' ? <Icons.Backspace size={20}/> : k}
                                 </button>
                             ))}
                         </div>
-                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-4 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-                            <Icons.Save size={24}/> บันทึก
+                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2 rounded-xl font-bold text-base shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                            <Icons.Save size={18}/> บันทึก
                         </button>
                     </div>
                 </div>
