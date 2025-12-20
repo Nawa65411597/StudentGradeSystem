@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- QRCode.js Library (For generating QR without external API) -->
+    <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Tailwind CSS -->
@@ -24,32 +24,18 @@
                         display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Forced Pastel Palette
-                        primary: { 
-                            50: '#fdf2f8',  // Pinkish White
-                            100: '#fce7f3', 
-                            200: '#fbcfe8', 
-                            300: '#f9a8d4', 
-                            400: '#f472b6', 
-                            500: '#ec4899', 
-                            600: '#db2777', 
-                            700: '#be185d', 
-                            800: '#9d174d', 
-                            900: '#831843' 
-                        },
-                        pastel: {
-                            bg: '#fff5f7', // Soft Pink BG
-                            card: '#ffffff',
-                            text: '#4a5568',
-                            accent: '#f472b6' // Pink
-                        }
+                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
+                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
+                        success: { 50:'#f0fdf4', 500:'#22c55e' },
+                        warning: { 50:'#fffbeb', 500:'#f59e0b' },
+                        danger: { 50:'#fef2f2', 500:'#ef4444' }
                     }
                 }
             }
         }
     </script>
     
-    <!-- React & Firebase -->
+    <!-- Libraries -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -57,46 +43,27 @@
 
     <style>
         * { font-family: 'Krub', sans-serif; }
-        body { background-color: #fff1f2; color: #4a5568; } /* Pastel Pink BG */
-        
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.9); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 1);
-            box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.1), 0 8px 10px -6px rgba(236, 72, 153, 0.1); 
-        }
-        
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        body { background-color: #f8fafc; color: #334155; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #fff1f2; }
-        ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #f472b6; }
-
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
-        
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
-        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #fce7f3; }
-        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #fce7f3; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #fce7f3; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.03); }
-        
-        .vertical-header { 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            white-space: nowrap; 
-            text-align: left;
-            max-height: 120px;
-        }
-
+        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; text-align: left; max-height: 120px; }
         #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
-
-        /* PRINT STYLES */
+        
         .print-only { display: none; }
         @media print {
-            body { background-color: white !important; font-family: 'Krub', sans-serif !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -104,21 +71,20 @@
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
             .print-only { display: block !important; width: 100%; }
             @page { size: A4 portrait; margin: 15mm; }
+            .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
-            .print-container { display: flex; width: 100%; gap: 10mm; }
-            .print-column { width: 50%; }
-            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; table-layout: fixed; }
-            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px 2px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
+            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
+            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
-            .w-no { width: 10%; } .w-id { width: 20%; } .w-name { width: 40%; text-align: left; } .w-score { width: 8%; }
+            tr { break-inside: avoid; page-break-inside: avoid; }
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
+            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
-            tr { break-inside: avoid; }
+            .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -251,53 +217,55 @@
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Mobile Scanner (QR Code Generation Mode)
+        // Mobile Scanner (Phone View) - Updated for QR and Beep
         function MobileScanner({ sessionId, onClose }) {
-            const qrRef = useRef(null);
-            const [status, setStatus] = useState('กำลังรอการเชื่อมต่อ...');
+            const [status, setStatus] = useState('กำลังเปิดกล้อง...');
+            const [lastScanned, setLastScanned] = useState(null);
+            const [isScanning, setIsScanning] = useState(false);
 
-            useEffect(() => {
-                if (qrRef.current) {
-                    const url = window.location.href.split('?')[0] + '?scan_session=' + sessionId;
-                    qrRef.current.innerHTML = "";
-                    new QRCode(qrRef.current, {
-                        text: url,
-                        width: 200,
-                        height: 200,
-                        colorDark : "#ec4899", // Pastel Pink QR
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                }
-                
-                // Poll for updates (Simulated socket)
-                const checkStatus = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), (docSnap) => {
-                    if (docSnap.exists() && docSnap.data().lastScanned) {
-                        setStatus(`ได้รับข้อมูล: ${docSnap.data().lastScanned}`);
-                        // Play Beep on PC when data received
+            const startScan = () => {
+                setIsScanning(true);
+                const scanner = new Html5Qrcode("mobile-reader");
+                scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+                    (text) => {
+                        if (text.includes("scan_session")) return; 
+                        if (lastScanned === text) return;
+                        setLastScanned(text);
+                        setStatus(`ส่ง: ${text}`);
+
+                        // Beep Sound (On Mobile)
                         const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
                         audio.volume = 0.5;
                         audio.play().catch(()=>{});
-                    }
-                });
-                return () => checkStatus();
-            }, [sessionId]);
+
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { lastScanned: text, timestamp: Date.now() }, { merge: true });
+                        if(navigator.vibrate) navigator.vibrate(200);
+                        setTimeout(() => { setLastScanned(null); setStatus("พร้อมสแกน..."); }, 2000);
+                    }, 
+                    () => {}
+                ).catch(e => setStatus("Error: " + e));
+            };
 
             return (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
-                    <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative shadow-2xl">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600"><Icons.QrCode size={32}/></div>
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">Mobile Pair</h3>
-                        <p className="text-gray-500 mb-6 text-sm">ใช้มือถือสแกน QR Code นี้<br/>เพื่อเปลี่ยนมือถือเป็นเครื่องยิงบาร์โค้ด</p>
-                        
-                        <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm"></div>
-                        
-                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
-                        
-                        <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold transition-all ${status.includes('ได้รับ') ? 'bg-green-100 text-green-700 scale-105' : 'bg-gray-100 text-gray-400'}`}>
+                <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
+                    <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
+                    
+                    {!isScanning ? (
+                        <div className="text-center">
+                             <div className="w-64 h-64 bg-gray-800 rounded-xl flex items-center justify-center mb-6">
+                                <span className="text-gray-500">กล้องปิดอยู่</span>
+                             </div>
+                             <button onClick={startScan} className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg text-lg">แตะเพื่อเริ่มสแกน</button>
+                        </div>
+                    ) : (
+                        <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-300 shadow-2xl"></div>
+                    )}
+                    
+                    <div className="mt-6 flex flex-col items-center gap-2">
+                        <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
                         </div>
+                        <button onClick={onClose} className="mt-4 bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold shadow-lg transition-transform transform active:scale-95">ปิดการทำงาน</button>
                     </div>
                 </div>
             );
@@ -329,7 +297,7 @@
                 };
                 const handleTouchMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault(); 
+                    e.preventDefault(); // Prevent scrolling while dragging
                     setPosition({ x: e.touches[0].clientX - dragStart.current.x, y: e.touches[0].clientY - dragStart.current.y });
                 };
                 const handleUp = () => setIsDragging(false);
@@ -413,14 +381,14 @@
             const [scanTarget, setScanTarget] = useState('');
             const [returnToScanner, setReturnToScanner] = useState(false); 
             
-            // Mobile Pair
+            // Mobile Pair - Auto Check URL
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
             
             // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
-            const [useNumpad, setUseNumpad] = useState(false); 
+            const [useNumpad, setUseNumpad] = useState(false); // Default to FALSE (Keyboard Mode)
 
             // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
@@ -447,8 +415,9 @@
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
 
-            // --- AUTH & DATA ---
+            // --- AUTH & DATA & MOBILE CHECK ---
             useEffect(() => {
+                // Check if this is a mobile scanner session
                 const params = new URLSearchParams(window.location.search);
                 const scanSession = params.get('scan_session');
                 if (scanSession) {
@@ -539,6 +508,10 @@
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
                     setIsMobilePairOpen(false);
+                    // Play Beep on PC
+                    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                    audio.volume = 0.5;
+                    audio.play().catch(()=>{});
                 } else {
                     setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
                 }
@@ -606,9 +579,13 @@
                     linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
                     linkElement.click();
                 } else if (pendingAction === 'export_excel') {
-                    let csvContent = "\uFEFF"; 
+                    // Generate CSV for Excel
+                    let csvContent = "\uFEFF"; // BOM for Thai support
+                    
+                    // 1. Headers
                     const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
                     const colIds = [];
+                    
                     sections.forEach(sec => {
                         sec.groups.forEach(grp => {
                             grp.columns.forEach(col => {
@@ -617,13 +594,24 @@
                             });
                         });
                     });
+                    
                     csvContent += headers.join(",") + "\n";
+                    
+                    // 2. Rows
+                    // Sort by room then no
                     const sortedStudents = [...students].sort((a,b) => {
                         if (a.room !== b.room) return a.room.localeCompare(b.room);
                         return (parseInt(a.no)||0) - (parseInt(b.no)||0);
                     });
+
                     sortedStudents.forEach(s => {
-                        const row = [`"${s.no || ''}"`, `"${s.id || ''}"`, `"${s.name || ''}"`, `"${s.room || ''}"`];
+                        const row = [
+                            `"${s.no || ''}"`,
+                            `"${s.id || ''}"`,
+                            `"${s.name || ''}"`,
+                            `"${s.room || ''}"`
+                        ];
+                        
                         colIds.forEach(cid => {
                             let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
                             let foundCol = null;
@@ -635,14 +623,18 @@
                                 }
                                 if(foundCol) break;
                             }
+
                             if(foundCol && foundCol.type !== 'manual') {
                                 score = calculateColumnValue(s, foundGroup, foundCol);
                                 if(score === '-') score = "";
                             }
+
                             row.push(`"${score}"`);
                         });
+                        
                         csvContent += row.join(",") + "\n";
                     });
+                    
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -716,10 +708,13 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
+                    
+                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
+                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -809,13 +804,13 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
                     {/* NAVBAR */}
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-primary-500 to-primary-600 border-none">
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
-                                <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.Cloud className="w-5 h-5" /></div>
-                                <span>GradePro Cloud {useLocalStorage ? '(Offline)' : ''}</span>
+                            <div className="flex items-center gap-2 font-bold text-xl text-primary-600 font-display">
+                                <div className="bg-primary-500 text-white p-1.5 rounded-lg shadow-sm"><Icons.Cloud className="w-5 h-5" /></div>
+                                <span className="text-slate-700">GradePro <span className="text-primary-500">Cloud</span> {useLocalStorage ? '(Offline)' : ''}</span>
                             </div>
-                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-white/80 hover:text-white transition bg-white/10 px-3 py-1 rounded-full">
+                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-slate-500 hover:text-primary-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-1.5 rounded-full">
                                 {view === 'student' ? 'เข้าสู่ระบบครู' : 'หน้าหลักนักเรียน'}
                             </button>
                         </div>
@@ -824,7 +819,7 @@
                     {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
                         
-                        {/* TEACHER PRINT VIEW */}
+                        {/* TEACHER PRINT VIEW (Optimized 2-Column Layout) */}
                         {view === 'teacher' && (
                             <div className="print-only">
                                 <div className="student-report-header print-header">
@@ -837,6 +832,7 @@
                                         const half = Math.ceil(processedStudents.length / 2);
                                         const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
                                         if (studentsInCol.length === 0) return null;
+                                        
                                         return (
                                             <div className="print-column" key={colIndex}>
                                                 <table className="print-table">
@@ -845,14 +841,32 @@
                                                             <th className="w-no">เลขที่</th>
                                                             <th className="w-id">รหัส</th>
                                                             <th className="w-name">ชื่อ-นามสกุล</th>
-                                                            {sections.map(sec => sec.groups.map(g => g.columns.map(c => <th key={c.id} className="w-score"><div className="vertical-header-print">{c.name}</div><div style={{borderTop:'1px solid #ccc', fontSize:'8pt'}}>({c.max})</div></th>)))}
+                                                            {sections.map(sec => 
+                                                                sec.groups.map(g => 
+                                                                    g.columns.map(c => (
+                                                                        <th key={c.id} className="w-score">
+                                                                            <div className="vertical-header-print">{c.name}</div>
+                                                                            <div style={{borderTop: '1px solid #ccc', fontSize: '8pt', marginTop: '2px'}}>({c.max})</div>
+                                                                        </th>
+                                                                    ))
+                                                                )
+                                                            )}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {studentsInCol.map(s => (
                                                             <tr key={s.id}>
-                                                                <td>{s.no}</td><td>{s.id}</td><td className="text-left">{s.name}</td>
-                                                                {sections.map(sec => sec.groups.map(g => g.columns.map(c => { const val = calculateColumnValue(s, g, c); return <td key={c.id}>{val && val !== '-' ? val : ''}</td>; })))}
+                                                                <td>{s.no}</td>
+                                                                <td>{s.id}</td>
+                                                                <td className="text-left">{s.name}</td>
+                                                                {sections.map(sec => 
+                                                                    sec.groups.map(g => 
+                                                                        g.columns.map(c => {
+                                                                            const val = calculateColumnValue(s, g, c);
+                                                                            return <td key={c.id}>{val && val !== '-' ? val : ''}</td>;
+                                                                        })
+                                                                    )
+                                                                )}
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -862,9 +876,21 @@
                                     })}
                                 </div>
                                 <div className="print-footer">
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์  เครือก๋า)</p><p>นักศึกษาฝึกวิชาชีพครู</p></div>
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นางสาวพรวดี ใจเที่ยงธรรม)</p><p>ครู</p></div>
-                                    <div className="signature-block"><div className="signature-line"></div><p>ผู้อำนวยการสถานศึกษา</p><p>(...........................................................)</p></div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>(นายนวรัตน์  เครือก๋า)</p>
+                                        <p>นักศึกษาฝึกวิชาชีพครู</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>(นางสาวพรวดี ใจเที่ยงธรรม)</p>
+                                        <p>ครู</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>ผู้อำนวยการสถานศึกษา</p>
+                                        <p>(...........................................................)</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -872,54 +898,74 @@
                         {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <>
+                                {/* SCREEN ONLY CONTENT */}
                                 <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
                                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
                                         <div className="flex justify-between items-start mb-6">
                                             <h2 className="text-3xl font-extrabold text-slate-800 font-display text-center flex-1">ตรวจสอบคะแนน</h2>
-                                            {searchResult && (<button onClick={handlePrint} className="bg-slate-100 text-slate-600 p-2 rounded-full hover:bg-slate-200 transition" title="พิมพ์ใบรายงานผลการเรียน"><Icons.Print size={20}/></button>)}
+                                            {searchResult && (
+                                                <button onClick={handlePrint} className="bg-slate-100 text-slate-600 p-2 rounded-full hover:bg-slate-200 transition" title="พิมพ์ใบรายงานผลการเรียน">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                                </button>
+                                            )}
                                         </div>
                                         <div className="flex gap-2">
                                             <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-primary-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
-                                            <button id="search-btn" onClick={() => { const s = students.find(x => x.id === searchId); if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'}); }} className="bg-primary-600 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
+                                            <button id="search-btn" onClick={() => {
+                                                const s = students.find(x => x.id === searchId);
+                                                if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
+                                            }} className="bg-primary-600 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
                                         </div>
                                         {searchResult && (
                                             <div className="mt-8 space-y-6 animate-fade-in">
                                                 <div className="bg-primary-50 p-4 rounded-xl flex items-center gap-4 border border-primary-100">
                                                     <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-primary-600"/></div>
-                                                    <div><div className="font-bold text-xl text-slate-800">{searchResult.name}</div><div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div></div>
-                                                </div>
-                                                {sections.map((sec, idx) => (
-                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                        <div className="bg-primary-50 p-3 font-bold text-primary-800 border-b font-display">{sec.title}</div>
-                                                        <div className="bg-white p-3 space-y-2">
-                                                            {sec.groups?.map(g => g.columns?.map(c => {
-                                                                const val = calculateColumnValue(searchResult, g, c);
-                                                                const isSpecial = c.type === 'sum' || c.type === 'percent';
-                                                                const isMissing = !val || val === '-';
-                                                                return (
-                                                                    <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
-                                                                        <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
-                                                                            {c.name}
-                                                                            {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
-                                                                        </span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            {isMissing && c.link && (
-                                                                                <a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>
-                                                                            )}
-                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            }))}
-                                                        </div>
+                                                    <div>
+                                                        <div className="font-bold text-xl text-slate-800">{searchResult.name}</div>
+                                                        <div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
                                                     </div>
-                                                ))}
+                                                </div>
+                                                {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                    return (
+                                                        <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                            <div className="bg-white p-3 space-y-2">
+                                                                {sec.groups?.map(g => g.columns?.map(c => {
+                                                                    const val = calculateColumnValue(searchResult, g, c);
+                                                                    const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                    const isMissing = !val || val === '-';
+                                                                    return (
+                                                                        <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                            <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                                {c.name}
+                                                                                {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                            </span>
+                                                                            <div className="flex items-center gap-2">
+                                                                                {isMissing && c.link && (
+                                                                                    <a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1">
+                                                                                        <Icons.AlertTriangle size={12}/> ตามงาน
+                                                                                    </a>
+                                                                                )}
+                                                                                <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>
+                                                                                    {val || '-'} 
+                                                                                    <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span>
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
+                                {/* PRINT ONLY CONTENT (STUDENT REPORT CARD) */}
                                 {searchResult && (
                                     <div className="print-only">
                                         <div className="student-report-header">
@@ -929,28 +975,73 @@
                                             <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h3>
                                         </div>
                                         <div className="student-info">
-                                            <div><span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span><span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span></div>
-                                            <div><span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span><span><strong>เลขที่:</strong> {searchResult.no}</span></div>
-                                            <div><span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                                            <div>
+                                                <span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span>
+                                                <span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span>
+                                                <span><strong>เลขที่:</strong> {searchResult.no}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                            </div>
                                         </div>
+                                        
                                         <table className="print-table">
-                                            <thead><tr><th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th><th style={{width: '20%'}}>คะแนนเต็ม</th><th style={{width: '20%'}}>คะแนนที่ได้</th></tr></thead>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th>
+                                                    <th style={{width: '20%'}}>คะแนนเต็ม</th>
+                                                    <th style={{width: '20%'}}>คะแนนที่ได้</th>
+                                                </tr>
+                                            </thead>
                                             <tbody>
                                                 {sections.map(sec => (
                                                     <React.Fragment key={sec.id}>
-                                                        <tr style={{backgroundColor: '#f9fafb'}}><td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td></tr>
+                                                        <tr style={{backgroundColor: '#f9fafb'}}>
+                                                            <td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td>
+                                                        </tr>
                                                         {sec.groups?.map(g => g.columns?.map(c => {
                                                             const val = calculateColumnValue(searchResult, g, c);
-                                                            return <tr key={c.id}><td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td><td>{c.max}</td><td>{val || '-'}</td></tr>;
+                                                            return (
+                                                                <tr key={c.id}>
+                                                                    <td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td>
+                                                                    <td>{c.max}</td>
+                                                                    <td>{val || '-'}</td>
+                                                                </tr>
+                                                            );
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '14pt'}}>{(() => { let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); })()}</td></tr>
+                                                {/* Total Summary Row */}
+                                                <tr style={{borderTop: '2px solid black'}}>
+                                                    <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
+                                                    <td></td>
+                                                    <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
+                                                        {(() => {
+                                                            let total = 0;
+                                                            sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
+                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
+                                                            })));
+                                                            return parseFloat(total.toFixed(2));
+                                                        })()}
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
+
                                         <div className="print-footer">
-                                            <div className="signature-block"><div className="signature-line"></div><p>({searchResult.name})</p><p>นักเรียนผู้รับรอง</p></div>
-                                            <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์ เครือก๋า)</p><p>ครูผู้สอน</p></div>
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>({searchResult.name})</p>
+                                                <p>นักเรียนผู้รับรอง</p>
+                                            </div>
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>(นายนวรัตน์  เครือก๋า)</p>
+                                                <p>ครูผู้สอน</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
