@@ -1347,19 +1347,39 @@
                                                                         </div>
                                                                         <input 
                                                                             type="number"
-                                                                            autoFocus={c.type === 'manual' && !scoreModalData.scores?.[c.id]} // Autofocus empty
-                                                                            className={`w-full p-3 border-2 rounded-xl text-center font-bold text-xl outline-none focus:border-primary-500 focus:bg-white transition ${c.type!=='manual'?'bg-gray-100 text-gray-400 border-transparent':'bg-white border-gray-200'}`}
-                                                                            value={c.type !== 'manual' ? '-' : (scoreModalData.scores?.[c.id] || '')}
-                                                                            disabled={c.type !== 'manual'}
+                                                                            autoFocus={c.type === 'manual' && !scoreModalData.scores?.[c.id]} 
+                                                                            className={`score-input w-full p-3 border-2 rounded-xl text-center font-bold text-xl outline-none focus:border-primary-500 focus:bg-white transition ${isAuto ? 'bg-gray-100 text-teal-600 border-transparent' : 'bg-white border-gray-200'}`}
+                                                                            value={displayVal}
+                                                                            disabled={isAuto}
                                                                             onChange={e => {
                                                                                 const val = parseFloat(e.target.value);
-                                                                                if (val > c.max) {
+                                                                                if (!isNaN(val) && val > c.max) {
                                                                                     setWarning({show:true, msg:`คะแนนเต็มคือ ${c.max} ครับ`});
                                                                                     return; 
                                                                                 }
                                                                                 setScoreModalData({...scoreModalData, scores: {...scoreModalData.scores, [c.id]: e.target.value}});
                                                                             }}
-                                                                            onKeyDown={e => e.key === 'Enter' && document.getElementById('save-btn').click()}
+                                                                            onKeyDown={e => {
+                                                                                if (['Enter', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
+                                                                                    e.preventDefault();
+                                                                                    const inputs = Array.from(document.querySelectorAll('.score-input:not([disabled])'));
+                                                                                    const index = inputs.indexOf(e.target);
+                                                                                    if (index < inputs.length - 1) {
+                                                                                        inputs[index + 1].focus();
+                                                                                        inputs[index + 1].select();
+                                                                                    } else {
+                                                                                        document.getElementById('save-btn').click();
+                                                                                    }
+                                                                                } else if (['ArrowUp', 'ArrowLeft'].includes(e.key)) {
+                                                                                    e.preventDefault();
+                                                                                    const inputs = Array.from(document.querySelectorAll('.score-input:not([disabled])'));
+                                                                                    const index = inputs.indexOf(e.target);
+                                                                                    if (index > 0) {
+                                                                                        inputs[index - 1].focus();
+                                                                                        inputs[index - 1].select();
+                                                                                    }
+                                                                                }
+                                                                            }}
                                                                         />
                                                                     </div>
                                                                 );
