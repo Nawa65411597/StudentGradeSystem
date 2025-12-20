@@ -8,7 +8,7 @@
     <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +18,16 @@
                 extend: {
                     fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
                     colors: { 
-                        // Base Brand Color (Indigo)
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' } 
+                        // Modern Formal Theme (Royal Slate)
+                        primary: { 
+                            50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 
+                            400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 
+                            800: '#1e293b', 900: '#0f172a', 950: '#020617' 
+                        },
+                        accent: {
+                            500: '#3b82f6', // Bright Blue for actions
+                            600: '#2563eb',
+                        }
                     }
                 }
             }
@@ -36,27 +44,32 @@
         * { font-family: 'Sarabun', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Prompt', sans-serif !important; }
         body { background-color: #f8fafc; color: #1e293b; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); }
+        
+        .glass-card { 
+            background: white; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0; 
+        }
+        
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Custom Scrollbar */
+        /* Modern Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #99f6e4; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
         
-        /* Sticky Headers */
-        .sticky-left-0 { position: sticky; left: 0; z-index: 20; }
-        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; }
+        /* Sticky Headers for Table */
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
-        /* Vertical Text for Headers */
         .vertical-header { 
             writing-mode: vertical-rl; 
             transform: rotate(180deg); 
@@ -67,11 +80,11 @@
 
         #reader video, #scanner-video video { object-fit: cover; border-radius: 0.75rem; }
 
-        /* Print Styles */
+        /* Print Styles - Formal Document Mode */
         .print-only { display: none; }
         
         @media print {
-            @page { size: auto; margin: 10mm; }
+            @page { size: auto; margin: 10mm; } 
             body { 
                 background-color: white; 
                 color: black; 
@@ -84,23 +97,28 @@
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; }
+            
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 11pt; margin-top: 10px; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 6px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { font-weight: bold; background-color: #f0f0f0 !important; }
             table.print-table td.text-left { text-align: left !important; }
+            
             .rounded-xl, .rounded-2xl, .rounded-lg, .rounded { border-radius: 0 !important; }
             .bg-white { background-color: transparent !important; }
             input { border: none !important; background: transparent !important; text-align: center; font-family: 'Sarabun', sans-serif; font-size: 10pt; padding: 0; margin: 0; width: 100%; }
             .print-only { display: block !important; }
+            
             .student-report-header { text-align: center; margin-bottom: 10px; }
             .student-report-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
             .student-report-header h2 { font-size: 14pt; font-weight: bold; margin: 2px 0; }
             .student-report-header h3 { font-size: 12pt; margin: 2px 0; font-weight: normal; }
             .student-info { margin-bottom: 10px; font-size: 12pt; line-height: 1.4; border: 1px solid #000; padding: 10px; border-radius: 4px; }
             .student-info div { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; }
             .signature-block { text-align: center; width: 30%; font-size: 11pt; }
             .signature-line { border-bottom: 1px dotted #000; display: block; margin: 20px auto 5px; width: 90%; }
+            
             tr { break-inside: avoid; }
             .vertical-header { transform: none !important; writing-mode: horizontal-tb !important; white-space: normal !important; height: auto !important; max-height: none !important; }
             th div { height: auto !important; }
@@ -199,13 +217,15 @@
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        // --- THEME PALETTES ---
+        // --- THEME PALETTES (Refined Formal Colors) ---
+        // Using mostly Slate/Gray/Indigo for a unified professional look.
+        // Keeping "themes" but making them subtle variants of professional colors.
         const SECTION_THEMES = [
-            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-800', header: 'bg-indigo-100', icon: 'text-indigo-600', subHeader: 'text-indigo-700', button: 'bg-indigo-600 text-white' },
-            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-800', header: 'bg-fuchsia-100', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700', button: 'bg-fuchsia-600 text-white' },
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-800', header: 'bg-sky-100', icon: 'text-sky-600', subHeader: 'text-sky-700', button: 'bg-sky-600 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', header: 'bg-emerald-100', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
-            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', header: 'bg-orange-100', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
+            { name: 'Slate', bg: 'bg-slate-50', border: 'border-slate-300', text: 'text-slate-800', header: 'bg-slate-100', icon: 'text-slate-600', subHeader: 'text-slate-700', button: 'bg-slate-700 text-white' },
+            { name: 'Gray', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-800', header: 'bg-gray-100', icon: 'text-gray-600', subHeader: 'text-gray-700', button: 'bg-gray-700 text-white' },
+            { name: 'Zinc', bg: 'bg-zinc-50', border: 'border-zinc-300', text: 'text-zinc-800', header: 'bg-zinc-100', icon: 'text-zinc-600', subHeader: 'text-zinc-700', button: 'bg-zinc-700 text-white' },
+            { name: 'Neutral', bg: 'bg-neutral-50', border: 'border-neutral-300', text: 'text-neutral-800', header: 'bg-neutral-100', icon: 'text-neutral-600', subHeader: 'text-neutral-700', button: 'bg-neutral-700 text-white' },
+            { name: 'Stone', bg: 'bg-stone-50', border: 'border-stone-300', text: 'text-stone-800', header: 'bg-stone-100', icon: 'text-stone-600', subHeader: 'text-stone-700', button: 'bg-stone-700 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -316,9 +336,9 @@
             }, [isDragging]);
             
             return (
-                <div className="fixed inset-0 z-[70] pointer-events-none flex items-center justify-center">
+                <div className="fixed inset-0 z-[70] pointer-events-none flex items-end justify-center sm:items-center">
                     <div 
-                        className="bg-white p-5 rounded-3xl shadow-2xl border border-gray-200 pointer-events-auto w-full max-w-sm ring-1 ring-black/5 animate-fade-in"
+                        className="bg-white p-5 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-200 pointer-events-auto w-full max-w-sm ring-1 ring-black/5 animate-fade-in"
                         style={{ transform: `translate(${position.x}px, ${position.y}px)`, transition: isDragging ? 'none' : 'transform 0.1s' }}
                     >
                         <div 
@@ -471,7 +491,6 @@
 
                 if (!isAnyModalOpen) {
                     if (view === 'student' && studentInputRef.current) {
-                        // Small timeout to ensure DOM is ready and modal closing animation is done
                         setTimeout(() => studentInputRef.current.focus(), 100);
                     } else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) {
                         setTimeout(() => teacherInputRef.current.focus(), 100);
@@ -510,7 +529,6 @@
                     setScoreModalData(JSON.parse(JSON.stringify(s)));
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
-                    // Also close mobile pair modal if open
                     setIsMobilePairOpen(false);
                 } else {
                     setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
@@ -541,15 +559,12 @@
                 if (key === 'Del') {
                     newVal = currentVal.slice(0, -1);
                 } else {
-                    // Prevent multiple dots
                     if (key === '.' && currentVal.includes('.')) return;
                     newVal = currentVal + key;
                 }
 
-                // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
-                    // Optional: Vibrate on error
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     return;
                 }
@@ -582,13 +597,9 @@
                     linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
                     linkElement.click();
                 } else if (pendingAction === 'export_excel') {
-                    // Generate CSV for Excel
-                    let csvContent = "\uFEFF"; // BOM for Thai support
-                    
-                    // 1. Headers
+                    let csvContent = "\uFEFF"; 
                     const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
                     const colIds = [];
-                    
                     sections.forEach(sec => {
                         sec.groups.forEach(grp => {
                             grp.columns.forEach(col => {
@@ -597,24 +608,13 @@
                             });
                         });
                     });
-                    
                     csvContent += headers.join(",") + "\n";
-                    
-                    // 2. Rows
-                    // Sort by room then no
                     const sortedStudents = [...students].sort((a,b) => {
                         if (a.room !== b.room) return a.room.localeCompare(b.room);
                         return (parseInt(a.no)||0) - (parseInt(b.no)||0);
                     });
-
                     sortedStudents.forEach(s => {
-                        const row = [
-                            `"${s.no || ''}"`,
-                            `"${s.id || ''}"`,
-                            `"${s.name || ''}"`,
-                            `"${s.room || ''}"`
-                        ];
-                        
+                        const row = [`"${s.no || ''}"`, `"${s.id || ''}"`, `"${s.name || ''}"`, `"${s.room || ''}"`];
                         colIds.forEach(cid => {
                             let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
                             let foundCol = null;
@@ -626,18 +626,14 @@
                                 }
                                 if(foundCol) break;
                             }
-
                             if(foundCol && foundCol.type !== 'manual') {
                                 score = calculateColumnValue(s, foundGroup, foundCol);
                                 if(score === '-') score = "";
                             }
-
                             row.push(`"${score}"`);
                         });
-                        
                         csvContent += row.join(",") + "\n";
                     });
-                    
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -646,7 +642,6 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-
                 } else if (pendingAction === 'import') {
                     if (fileInputRef.current) fileInputRef.current.click();
                 } else if (pendingAction === 'clear') {
@@ -711,13 +706,10 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
-                    
-                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
-                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -725,7 +717,6 @@
                     for (let i = 0; i < newStudents.length; i += CHUNK_SIZE) {
                         chunks.push(newStudents.slice(i, i + CHUNK_SIZE));
                     }
-
                     let processedCount = 0;
                     for (let i = 0; i < chunks.length; i++) {
                         const chunk = chunks[i];
@@ -739,14 +730,12 @@
                         setImportProgress(Math.round((processedCount / newStudents.length) * 100));
                     }
                 }
-
                 alert(`นำเข้าสำเร็จ ${newStudents.length} รายการ`);
                 setIsImporting(false);
                 setImportProgress(0);
                 setIsImportOpen(false);
                 setImportText('');
             };
-
 
             // Structure Management
             const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
@@ -1140,7 +1129,7 @@
                                                                     const val = calculateColumnValue(s, g, col);
                                                                     return (
                                                                         <td key={col.id} className={`p-1 text-center border-r group-hover:bg-indigo-50 ${col.type!=='manual'?'bg-slate-200 text-slate-800 font-bold text-xs border-slate-300': theme.text + ' font-medium'}`}>
-                                                                            {val && val !== '-' ? val : <span className="text-gray-200 font-light">-</span>}
+                                                                            {val && val !== '-' ? val : <span className="text-gray-300 font-light">-</span>}
                                                                         </td>
                                                                     );
                                                                 }))
