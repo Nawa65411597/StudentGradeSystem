@@ -44,88 +44,88 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
         }
         
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
-        
-        /* Sticky Headers Fixes */
-        .sticky-header { position: sticky; top: 0; z-index: 40; }
-        .sticky-left-0 { position: sticky; left: 0; z-index: 30; border-right: 1px solid #e2e8f0; }
-        .sticky-left-1 { position: sticky; left: 50px; z-index: 30; border-right: 1px solid #e2e8f0; } 
-        .sticky-left-2 { position: sticky; left: 130px; z-index: 30; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1); }
-        
-        tbody tr { border-bottom: 1px dashed #e2e8f0; }
-        tbody tr:last-child { border-bottom: none; }
-        th, td { border-right: 1px solid #e2e8f0; vertical-align: middle; }
-        th:last-child, td:last-child { border-right: none; }
-
-        .vertical-header-container {
-            height: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding-bottom: 8px;
-            width: 100%;
-        }
-
-        .vertical-header { 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            white-space: nowrap; 
-            text-align: left;
-            margin-bottom: 6px;
-        }
-
-        #reader video, #scanner-video video { object-fit: cover; border-radius: 0.75rem; }
-
-        /* --- PRINT STYLES (Official Report) --- */
+        /* --- PRINT STYLES (A4 Optimized) --- */
         .print-only { display: none; }
         
         @media print {
-            @page { size: auto; margin: 10mm; } 
-            body { background-color: white; color: black; font-family: 'Krub', sans-serif !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11pt; }
+            @page { size: A4 portrait; margin: 15mm; } 
+            body { 
+                background-color: white; 
+                color: black; 
+                font-family: 'Sarabun', sans-serif !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                font-size: 12pt;
+            }
+            
+            /* Hide UI Elements */
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
+            
+            /* Reset Layout */
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
-            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; }
             
             .print-only { display: block !important; width: 100%; }
-            
-            /* Print Header */
-            .report-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            .report-header h1 { font-size: 18pt; font-weight: bold; margin: 0 0 5px; }
-            .report-header p { font-size: 14pt; margin: 0; }
-            .report-logo { width: 60px; height: 60px; border: 1px solid #000; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+
+            /* Header Alignment */
+            .student-report-header { 
+                text-align: center !important; 
+                margin-bottom: 20px; 
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .student-report-header h1 { font-size: 18pt; font-weight: bold; margin: 0; }
+            .student-report-header h2 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
+            .student-report-header h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
 
             /* Student Info Box */
-            .info-box { border: 1px solid #000; padding: 15px; border-radius: 8px; margin-bottom: 20px; background-color: #fff; }
-            .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-            .info-label { font-weight: bold; margin-right: 5px; }
+            .student-info { 
+                margin-bottom: 20px; 
+                border: 1px solid #000; 
+                padding: 15px; 
+                border-radius: 4px; 
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+            /* Table Styling - Fix Truncation */
+            table.print-table { 
+                width: 100% !important; 
+                border-collapse: collapse; 
+                border: 1px solid #000; 
+                font-size: 12pt; 
+                margin-top: 20px; 
+                table-layout: auto; /* Let content dictate width */
+            }
+            table.print-table th, table.print-table td { 
+                border: 1px solid #000 !important; 
+                padding: 8px 5px !important; 
+                text-align: center; 
+                color: #000 !important; 
+                background-color: transparent !important;
+                white-space: normal !important; /* Allow wrapping */
+                overflow: visible !important;
+                word-wrap: break-word;
+            }
+            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
+            table.print-table td.text-left { text-align: left !important; padding-left: 10px !important; }
             
-            /* Formal Table */
-            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 11pt; }
-            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 8px 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
-            table.print-table th { background-color: #f3f4f6 !important; font-weight: bold; }
-            table.print-table td.text-left { text-align: left !important; padding-left: 8px !important; }
-            
-            /* Signatures */
-            .signatures-section { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-            .sign-box { text-align: center; width: 30%; }
-            .sign-line { border-bottom: 1px dotted #000; margin: 30px auto 10px; width: 80%; }
-            
-            /* Helper */
-            tr { break-inside: avoid; }
-            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 100px; white-space: nowrap; margin: 0 auto; text-align: left; }
+            /* Footer Signatures */
+            .print-footer { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; width: 100%; }
+            .signature-block { text-align: center; width: 40%; }
+            .signature-line { border-bottom: 1px dotted #000; display: block; margin: 30px auto 5px; width: 90%; height: 1px; }
+
+            /* For Teacher View (Landscape) */
+            .teacher-print-mode @page { size: A4 landscape; }
+            .teacher-print-mode .print-container { display: flex; gap: 10mm; }
+            .teacher-print-mode .print-column { width: 50%; }
+            .teacher-print-mode table.print-table { font-size: 10pt; }
+            .teacher-print-mode .w-score { width: 40px; }
+            .teacher-print-mode .vertical-header-print { transform: rotate(-90deg); height: 60px; width: 20px; white-space: nowrap; margin: 0 auto; display: block; text-align: left; transform-origin: center; }
         }
     </style>
 </head>
@@ -848,7 +848,7 @@
                         
                         {/* TEACHER PRINT VIEW (Visible only when printing in teacher mode) */}
                         {view === 'teacher' && (
-                            <div className="print-only">
+                            <div className="print-only teacher-print-mode">
                                 <div className="student-report-header">
                                     <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
                                     <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
@@ -865,15 +865,15 @@
                                                 <table className="print-table">
                                                     <thead>
                                                         <tr>
-                                                            <th className="w-no">เลขที่</th>
-                                                            <th className="w-id">รหัส</th>
-                                                            <th className="w-name">ชื่อ-นามสกุล</th>
+                                                            <th style={{width: '30px'}}>ที่</th>
+                                                            <th style={{width: '60px'}}>รหัส</th>
+                                                            <th className="text-left">ชื่อ-นามสกุล</th>
                                                             {sections.map(sec => 
                                                                 sec.groups.map(g => 
                                                                     g.columns.map(c => (
                                                                         <th key={c.id} className="w-score">
-                                                                            <div className="vertical-header-print" style={{height:'60px', width: '20px', margin: '0 auto', textAlign: 'left', transform: 'rotate(-90deg)', transformOrigin: 'center'}}>{c.name}</div>
-                                                                            <div style={{borderTop: '1px solid #ccc', fontSize: '8pt', marginTop: '2px'}}>({c.max})</div>
+                                                                            <div className="vertical-header-print">{c.name}</div>
+                                                                            <div style={{borderTop: '1px solid #ccc', fontSize: '8pt'}}>({c.max})</div>
                                                                         </th>
                                                                     ))
                                                                 )
@@ -1026,7 +1026,7 @@
                                                 {sections.map(sec => (
                                                     <React.Fragment key={sec.id}>
                                                         <tr style={{backgroundColor: '#f9fafb'}}>
-                                                            <td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td>
+                                                            <td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '15px', backgroundColor: '#eee !important'}}>{sec.title}</td>
                                                         </tr>
                                                         {sec.groups?.map(g => g.columns?.map(c => {
                                                             const val = calculateColumnValue(searchResult, g, c);
@@ -1040,21 +1040,17 @@
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
+                                                {/* Total Summary Row */}
                                                 <tr style={{borderTop: '2px solid black'}}>
                                                     <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
                                                     <td></td>
                                                     <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
                                                         {(() => {
                                                             let total = 0;
-                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
                                                             sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                                                                if(c.type === 'manual' || c.type === 'sum') {
-                                                                    // Complex to sum generic, sticking to manual for safe sum or just leave blank
-                                                                    // Let's sum only columns marked as 'sum' if available, else sum all manuals?
-                                                                    // Safest: Sum all 'manual' scores
-                                                                    if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
-                                                                }
+                                                                // Sum manual or columns marked as sum if you prefer, usually sum of parts
+                                                                // Here summing manual scores for simplicity
+                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
                                                             })));
                                                             return parseFloat(total.toFixed(2));
                                                         })()}
