@@ -8,7 +8,7 @@
     <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,16 +18,11 @@
                 extend: {
                     fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
                     colors: { 
-                        // Modern Formal Theme (Royal Slate)
-                        primary: { 
-                            50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 
-                            400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 
-                            800: '#1e293b', 900: '#0f172a', 950: '#020617' 
-                        },
-                        accent: {
-                            500: '#3b82f6', // Bright Blue for actions
-                            600: '#2563eb',
-                        }
+                        // Vibrant Theme
+                        primary: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 300:'#93c5fd', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e40af', 900:'#1e3a8a' },
+                        secondary: { 50:'#fdf4ff', 500:'#d946ef' }, // Fuchsia
+                        success: { 50:'#f0fdf4', 500:'#22c55e' }, // Green
+                        warning: { 50:'#fffbeb', 500:'#f59e0b' }, // Amber
                     }
                 }
             }
@@ -42,13 +37,14 @@
 
     <style>
         * { font-family: 'Sarabun', sans-serif; }
-        h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Prompt', sans-serif !important; }
-        body { background-color: #f8fafc; color: #1e293b; }
+        h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Prompt', sans-serif !important; }
+        body { background-color: #f1f5f9; color: #334155; }
         
         .glass-card { 
             background: white; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
             border: 1px solid #e2e8f0; 
+            border-radius: 1rem;
         }
         
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -56,20 +52,27 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Modern Scrollbar */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
         
-        /* Sticky Headers for Table */
+        /* Sticky Headers & Table Styling */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
+        /* Dashed Lines for Rows */
+        tbody tr { border-bottom: 1px dashed #cbd5e1; }
+        tbody tr:last-child { border-bottom: none; }
+        /* Vertical Grid Lines */
+        th, td { border-right: 1px solid #e2e8f0; }
+        th:last-child, td:last-child { border-right: none; }
+
         .vertical-header { 
             writing-mode: vertical-rl; 
             transform: rotate(180deg); 
@@ -217,15 +220,15 @@
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        // --- THEME PALETTES (Refined Formal Colors) ---
-        // Using mostly Slate/Gray/Indigo for a unified professional look.
-        // Keeping "themes" but making them subtle variants of professional colors.
+        // --- THEME PALETTES (Vibrant & Colorful) ---
+        // Using distinct colors for each section index
         const SECTION_THEMES = [
-            { name: 'Slate', bg: 'bg-slate-50', border: 'border-slate-300', text: 'text-slate-800', header: 'bg-slate-100', icon: 'text-slate-600', subHeader: 'text-slate-700', button: 'bg-slate-700 text-white' },
-            { name: 'Gray', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-800', header: 'bg-gray-100', icon: 'text-gray-600', subHeader: 'text-gray-700', button: 'bg-gray-700 text-white' },
-            { name: 'Zinc', bg: 'bg-zinc-50', border: 'border-zinc-300', text: 'text-zinc-800', header: 'bg-zinc-100', icon: 'text-zinc-600', subHeader: 'text-zinc-700', button: 'bg-zinc-700 text-white' },
-            { name: 'Neutral', bg: 'bg-neutral-50', border: 'border-neutral-300', text: 'text-neutral-800', header: 'bg-neutral-100', icon: 'text-neutral-600', subHeader: 'text-neutral-700', button: 'bg-neutral-700 text-white' },
-            { name: 'Stone', bg: 'bg-stone-50', border: 'border-stone-300', text: 'text-stone-800', header: 'bg-stone-100', icon: 'text-stone-600', subHeader: 'text-stone-700', button: 'bg-stone-700 text-white' },
+            { name: 'Blue', bg: 'bg-blue-500', border: 'border-blue-500', text: 'text-blue-900', header: 'bg-blue-600 text-white', icon: 'text-blue-600', subHeader: 'text-blue-700', button: 'bg-blue-600 text-white' },
+            { name: 'Orange', bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-900', header: 'bg-orange-500 text-white', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
+            { name: 'Emerald', bg: 'bg-emerald-500', border: 'border-emerald-500', text: 'text-emerald-900', header: 'bg-emerald-600 text-white', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
+            { name: 'Rose', bg: 'bg-rose-500', border: 'border-rose-500', text: 'text-rose-900', header: 'bg-rose-600 text-white', icon: 'text-rose-600', subHeader: 'text-rose-700', button: 'bg-rose-600 text-white' },
+            { name: 'Violet', bg: 'bg-violet-500', border: 'border-violet-500', text: 'text-violet-900', header: 'bg-violet-600 text-white', icon: 'text-violet-600', subHeader: 'text-violet-700', button: 'bg-violet-600 text-white' },
+            { name: 'Cyan', bg: 'bg-cyan-500', border: 'border-cyan-500', text: 'text-cyan-900', header: 'bg-cyan-600 text-white', icon: 'text-cyan-600', subHeader: 'text-cyan-700', button: 'bg-cyan-600 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
