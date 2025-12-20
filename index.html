@@ -21,9 +21,8 @@
                         display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Pastel Indigo Theme
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
-                        // Secondary Pastels
+                        // Enhanced Colorful Theme
+                        primary: { 50:'#f0f9ff', 100:'#e0f2fe', 200:'#bae6fd', 300:'#7dd3fc', 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1', 800:'#075985', 900:'#0c4a6e' },
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
@@ -43,24 +42,24 @@
     <style>
         * { font-family: 'Krub', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Krub', sans-serif !important; }
-        body { background-color: #f8fafc; color: #334155; }
+        body { background-color: #fffbeb; color: #334155; } /* Warmer background */
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); 
         }
         
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #fffbeb; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid #fffbeb; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
@@ -68,7 +67,7 @@
         /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
         /* Vertical Text */
@@ -80,52 +79,54 @@
             max-height: 120px;
         }
 
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
 
         /* --- PRINT STYLES (A4 Optimized) --- */
         .print-only { display: none; }
         
         @media print {
-            @page { size: auto; margin: 10mm; } 
-            body { 
-                background-color: white; 
-                color: black; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-                font-family: 'Sarabun', sans-serif !important;
-            }
+            /* Force background graphics for colored headers */
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
+            
+            /* Hide non-print elements */
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
+            
+            /* Layout Reset */
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
-            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; }
+            .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
             
             .print-only { display: block !important; width: 100%; }
 
-            /* Table Styling */
-            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; table-layout: fixed; }
-            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px 2px !important; text-align: center; color: #000 !important; background-color: transparent !important; overflow: hidden; white-space: nowrap; }
-            table.print-table th { font-weight: bold; background-color: #f0f0f0 !important; }
+            /* --- Student Report (Portrait) --- */
+            @page { size: A4 portrait; margin: 15mm; }
+            
+            /* --- Teacher Report (Landscape 2-Column) --- */
+            .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
+            .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
+            
+            /* Common Print Table */
+            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
+            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
+            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
-            
-            /* Column Widths */
-            .w-no { width: 10%; }
-            .w-id { width: 20%; }
-            .w-name { width: 40%; text-align: left; }
-            .w-score { width: 8%; } 
-            
-            /* Header */
-            .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid black; padding-bottom: 5px; }
+            tr { break-inside: avoid; page-break-inside: avoid; }
+
+            /* Header/Footer */
+            .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
             .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Krub', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
-
-            /* Footer */
+            
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
-            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 80%; }
+            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
+
+            /* Student Info Box */
+            .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
             
-            tr { break-inside: avoid; }
-            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; width: 20px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
+            /* Vertical Header in Print */
+            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
             th div { height: auto !important; }
             
             /* Student Report Specifics */
@@ -237,13 +238,13 @@
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        // --- THEME PALETTES (Pastel) ---
+        // --- THEME PALETTES (Solid Colors for Headers) ---
         const SECTION_THEMES = [
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-100', text: 'text-sky-700', header: 'bg-sky-100', icon: 'text-sky-400', subHeader: 'text-sky-600', button: 'bg-sky-400 text-white' },
-            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-700', header: 'bg-rose-100', icon: 'text-rose-400', subHeader: 'text-rose-600', button: 'bg-rose-400 text-white' },
-            { name: 'Purple', bg: 'bg-purple-50', border: 'border-purple-100', text: 'text-purple-700', header: 'bg-purple-100', icon: 'text-purple-400', subHeader: 'text-purple-600', button: 'bg-purple-400 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', header: 'bg-emerald-100', icon: 'text-emerald-400', subHeader: 'text-emerald-600', button: 'bg-emerald-400 text-white' },
-            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-700', header: 'bg-amber-100', icon: 'text-amber-400', subHeader: 'text-amber-600', button: 'bg-amber-400 text-white' },
+            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', header: 'bg-indigo-600 text-white', icon: 'text-indigo-600', subHeader: 'text-indigo-700', button: 'bg-indigo-600 text-white' },
+            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-900', header: 'bg-fuchsia-600 text-white', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700', button: 'bg-fuchsia-600 text-white' },
+            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-900', header: 'bg-sky-600 text-white', icon: 'text-sky-600', subHeader: 'text-sky-700', button: 'bg-sky-600 text-white' },
+            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', header: 'bg-emerald-600 text-white', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
+            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', header: 'bg-orange-600 text-white', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -302,7 +303,7 @@
             return (
                 <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-300 shadow-2xl"></div>
+                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-500 shadow-2xl"></div>
                     <div className="mt-6 flex flex-col items-center gap-2">
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
@@ -514,7 +515,6 @@
 
                 if (!isAnyModalOpen) {
                     if (view === 'student' && studentInputRef.current) {
-                        // Small timeout to ensure DOM is ready and modal closing animation is done
                         setTimeout(() => studentInputRef.current.focus(), 100);
                     } else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) {
                         setTimeout(() => teacherInputRef.current.focus(), 100);
@@ -553,7 +553,6 @@
                     setScoreModalData(JSON.parse(JSON.stringify(s)));
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
-                    // Also close mobile pair modal if open
                     setIsMobilePairOpen(false);
                 } else {
                     setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
@@ -584,15 +583,12 @@
                 if (key === 'Del') {
                     newVal = currentVal.slice(0, -1);
                 } else {
-                    // Prevent multiple dots
                     if (key === '.' && currentVal.includes('.')) return;
                     newVal = currentVal + key;
                 }
 
-                // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
-                    // Optional: Vibrate on error
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     return;
                 }
@@ -625,13 +621,9 @@
                     linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
                     linkElement.click();
                 } else if (pendingAction === 'export_excel') {
-                    // Generate CSV for Excel
-                    let csvContent = "\uFEFF"; // BOM for Thai support
-                    
-                    // 1. Headers
+                    let csvContent = "\uFEFF"; 
                     const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
                     const colIds = [];
-                    
                     sections.forEach(sec => {
                         sec.groups.forEach(grp => {
                             grp.columns.forEach(col => {
@@ -640,24 +632,13 @@
                             });
                         });
                     });
-                    
                     csvContent += headers.join(",") + "\n";
-                    
-                    // 2. Rows
-                    // Sort by room then no
                     const sortedStudents = [...students].sort((a,b) => {
                         if (a.room !== b.room) return a.room.localeCompare(b.room);
                         return (parseInt(a.no)||0) - (parseInt(b.no)||0);
                     });
-
                     sortedStudents.forEach(s => {
-                        const row = [
-                            `"${s.no || ''}"`,
-                            `"${s.id || ''}"`,
-                            `"${s.name || ''}"`,
-                            `"${s.room || ''}"`
-                        ];
-                        
+                        const row = [`"${s.no || ''}"`, `"${s.id || ''}"`, `"${s.name || ''}"`, `"${s.room || ''}"`];
                         colIds.forEach(cid => {
                             let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
                             let foundCol = null;
@@ -669,18 +650,14 @@
                                 }
                                 if(foundCol) break;
                             }
-
                             if(foundCol && foundCol.type !== 'manual') {
                                 score = calculateColumnValue(s, foundGroup, foundCol);
                                 if(score === '-') score = "";
                             }
-
                             row.push(`"${score}"`);
                         });
-                        
                         csvContent += row.join(",") + "\n";
                     });
-                    
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -754,13 +731,10 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
-                    
-                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
-                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -768,7 +742,6 @@
                     for (let i = 0; i < newStudents.length; i += CHUNK_SIZE) {
                         chunks.push(newStudents.slice(i, i + CHUNK_SIZE));
                     }
-
                     let processedCount = 0;
                     for (let i = 0; i < chunks.length; i++) {
                         const chunk = chunks[i];
@@ -782,7 +755,6 @@
                         setImportProgress(Math.round((processedCount / newStudents.length) * 100));
                     }
                 }
-
                 alert(`นำเข้าสำเร็จ ${newStudents.length} รายการ`);
                 setIsImporting(false);
                 setImportProgress(0);
@@ -790,8 +762,6 @@
                 setImportText('');
             };
 
-
-            // Structure Management
             const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
             const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
             const handleSaveGroup = () => { if(!groupModalData.title) return; const newSecs = sections.map(s => { if(s.id === groupModalData.sectionId) { const groups = [...(s.groups || [])]; if(groupModalData.id) { const idx = groups.findIndex(g => g.id === groupModalData.id); groups[idx] = {...groups[idx], title: groupModalData.title}; } else { groups.push({id: `g_${Date.now()}`, title: groupModalData.title, columns: []}); } return {...s, groups}; } return s; }); saveData(null, newSecs); setIsGroupModalOpen(false); };
@@ -799,7 +769,6 @@
             const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
 
-            // Calculations
             const calculateColumnValue = (student, group, col) => {
                 if (!group || !group.columns) return '-';
                 if (col.type === 'manual') return student.scores?.[col.id];
@@ -849,13 +818,13 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
                     {/* NAVBAR */}
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card">
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-primary-500 to-primary-600 border-none">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-2 font-bold text-xl text-primary-600 font-display">
-                                <div className="bg-primary-500 text-white p-1.5 rounded-lg shadow-sm"><Icons.Cloud className="w-5 h-5" /></div>
-                                <span className="text-slate-700">GradePro <span className="text-primary-500">Cloud</span> {useLocalStorage ? '(Offline)' : ''}</span>
+                            <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
+                                <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.Cloud className="w-5 h-5" /></div>
+                                <span>GradePro Cloud {useLocalStorage ? '(Offline)' : ''}</span>
                             </div>
-                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-slate-500 hover:text-primary-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-1.5 rounded-full">
+                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-white/80 hover:text-white transition bg-white/10 px-3 py-1 rounded-full">
                                 {view === 'student' ? 'เข้าสู่ระบบครู' : 'หน้าหลักนักเรียน'}
                             </button>
                         </div>
@@ -864,10 +833,10 @@
                     {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
                         
-                        {/* TEACHER PRINT VIEW (Visible only when printing in teacher mode) */}
+                        {/* TEACHER PRINT VIEW (Optimized 2-Column Layout) */}
                         {view === 'teacher' && (
                             <div className="print-only">
-                                <div className="student-report-header">
+                                <div className="student-report-header print-header">
                                     <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
                                     <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
                                     <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
@@ -877,6 +846,7 @@
                                         const half = Math.ceil(processedStudents.length / 2);
                                         const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
                                         if (studentsInCol.length === 0) return null;
+                                        
                                         return (
                                             <div className="print-column" key={colIndex}>
                                                 <table className="print-table">
@@ -890,7 +860,7 @@
                                                                     g.columns.map(c => (
                                                                         <th key={c.id} className="w-score">
                                                                             <div className="vertical-header-print">{c.name}</div>
-                                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
+                                                                            <div style={{borderTop: '1px solid #ccc', fontSize: '8pt', marginTop: '2px'}}>({c.max})</div>
                                                                         </th>
                                                                     ))
                                                                 )
@@ -971,10 +941,9 @@
                                                     </div>
                                                 </div>
                                                 {sections.map((sec, idx) => {
-                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                     return (
                                                         <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                            <div className="bg-primary-50 p-3 font-bold text-primary-800 border-b font-display">{sec.title}</div>
                                                             <div className="bg-white p-3 space-y-2">
                                                                 {sec.groups?.map(g => g.columns?.map(c => {
                                                                     const val = calculateColumnValue(searchResult, g, c);
@@ -1058,21 +1027,15 @@
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
+                                                {/* Total Summary Row */}
                                                 <tr style={{borderTop: '2px solid black'}}>
                                                     <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
                                                     <td></td>
                                                     <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
                                                         {(() => {
                                                             let total = 0;
-                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
                                                             sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                                                                if(c.type === 'manual' || c.type === 'sum') {
-                                                                    // Complex to sum generic, sticking to manual for safe sum or just leave blank
-                                                                    // Let's sum only columns marked as 'sum' if available, else sum all manuals?
-                                                                    // Safest: Sum all 'manual' scores
-                                                                    if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
-                                                                }
+                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
                                                             })));
                                                             return parseFloat(total.toFixed(2));
                                                         })()}
