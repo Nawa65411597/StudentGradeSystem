@@ -21,8 +21,8 @@
                         display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Enhanced Colorful Theme
-                        primary: { 50:'#f0f9ff', 100:'#e0f2fe', 200:'#bae6fd', 300:'#7dd3fc', 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1', 800:'#075985', 900:'#0c4a6e' },
+                        // Pastel Indigo Theme
+                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
@@ -42,24 +42,24 @@
     <style>
         * { font-family: 'Krub', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Krub', sans-serif !important; }
-        body { background-color: #fffbeb; color: #334155; } /* Warmer background */
+        body { background-color: #f8fafc; color: #334155; }
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.9); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
         }
         
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: #fffbeb; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid #fffbeb; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
@@ -67,7 +67,7 @@
         /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
         /* Vertical Text */
@@ -79,34 +79,28 @@
             max-height: 120px;
         }
 
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
 
         /* --- PRINT STYLES (A4 Optimized) --- */
         .print-only { display: none; }
         
         @media print {
-            /* Force background graphics for colored headers */
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
-            
-            /* Hide non-print elements */
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
-            
-            /* Layout Reset */
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
-            
             .print-only { display: block !important; width: 100%; }
 
-            /* --- Student Report (Portrait) --- */
+            /* Student Report (Portrait) */
             @page { size: A4 portrait; margin: 15mm; }
             
-            /* --- Teacher Report (Landscape 2-Column) --- */
+            /* Teacher Report (Landscape 2-Column) */
             .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
             
-            /* Common Print Table */
+            /* Common Table */
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
@@ -115,31 +109,19 @@
 
             /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Krub', sans-serif !important; }
+            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
             .print-header p { font-size: 12pt; margin: 0; }
             
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
 
-            /* Student Info Box */
-            .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+            /* Student Info */
+            .student-info { margin-bottom: 15px; border: 1px solid #000; padding: 10px; border-radius: 4px; }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
             
-            /* Vertical Header in Print */
+            /* Vertical Header Print */
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
-            th div { height: auto !important; }
-            
-            /* Student Report Specifics */
-            .student-report-header { text-align: center; margin-bottom: 10px; }
-            .student-report-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
-            .student-report-header h2 { font-size: 14pt; font-weight: bold; margin: 2px 0; }
-            .student-report-header h3 { font-size: 12pt; margin: 2px 0; font-weight: normal; }
-            .student-info { margin-bottom: 10px; font-size: 12pt; line-height: 1.4; border: 1px solid #000; padding: 10px; border-radius: 4px; }
-            .student-info div { display: flex; justify-content: space-between; margin-bottom: 4px; }
-            
-            /* Teacher Report 2-Column */
-            .print-container { display: flex; width: 100%; gap: 10mm; }
-            .print-column { width: 50%; }
         }
     </style>
 </head>
@@ -238,13 +220,13 @@
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        // --- THEME PALETTES (Solid Colors for Headers) ---
+        // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
-            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', header: 'bg-indigo-600 text-white', icon: 'text-indigo-600', subHeader: 'text-indigo-700', button: 'bg-indigo-600 text-white' },
-            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-900', header: 'bg-fuchsia-600 text-white', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700', button: 'bg-fuchsia-600 text-white' },
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-900', header: 'bg-sky-600 text-white', icon: 'text-sky-600', subHeader: 'text-sky-700', button: 'bg-sky-600 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', header: 'bg-emerald-600 text-white', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
-            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', header: 'bg-orange-600 text-white', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
+            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-100', text: 'text-sky-700', header: 'bg-sky-100', icon: 'text-sky-400', subHeader: 'text-sky-600', button: 'bg-sky-400 text-white' },
+            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-700', header: 'bg-rose-100', icon: 'text-rose-400', subHeader: 'text-rose-600', button: 'bg-rose-400 text-white' },
+            { name: 'Purple', bg: 'bg-purple-50', border: 'border-purple-100', text: 'text-purple-700', header: 'bg-purple-100', icon: 'text-purple-400', subHeader: 'text-purple-600', button: 'bg-purple-400 text-white' },
+            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', header: 'bg-emerald-100', icon: 'text-emerald-400', subHeader: 'text-emerald-600', button: 'bg-emerald-400 text-white' },
+            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-700', header: 'bg-amber-100', icon: 'text-amber-400', subHeader: 'text-amber-600', button: 'bg-amber-400 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -271,7 +253,7 @@
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Mobile Scanner (Phone View)
+        // Mobile Scanner
         function MobileScanner({ sessionId, onClose }) {
             const [status, setStatus] = useState('กำลังเปิดกล้อง...');
             const [lastScanned, setLastScanned] = useState(null);
@@ -280,7 +262,7 @@
                 const scanner = new Html5Qrcode("mobile-reader");
                 scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
                     (text) => {
-                        if (text.includes("scan_session")) return; // Ignore session QR
+                        if (text.includes("scan_session")) return; 
                         if (lastScanned === text) return;
                         setLastScanned(text);
                         setStatus(`ส่ง: ${text}`);
@@ -290,7 +272,6 @@
                         audio.volume = 0.5;
                         audio.play().catch(()=>{});
 
-                        // Update Firestore
                         setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { lastScanned: text, timestamp: Date.now() }, { merge: true });
                         if(navigator.vibrate) navigator.vibrate(200);
                         setTimeout(() => { setLastScanned(null); setStatus("พร้อมสแกน..."); }, 2000);
@@ -303,7 +284,7 @@
             return (
                 <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
                     <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-500 shadow-2xl"></div>
+                    <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-300 shadow-2xl"></div>
                     <div className="mt-6 flex flex-col items-center gap-2">
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold ${lastScanned ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                             {status}
@@ -314,7 +295,7 @@
             );
         }
 
-        // Virtual Numpad Component (Draggable)
+        // Virtual Numpad Component
         function VirtualNumpad({ isOpen, target, onInput, onClose, onConfirm }) {
             if (!isOpen || !target) return null;
             
@@ -340,7 +321,7 @@
                 };
                 const handleTouchMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault(); // Prevent scrolling while dragging
+                    e.preventDefault(); 
                     setPosition({ x: e.touches[0].clientX - dragStart.current.x, y: e.touches[0].clientY - dragStart.current.y });
                 };
                 const handleUp = () => setIsDragging(false);
@@ -414,11 +395,8 @@
             const [teacherSearchId, setTeacherSearchId] = useState('');
             const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const [warning, setWarning] = useState({ show: false, msg: '' });
-            
-            // Collapsible Logic
-            const [collapsedSections, setCollapsedSections] = useState({}); // { secId: true/false }
+            const [collapsedSections, setCollapsedSections] = useState({});
 
-            // Modals & Scanner
             const [scoreModalData, setScoreModalData] = useState(null); 
             const [studentModalData, setStudentModalData] = useState(null);
             const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
@@ -426,18 +404,15 @@
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
             const [scanTarget, setScanTarget] = useState('');
-            const [returnToScanner, setReturnToScanner] = useState(false); // New: Flow control
+            const [returnToScanner, setReturnToScanner] = useState(false); 
             
-            // Mobile Pair
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
             
-            // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
-            const [useNumpad, setUseNumpad] = useState(false); // Default to FALSE (Keyboard Mode)
+            const [useNumpad, setUseNumpad] = useState(false);
 
-            // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
             const [sectionSettings, setSectionSettings] = useState({});
             const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -445,24 +420,19 @@
             const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
             const [columnModalData, setColumnModalData] = useState({});
             
-            // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
+            const [pendingAction, setPendingAction] = useState(null);
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
-            // Import Progress
             const [importProgress, setImportProgress] = useState(0);
             const [isImporting, setIsImporting] = useState(false);
 
-            // New Student State
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
-            // Refs for Auto Focus
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
 
-            // --- AUTH & DATA ---
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
                 const scanSession = params.get('scan_session');
@@ -496,7 +466,6 @@
                 return () => { unsub1(); unsub2(); };
             }, [user]);
 
-            // Scanner Listener (PC listening to Mobile)
             useEffect(() => {
                 if (!scannerSessionId || isMobileScannerActive) return; 
                 const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
@@ -509,7 +478,6 @@
                 return () => unsub();
             }, [scannerSessionId, isMobileScannerActive, students]);
 
-            // --- AUTO FOCUS LOGIC ---
             useEffect(() => {
                 const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
 
@@ -522,7 +490,6 @@
                 }
             }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
 
-            // --- LOGIC ---
             const saveData = (newS, newSec) => {
                 if(useLocalStorage) {
                     const d = loadLocalData();
@@ -599,7 +566,6 @@
                 });
             };
 
-            // Admin Actions Handlers
             const requestAdminAction = (type) => {
                 setPendingAction(type);
                 setConfirmPasswordInput('');
@@ -742,6 +708,7 @@
                     for (let i = 0; i < newStudents.length; i += CHUNK_SIZE) {
                         chunks.push(newStudents.slice(i, i + CHUNK_SIZE));
                     }
+
                     let processedCount = 0;
                     for (let i = 0; i < chunks.length; i++) {
                         const chunk = chunks[i];
@@ -755,6 +722,7 @@
                         setImportProgress(Math.round((processedCount / newStudents.length) * 100));
                     }
                 }
+
                 alert(`นำเข้าสำเร็จ ${newStudents.length} รายการ`);
                 setIsImporting(false);
                 setImportProgress(0);
@@ -762,6 +730,8 @@
                 setImportText('');
             };
 
+
+            // Structure Management
             const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
             const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
             const handleSaveGroup = () => { if(!groupModalData.title) return; const newSecs = sections.map(s => { if(s.id === groupModalData.sectionId) { const groups = [...(s.groups || [])]; if(groupModalData.id) { const idx = groups.findIndex(g => g.id === groupModalData.id); groups[idx] = {...groups[idx], title: groupModalData.title}; } else { groups.push({id: `g_${Date.now()}`, title: groupModalData.title, columns: []}); } return {...s, groups}; } return s; }); saveData(null, newSecs); setIsGroupModalOpen(false); };
@@ -769,6 +739,7 @@
             const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
 
+            // Calculations
             const calculateColumnValue = (student, group, col) => {
                 if (!group || !group.columns) return '-';
                 if (col.type === 'manual') return student.scores?.[col.id];
@@ -941,9 +912,10 @@
                                                     </div>
                                                 </div>
                                                 {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                     return (
                                                         <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                            <div className="bg-primary-50 p-3 font-bold text-primary-800 border-b font-display">{sec.title}</div>
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
                                                             <div className="bg-white p-3 space-y-2">
                                                                 {sec.groups?.map(g => g.columns?.map(c => {
                                                                     const val = calculateColumnValue(searchResult, g, c);
@@ -1114,8 +1086,9 @@
                                                         {sections.map((sec, idx) => {
                                                             const isCollapsed = collapsedSections[sec.id];
                                                             const colsCount = isCollapsed ? 1 : (sec.groups?.reduce((a, b) => a + (b.columns?.length||0), 0) || 0);
+                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             return colsCount > 0 && (
-                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center bg-primary-50 text-primary-700 font-bold border-b border-primary-200 group cursor-pointer hover:bg-primary-100 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
+                                                                <th key={sec.id} colSpan={colsCount} className={`p-2 border-r text-center ${theme.header} ${theme.text} font-bold border-b group cursor-pointer hover:brightness-95 transition select-none`} onClick={() => setCollapsedSections({...collapsedSections, [sec.id]: !isCollapsed})}>
                                                                     <div className="flex items-center justify-center gap-2">
                                                                         {sec.title}
                                                                         <span className={`transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}><Icons.ChevronDown size={14}/></span>
@@ -1130,13 +1103,14 @@
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-1 z-30"></th>
                                                         <th className="p-2 border-r bg-slate-50 sticky-left-2 z-30"></th>
                                                         {sections.map((sec, idx) => {
+                                                            const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                             if (collapsedSections[sec.id]) {
                                                                 return <th key={sec.id} className="p-2 border-r text-center bg-gray-100 text-gray-400 font-normal italic h-40 align-middle">ยุบแล้ว</th>
                                                             }
                                                             return sec.groups?.map(g => g.columns?.map(col => (
                                                                 <th key={col.id} className={`p-1 border-r text-center font-normal group relative align-bottom h-48 min-w-[40px] max-w-[50px] ${col.type!=='manual' ? 'bg-slate-100' : 'bg-white hover:bg-slate-50'}`} title={`กลุ่ม: ${g.title}`}>
                                                                      <div className="flex flex-col items-center justify-end h-full pb-1 w-full">
-                                                                        <div className="mb-2 font-bold text-xs text-slate-700 vertical-header tracking-wide leading-none">
+                                                                        <div className={`mb-2 font-bold text-xs ${theme.subHeader} vertical-header tracking-wide leading-none`}>
                                                                             {col.name}
                                                                         </div>
                                                                         <div className={`border rounded px-0.5 w-full text-center text-[10px] font-mono mb-0.5 ${col.type!=='manual' ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>{col.max}</div>
@@ -1155,6 +1129,7 @@
                                                             <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
                                                             <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
+                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
                                                                     return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
@@ -1373,7 +1348,7 @@
                                     <input className="w-full p-3 border-2 border-gray-100 rounded-xl mb-6 focus:border-primary-500 focus:outline-none transition" placeholder="ชื่อกลุ่ม (เช่น สอบเก็บคะแนน)" value={groupModalData.title} onChange={e => setGroupModalData({...groupModalData, title: e.target.value})} autoFocus />
                                     <div className="flex justify-end gap-2">
                                         <button onClick={() => setIsGroupModalOpen(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-xl font-bold transition">ยกเลิก</button>
-                                        <button onClick={handleSaveGroup} className="px-6 py-2 bg-primary-600 text-white rounded-xl font-bold shadow-lg hover:bg-primary-700 transition transform active:scale-95">บันทึก</button>
+                                        <button onClick={handleSaveGroup} className="px-6 py-2 bg-primary-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">บันทึก</button>
                                     </div>
                                 </div>
                             </div>
@@ -1387,7 +1362,7 @@
                                     <p className="text-sm text-gray-500 mb-4">กรุณากรอกรหัสผ่าน 'admin' เพื่อดำเนินการต่อ</p>
                                     <input 
                                         type="password" 
-                                        className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-warning-500 focus:outline-none transition" 
+                                        className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-amber-500 focus:outline-none transition" 
                                         placeholder="รหัสผ่าน" 
                                         value={confirmPasswordInput} 
                                         onChange={e => setConfirmPasswordInput(e.target.value)}
@@ -1396,7 +1371,7 @@
                                     />
                                     <div className="flex gap-2">
                                         <button onClick={() => setIsPasswordConfirmOpen(false)} className="flex-1 py-2.5 rounded-xl text-gray-500 font-bold hover:bg-gray-100 transition">ยกเลิก</button>
-                                        <button onClick={executeAdminAction} className="flex-1 py-2.5 rounded-xl bg-warning-500 text-white font-bold hover:bg-warning-600 transition shadow-lg">ยืนยัน</button>
+                                        <button onClick={executeAdminAction} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition shadow-lg">ยืนยัน</button>
                                     </div>
                                 </div>
                             </div>
@@ -1551,7 +1526,6 @@
                             </div>
                         )}
 
-                        {/* STUDENT INFO MODAL */}
                         {studentModalData && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-slide-up">
