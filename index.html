@@ -89,12 +89,12 @@
 
         #reader video, #scanner-video video { object-fit: cover; border-radius: 0.75rem; }
 
-        /* --- PRINT STYLES (A4 Optimized) --- */
+        /* --- PRINT STYLES (Official Report) --- */
         .print-only { display: none; }
         
         @media print {
-            @page { size: A4 landscape; margin: 10mm; } 
-            body { background-color: white; color: black; font-family: 'Krub', sans-serif !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { size: auto; margin: 10mm; } 
+            body { background-color: white; color: black; font-family: 'Krub', sans-serif !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11pt; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -103,35 +103,31 @@
             
             .print-only { display: block !important; width: 100%; }
             
-            /* Two Column Layout */
-            .print-container { display: flex; width: 100%; gap: 10mm; }
-            .print-column { width: 50%; }
+            /* Print Header */
+            .report-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .report-header h1 { font-size: 18pt; font-weight: bold; margin: 0 0 5px; }
+            .report-header p { font-size: 14pt; margin: 0; }
+            .report-logo { width: 60px; height: 60px; border: 1px solid #000; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
 
-            /* Table Styling */
-            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; table-layout: fixed; }
-            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px 2px !important; text-align: center; color: #000 !important; background-color: transparent !important; overflow: hidden; white-space: nowrap; }
-            table.print-table th { font-weight: bold; background-color: #f0f0f0 !important; }
-            table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
+            /* Student Info Box */
+            .info-box { border: 1px solid #000; padding: 15px; border-radius: 8px; margin-bottom: 20px; background-color: #fff; }
+            .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+            .info-label { font-weight: bold; margin-right: 5px; }
             
-            /* Column Widths */
-            .w-no { width: 10%; }
-            .w-id { width: 20%; }
-            .w-name { width: 40%; text-align: left; }
-            .w-score { width: 8%; } 
+            /* Formal Table */
+            table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 11pt; }
+            table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 8px 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
+            table.print-table th { background-color: #f3f4f6 !important; font-weight: bold; }
+            table.print-table td.text-left { text-align: left !important; padding-left: 8px !important; }
             
-            /* Header */
-            .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid black; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; margin: 0; font-weight: bold; }
-            .print-header p { font-size: 12pt; margin: 0; }
-
-            /* Footer */
-            .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
-            .signature-block { text-align: center; width: 32%; }
-            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 80%; }
+            /* Signatures */
+            .signatures-section { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+            .sign-box { text-align: center; width: 30%; }
+            .sign-line { border-bottom: 1px dotted #000; margin: 30px auto 10px; width: 80%; }
             
+            /* Helper */
             tr { break-inside: avoid; }
-            .vertical-header-print { transform: rotate(-90deg); height: 80px; width: 20px; white-space: nowrap; margin: 0 auto; display: block; text-align: left; transform-origin: center; }
-            th div { height: auto !important; }
+            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 100px; white-space: nowrap; margin: 0 auto; text-align: left; }
         }
     </style>
 </head>
@@ -188,6 +184,7 @@
             Trash: (p) => <Icon {...p} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
             Plus: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
             Camera: (p) => <Icon {...p} p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
+            QrCode: (p) => <Icon {...p} p={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
             Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
             AlertTriangle: (p) => <Icon {...p} p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
             FolderPlus: (p) => <Icon {...p} p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
@@ -210,8 +207,6 @@
             Backspace: (p) => <Icon {...p} p={<><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></>} />,
             Keyboard: (p) => <Icon {...p} p={<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M6 12h.001"/><path d="M10 12h.001"/><path d="M14 12h.001"/><path d="M18 12h.001"/><path d="M7 16h10"/></>} />,
             Calculator: (p) => <Icon {...p} p={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
-            Link: (p) => <Icon {...p} p={<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>} />,
-            ExternalLink: (p) => <Icon {...p} p={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />
         };
 
         const SEED_SECTIONS = [
@@ -229,15 +224,6 @@
             }
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
-
-        // --- THEME PALETTES ---
-        const SECTION_THEMES = [
-            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-800', header: 'bg-indigo-100', icon: 'text-indigo-600', subHeader: 'text-indigo-700', button: 'bg-indigo-600 text-white' },
-            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-800', header: 'bg-fuchsia-100', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700', button: 'bg-fuchsia-600 text-white' },
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-800', header: 'bg-sky-100', icon: 'text-sky-600', subHeader: 'text-sky-700', button: 'bg-sky-600 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', header: 'bg-emerald-100', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
-            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', header: 'bg-orange-100', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
-        ];
 
         const { useState, useEffect, useMemo, useRef } = React;
 
@@ -783,7 +769,7 @@
             const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
             const handleSaveGroup = () => { if(!groupModalData.title) return; const newSecs = sections.map(s => { if(s.id === groupModalData.sectionId) { const groups = [...(s.groups || [])]; if(groupModalData.id) { const idx = groups.findIndex(g => g.id === groupModalData.id); groups[idx] = {...groups[idx], title: groupModalData.title}; } else { groups.push({id: `g_${Date.now()}`, title: groupModalData.title, columns: []}); } return {...s, groups}; } return s; }); saveData(null, newSecs); setIsGroupModalOpen(false); };
             const handleDeleteGroup = (secId, groupId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => s.id === secId ? {...s, groups: s.groups.filter(g => g.id !== groupId)} : s); saveData(null, newSecs); };
-            const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
+            const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
 
             // Calculations
@@ -947,7 +933,6 @@
                                                     </div>
                                                 </div>
                                                 {sections.map((sec, idx) => {
-                                                    // No theme cycle here, stick to clean formal look
                                                     return (
                                                         <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
                                                             <div className="bg-primary-50 p-3 font-bold text-primary-800 border-b font-display">{sec.title}</div>
@@ -1072,7 +1057,7 @@
                                 <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-primary-600"/></div>
                                 <h3 className="text-xl font-bold mb-6 font-display text-slate-800">สำหรับครูผู้สอน</h3>
                                 <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-primary-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
-                                <button id="login-btn" onClick={() => { if(password==='65411597') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
+                                <button id="login-btn" onClick={() => { if(password==='65411597') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
                             </div>
                         )}
 
@@ -1081,8 +1066,8 @@
                             <div className="animate-fade-in screen-only">
                                 {/* TAB NAVIGATION */}
                                 <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-200 mx-auto md:mx-0">
-                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-primary-50 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
-                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-primary-50 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
+                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
+                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
                                     <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
                                 </div>
 
@@ -1166,7 +1151,7 @@
                                                                 return sec.groups?.map(g => g.columns?.map(col => {
                                                                     const val = calculateColumnValue(s, g, col);
                                                                     return (
-                                                                        <td key={col.id} className={`p-1 text-center border-r group-hover:bg-primary-50 ${col.type!=='manual'?'bg-slate-200 text-slate-800 font-bold text-xs border-slate-300': 'text-slate-600 font-medium'}`}>
+                                                                        <td key={col.id} className={`p-1 text-center border-r group-hover:bg-primary-50 ${col.type!=='manual'?'bg-slate-100 text-slate-800 font-bold text-xs border-slate-200': 'text-slate-600 font-medium'}`}>
                                                                             {val && val !== '-' ? val : <span className="text-slate-200 font-light">-</span>}
                                                                         </td>
                                                                     );
