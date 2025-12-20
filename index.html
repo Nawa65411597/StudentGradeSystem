@@ -24,9 +24,7 @@
                         display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Pastel Indigo Theme
                         primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
-                        // Secondary Pastels
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
@@ -38,7 +36,7 @@
     </script>
     
     <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -46,87 +44,47 @@
     <style>
         * { font-family: 'Krub', sans-serif; }
         body { background-color: #f8fafc; color: #334155; }
-        
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-        }
-        
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
-        
-        /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
-        
-        /* Vertical Text */
-        .vertical-header { 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            white-space: nowrap; 
-            text-align: left;
-            max-height: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
+        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; text-align: left; max-height: 120px; }
         #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
-
-        /* --- PRINT STYLES (A4 Optimized) --- */
-        .print-only { display: none; }
         
+        .print-only { display: none; }
         @media print {
-            body { background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
-            
             .print-only { display: block !important; width: 100%; }
-
-            /* Student Report (Portrait) */
             @page { size: A4 portrait; margin: 15mm; }
-            
-            /* Teacher Report (Landscape 2-Column) */
             .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
-            
-            /* Common Table */
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
             tr { break-inside: avoid; page-break-inside: avoid; }
-
-            /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
             .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
-            
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
-
-            /* Student Info */
             .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
-            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
-            
-            /* Vertical Header Print */
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -314,15 +272,16 @@
             );
         }
         
-        // 1. QR Generator Component (PC Left Side)
-        function AttendanceQRCode({ roomId }) {
+        // 1. QR Generator Component for Attendance (PC)
+        function AttendanceQRModal({ roomId, onClose, onSessionCreated }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
 
             useEffect(() => {
-                const safeRoom = roomId.replace(/[^a-zA-Z0-9]/g, '-');
+                const safeRoom = roomId ? roomId.replace(/[^a-zA-Z0-9]/g, '-') : 'ALL';
                 const newSessionId = `ATT-${safeRoom}-${Date.now()}`;
                 setSessionId(newSessionId);
+                if (onSessionCreated) onSessionCreated(newSessionId);
 
                 // Create session in DB
                 setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_sessions', newSessionId), { 
@@ -350,13 +309,14 @@
             }, [roomId]);
 
             return (
-                <div className="flex flex-col items-center justify-center h-full">
-                    <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-primary-200 shadow-sm mb-4">
-                        <div ref={qrRef}></div>
-                    </div>
-                    <div className="text-center">
-                        <h3 className="font-bold text-primary-700 text-lg mb-1">สแกนเพื่อเช็คชื่อ</h3>
-                        <p className="text-gray-400 text-xs font-mono bg-white px-2 py-1 rounded border border-gray-100 inline-block">ID: {sessionId}</p>
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative shadow-2xl">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
+                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600"><Icons.QrCode size={32}/></div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">เช็คชื่อเข้าเรียน</h3>
+                        <p className="text-gray-500 mb-6 text-sm">สแกน QR Code เพื่อลงชื่อเข้าเรียน</p>
+                        <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm flex justify-center"></div>
+                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
                     </div>
                 </div>
             );
@@ -638,7 +598,7 @@
 
             // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
-            const [useNumpad, setUseNumpad] = useState(false); 
+            const [useNumpad, setUseNumpad] = useState(false); // Default to FALSE (Keyboard Mode)
 
             // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
@@ -650,7 +610,7 @@
             
             // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null); 
+            const [pendingAction, setPendingAction] = useState(null);
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
@@ -820,7 +780,6 @@
                 // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
-                    // Optional: Vibrate on error
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     return;
                 }
@@ -1286,7 +1245,7 @@
                                             {isAttendanceQROpen && (
                                                 <div className="w-1/3 bg-white rounded-xl shadow-sm border p-6 flex flex-col items-center justify-center relative">
                                                     <h3 className="text-xl font-bold text-primary-700 mb-4">สแกนเพื่อเช็คชื่อ</h3>
-                                                    <AttendanceQRCode roomId={scannerSessionId} />
+                                                    <AttendanceQRModal roomId={scannerSessionId} />
                                                     <button onClick={() => setIsAttendanceQROpen(false)} className="mt-6 w-full bg-red-50 text-red-600 py-2 rounded-xl font-bold hover:bg-red-100 transition">ปิด QR Code</button>
                                                 </div>
                                             )}
