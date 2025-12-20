@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GradePro Cloud</title>
     
-    <!-- Google Fonts: Krub -->
+    <!-- Google Fonts: Prompt & Sarabun (Mixed) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- QRCode.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" xintegrity="sha512-CNgIRspuACwg2iBqdbDWpTZLqb38nIs6e1wbcep87qKP2tupDXnrG0vRL1tJLiKfTR+50JlijW44bTrDlZx7aw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,15 +20,17 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Krub', 'sans-serif'], 
-                        display: ['Krub', 'sans-serif'] 
+                        sans: ['Sarabun', 'sans-serif'], // Body font
+                        display: ['Prompt', 'sans-serif'] // Header/UI font
                     },
                     colors: { 
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
-                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
-                        success: { 50:'#f0fdf4', 500:'#22c55e' },
-                        warning: { 50:'#fffbeb', 500:'#f59e0b' },
-                        danger: { 50:'#fef2f2', 500:'#ef4444' }
+                        // Pastel Palette (More Vibrant)
+                        primary: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 300:'#93c5fd', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e40af', 900:'#1e3a8a' },
+                        pastelPurple: { 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed' },
+                        pastelPink: { 100: '#fce7f3', 500: '#ec4899', 600: '#db2777' },
+                        pastelGreen: { 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a' },
+                        pastelOrange: { 100: '#ffedd5', 500: '#f97316', 600: '#ea580c' },
+                        pastelSky: { 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7' }
                     }
                 }
             }
@@ -36,55 +38,101 @@
     </script>
     
     <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        * { font-family: 'Krub', sans-serif; }
-        body { background-color: #f8fafc; color: #334155; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        * { font-family: 'Sarabun', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display, button, .tab-btn, th, .header-text { font-family: 'Prompt', sans-serif !important; }
+        
+        body { 
+            background-color: #f8fafc;
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
+            color: #334155; 
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); 
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Modern Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
+        
+        /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
-        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; text-align: left; max-height: 120px; }
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
         
+        /* Vertical Text */
+        .vertical-header { 
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg); 
+            white-space: nowrap; 
+            text-align: left;
+            max-height: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
+
+        /* --- PRINT STYLES --- */
         .print-only { display: none; }
+        
         @media print {
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
+            body { background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
+            
             .print-only { display: block !important; width: 100%; }
+
+            /* Student Report (Portrait) */
             @page { size: A4 portrait; margin: 15mm; }
+            
+            /* Teacher Report (Landscape 2-Column) */
             .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
+            
+            /* Common Table */
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
             tr { break-inside: avoid; page-break-inside: avoid; }
+
+            /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
             .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
+            
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
+
+            /* Student Info */
             .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+            
+            /* Vertical Header Print */
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -104,11 +152,6 @@
             el.style.display = 'block';
             el.innerHTML = `<h3>⚠️ Application Error</h3><p>${message}</p>`;
         };
-        
-        // Add handler for unhandled promise rejections
-        window.addEventListener('unhandledrejection', function(event) {
-             console.warn('Unhandled rejection (promise):', event.reason);
-        });
     </script>
 
     <script type="text/babel" data-type="module">
@@ -195,11 +238,11 @@
 
         // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-100', text: 'text-sky-700', header: 'bg-sky-100', icon: 'text-sky-400', subHeader: 'text-sky-600', button: 'bg-sky-400 text-white' },
-            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-700', header: 'bg-rose-100', icon: 'text-rose-400', subHeader: 'text-rose-600', button: 'bg-rose-400 text-white' },
-            { name: 'Purple', bg: 'bg-purple-50', border: 'border-purple-100', text: 'text-purple-700', header: 'bg-purple-100', icon: 'text-purple-400', subHeader: 'text-purple-600', button: 'bg-purple-400 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', header: 'bg-emerald-100', icon: 'text-emerald-400', subHeader: 'text-emerald-600', button: 'bg-emerald-400 text-white' },
-            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-700', header: 'bg-amber-100', icon: 'text-amber-400', subHeader: 'text-amber-600', button: 'bg-amber-400 text-white' },
+            { name: 'Sky', bg: 'bg-pastelSky-100', border: 'border-pastelSky-100', text: 'text-sky-700', header: 'bg-sky-400 text-white', icon: 'text-sky-400', subHeader: 'text-sky-600', button: 'bg-sky-400 text-white' },
+            { name: 'Rose', bg: 'bg-pastelPink-100', border: 'border-pastelPink-100', text: 'text-rose-700', header: 'bg-rose-400 text-white', icon: 'text-rose-400', subHeader: 'text-rose-600', button: 'bg-rose-400 text-white' },
+            { name: 'Purple', bg: 'bg-pastelPurple-100', border: 'border-pastelPurple-100', text: 'text-purple-700', header: 'bg-purple-400 text-white', icon: 'text-purple-400', subHeader: 'text-purple-600', button: 'bg-purple-400 text-white' },
+            { name: 'Emerald', bg: 'bg-pastelGreen-100', border: 'border-pastelGreen-100', text: 'text-emerald-700', header: 'bg-emerald-400 text-white', icon: 'text-emerald-400', subHeader: 'text-emerald-600', button: 'bg-emerald-400 text-white' },
+            { name: 'Orange', bg: 'bg-pastelOrange-100', border: 'border-pastelOrange-100', text: 'text-orange-700', header: 'bg-orange-400 text-white', icon: 'text-orange-400', subHeader: 'text-orange-600', button: 'bg-orange-400 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -374,6 +417,7 @@
             
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'Del'];
             
+            // Dragging Logic
             const [position, setPosition] = useState({ x: 0, y: 0 });
             const [isDragging, setIsDragging] = useState(false);
             const dragStart = useRef({ x: 0, y: 0 });
@@ -393,18 +437,22 @@
                 };
                 const handleTouchMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault(); 
+                    e.preventDefault(); // Prevent scrolling while dragging
                     setPosition({ x: e.touches[0].clientX - dragStart.current.x, y: e.touches[0].clientY - dragStart.current.y });
                 };
                 const handleUp = () => setIsDragging(false);
 
                 if (isDragging) {
-                    window.addEventListener('mousemove', handleMouseMove); window.addEventListener('mouseup', handleUp);
-                    window.addEventListener('touchmove', handleTouchMove, { passive: false }); window.addEventListener('touchend', handleUp);
+                    window.addEventListener('mousemove', handleMouseMove);
+                    window.addEventListener('mouseup', handleUp);
+                    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    window.addEventListener('touchend', handleUp);
                 }
                 return () => {
-                    window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleUp);
-                    window.removeEventListener('touchmove', handleTouchMove); window.removeEventListener('touchend', handleUp);
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('mouseup', handleUp);
+                    window.removeEventListener('touchmove', handleTouchMove);
+                    window.removeEventListener('touchend', handleUp);
                 };
             }, [isDragging]);
             
@@ -438,7 +486,7 @@
                                 </button>
                             ))}
                         </div>
-                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-2 rounded-xl font-bold text-base shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-xl font-bold text-base shadow-md active:scale-95 transition flex items-center justify-center gap-2">
                             <Icons.Save size={18}/> บันทึก
                         </button>
                     </div>
@@ -484,7 +532,7 @@
             
             // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
-            const [useNumpad, setUseNumpad] = useState(false);
+            const [useNumpad, setUseNumpad] = useState(false); // Default to FALSE (Keyboard Mode)
 
             // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
@@ -496,7 +544,7 @@
             
             // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null);
+            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
@@ -636,10 +684,12 @@
                 if (key === 'Del') {
                     newVal = currentVal.slice(0, -1);
                 } else {
+                    // Prevent multiple dots
                     if (key === '.' && currentVal.includes('.')) return;
                     newVal = currentVal + key;
                 }
 
+                // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -803,10 +853,13 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
+                    
+                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
+                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -896,13 +949,13 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
                     {/* NAVBAR */}
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card">
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-primary-500 to-primary-600 border-none">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-2 font-bold text-xl text-primary-600 font-display">
-                                <div className="bg-primary-500 text-white p-1.5 rounded-lg shadow-sm"><Icons.Cloud className="w-5 h-5" /></div>
-                                <span className="text-slate-700">GradePro <span className="text-primary-500">Cloud</span> {useLocalStorage ? '(Offline)' : ''}</span>
+                            <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
+                                <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.Cloud className="w-5 h-5" /></div>
+                                <span>GradePro Cloud {useLocalStorage ? '(Offline)' : ''}</span>
                             </div>
-                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-slate-500 hover:text-primary-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-1.5 rounded-full">
+                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-white/80 hover:text-white transition bg-white/10 px-3 py-1 rounded-full">
                                 {view === 'student' ? 'เข้าสู่ระบบครู' : 'หน้าหลักนักเรียน'}
                             </button>
                         </div>
@@ -1121,7 +1174,7 @@
                                                             return sec.groups?.map(g => g.columns?.map(col => (
                                                                 <th key={col.id} className={`p-1 border-r text-center font-normal group relative align-bottom h-48 min-w-[40px] max-w-[50px] ${col.type!=='manual' ? 'bg-slate-100' : 'bg-white hover:bg-slate-50'}`} title={`กลุ่ม: ${g.title}`}>
                                                                      <div className="flex flex-col items-center justify-end h-full pb-1 w-full">
-                                                                        <div className={`mb-2 font-bold text-xs ${theme.subHeader} vertical-header tracking-wide leading-none`}>
+                                                                        <div className="mb-2 font-bold text-xs text-slate-700 vertical-header tracking-wide leading-none">
                                                                             {col.name}
                                                                         </div>
                                                                         <div className={`border rounded px-0.5 w-full text-center text-[10px] font-mono mb-0.5 ${col.type!=='manual' ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>{col.max}</div>
@@ -1140,7 +1193,6 @@
                                                             <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
                                                             <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
-                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
                                                                     return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
