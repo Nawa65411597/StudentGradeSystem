@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GradePro Cloud</title>
     
-    <!-- Google Fonts: Prompt & Sarabun -->
+    <!-- Google Fonts: Krub -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,8 +17,8 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Sarabun', 'sans-serif'], 
-                        display: ['Prompt', 'sans-serif'] 
+                        sans: ['Krub', 'sans-serif'], 
+                        display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
                         // Pastel Indigo Theme
@@ -41,8 +41,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        * { font-family: 'Sarabun', sans-serif; }
-        h1, h2, h3, h4, h5, h6, .font-display, button, input, select, th { font-family: 'Prompt', sans-serif !important; }
+        * { font-family: 'Krub', sans-serif; }
         body { background-color: #f8fafc; color: #334155; }
         
         .glass-card { 
@@ -87,7 +86,7 @@
         
         @media print {
             /* Force background graphics for colored headers */
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Sarabun', sans-serif !important; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
             
             /* Hide non-print elements */
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .shadow-md, .shadow-lg, .glass-card, .screen-only { display: none !important; }
@@ -116,7 +115,7 @@
 
             /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
+            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Krub', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
             
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
@@ -838,13 +837,13 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
                     {/* NAVBAR */}
-                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card bg-gradient-to-r from-indigo-600 to-purple-600 border-none">
+                    <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-2 font-bold text-xl text-white font-display">
-                                <div className="bg-white/20 text-white p-1.5 rounded-lg"><Icons.FileSpreadsheet className="w-5 h-5" /></div>
-                                <span>GradePro {useLocalStorage ? '(Offline)' : ''}</span>
+                            <div className="flex items-center gap-2 font-bold text-xl text-primary-600 font-display">
+                                <div className="bg-primary-500 text-white p-1.5 rounded-lg shadow-sm"><Icons.Cloud className="w-5 h-5" /></div>
+                                <span className="text-slate-700">GradePro <span className="text-primary-500">Cloud</span> {useLocalStorage ? '(Offline)' : ''}</span>
                             </div>
-                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-white/80 hover:text-white transition bg-white/10 px-3 py-1 rounded-full">
+                            <button onClick={() => setView(view === 'student' ? 'teacher_login' : 'student')} className="text-sm font-bold text-slate-500 hover:text-primary-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-1.5 rounded-full">
                                 {view === 'student' ? 'เข้าสู่ระบบครู' : 'หน้าหลักนักเรียน'}
                             </button>
                         </div>
@@ -861,53 +860,42 @@
                                     <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
                                     <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
                                 </div>
-                                <div className="print-container">
-                                    {[0, 1].map(colIndex => {
-                                        const half = Math.ceil(processedStudents.length / 2);
-                                        const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
-                                        if (studentsInCol.length === 0) return null;
-                                        return (
-                                            <div className="print-column" key={colIndex}>
-                                                <table className="print-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th className="w-no">เลขที่</th>
-                                                            <th className="w-id">รหัส</th>
-                                                            <th className="w-name">ชื่อ-นามสกุล</th>
-                                                            {sections.map(sec => 
-                                                                sec.groups.map(g => 
-                                                                    g.columns.map(c => (
-                                                                        <th key={c.id} className="w-score">
-                                                                            <div className="vertical-header-print">{c.name}</div>
-                                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
-                                                                        </th>
-                                                                    ))
-                                                                )
-                                                            )}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {studentsInCol.map(s => (
-                                                            <tr key={s.id}>
-                                                                <td>{s.no}</td>
-                                                                <td>{s.id}</td>
-                                                                <td className="text-left">{s.name}</td>
-                                                                {sections.map(sec => 
-                                                                    sec.groups.map(g => 
-                                                                        g.columns.map(c => {
-                                                                            const val = calculateColumnValue(s, g, c);
-                                                                            return <td key={c.id}>{val && val !== '-' ? val : ''}</td>;
-                                                                        })
-                                                                    )
-                                                                )}
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                <table className="print-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{width: '5%'}}>เลขที่</th>
+                                            <th style={{width: '15%'}}>รหัส</th>
+                                            <th style={{width: '25%'}}>ชื่อ-นามสกุล</th>
+                                            {sections.map(sec => 
+                                                sec.groups.map(g => 
+                                                    g.columns.map(c => (
+                                                        <th key={c.id} style={{fontSize: '10pt', minWidth: '40px'}}>
+                                                            <div className="vertical-header" style={{margin: '0 auto', height: '80px'}}>{c.name}</div>
+                                                            <div style={{borderTop: '1px solid #ccc', marginTop: '4px'}}>({c.max})</div>
+                                                        </th>
+                                                    ))
+                                                )
+                                            )}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {processedStudents.map(s => (
+                                            <tr key={s.id}>
+                                                <td>{s.no}</td>
+                                                <td>{s.id}</td>
+                                                <td className="text-left" style={{paddingLeft: '10px'}}>{s.name}</td>
+                                                {sections.map(sec => 
+                                                    sec.groups.map(g => 
+                                                        g.columns.map(c => {
+                                                            const val = calculateColumnValue(s, g, c);
+                                                            return <td key={c.id}>{val || '-'}</td>;
+                                                        })
+                                                    )
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                                 <div className="print-footer">
                                     <div className="signature-block">
                                         <div className="signature-line"></div>
@@ -960,9 +948,10 @@
                                                     </div>
                                                 </div>
                                                 {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                     return (
                                                         <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                            <div className="bg-primary-50 p-3 font-bold text-primary-800 border-b font-display">{sec.title}</div>
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
                                                             <div className="bg-white p-3 space-y-2">
                                                                 {sec.groups?.map(g => g.columns?.map(c => {
                                                                     const val = calculateColumnValue(searchResult, g, c);
@@ -1046,21 +1035,15 @@
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
+                                                {/* Total Summary Row */}
                                                 <tr style={{borderTop: '2px solid black'}}>
                                                     <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
                                                     <td></td>
                                                     <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
                                                         {(() => {
                                                             let total = 0;
-                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
                                                             sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                                                                if(c.type === 'manual' || c.type === 'sum') {
-                                                                    // Complex to sum generic, sticking to manual for safe sum or just leave blank
-                                                                    // Let's sum only columns marked as 'sum' if available, else sum all manuals?
-                                                                    // Safest: Sum all 'manual' scores
-                                                                    if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
-                                                                }
+                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
                                                             })));
                                                             return parseFloat(total.toFixed(2));
                                                         })()}
