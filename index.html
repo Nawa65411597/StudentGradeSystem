@@ -212,11 +212,11 @@
 
         // --- THEME PALETTES ---
         const SECTION_THEMES = [
-            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-800', header: 'bg-sky-100', icon: 'text-sky-500', subHeader: 'text-sky-700', button: 'bg-sky-500 text-white' },
-            { name: 'Rose', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-800', header: 'bg-rose-100', icon: 'text-rose-500', subHeader: 'text-rose-700', button: 'bg-rose-500 text-white' },
-            { name: 'Purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', header: 'bg-purple-100', icon: 'text-purple-500', subHeader: 'text-purple-700', button: 'bg-purple-500 text-white' },
-            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', header: 'bg-emerald-100', icon: 'text-emerald-500', subHeader: 'text-emerald-700', button: 'bg-emerald-500 text-white' },
-            { name: 'Amber', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', header: 'bg-amber-100', icon: 'text-amber-500', subHeader: 'text-amber-700', button: 'bg-amber-500 text-white' },
+            { name: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-800', header: 'bg-indigo-100', icon: 'text-indigo-600', subHeader: 'text-indigo-700', button: 'bg-indigo-600 text-white' },
+            { name: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-800', header: 'bg-fuchsia-100', icon: 'text-fuchsia-600', subHeader: 'text-fuchsia-700', button: 'bg-fuchsia-600 text-white' },
+            { name: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-800', header: 'bg-sky-100', icon: 'text-sky-600', subHeader: 'text-sky-700', button: 'bg-sky-600 text-white' },
+            { name: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', header: 'bg-emerald-100', icon: 'text-emerald-600', subHeader: 'text-emerald-700', button: 'bg-emerald-600 text-white' },
+            { name: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', header: 'bg-orange-100', icon: 'text-orange-600', subHeader: 'text-orange-700', button: 'bg-orange-600 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -252,7 +252,7 @@
                 const scanner = new Html5Qrcode("mobile-reader");
                 scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
                     (text) => {
-                        if (text.includes("scan_session")) return; 
+                        if (text.includes("scan_session")) return; // Ignore session QR
                         if (lastScanned === text) return;
                         setLastScanned(text);
                         setStatus(`ส่ง: ${text}`);
@@ -392,15 +392,18 @@
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
             const [scanTarget, setScanTarget] = useState('');
-            const [returnToScanner, setReturnToScanner] = useState(false); 
+            const [returnToScanner, setReturnToScanner] = useState(false); // New: Flow control
             
+            // Mobile Pair
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
             
+            // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
             const [useNumpad, setUseNumpad] = useState(false);
 
+            // Settings Modals & Data Actions
             const [isSectionSettingsOpen, setIsSectionSettingsOpen] = useState(false);
             const [sectionSettings, setSectionSettings] = useState({});
             const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -408,19 +411,24 @@
             const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
             const [columnModalData, setColumnModalData] = useState({});
             
+            // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null);
+            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
+            // Import Progress
             const [importProgress, setImportProgress] = useState(0);
             const [isImporting, setIsImporting] = useState(false);
 
+            // New Student State
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
 
+            // Refs for Auto Focus
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
 
+            // --- AUTH & DATA ---
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
                 const scanSession = params.get('scan_session');
@@ -454,6 +462,7 @@
                 return () => { unsub1(); unsub2(); };
             }, [user]);
 
+            // Scanner Listener (PC listening to Mobile)
             useEffect(() => {
                 if (!scannerSessionId || isMobileScannerActive) return; 
                 const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
@@ -466,6 +475,7 @@
                 return () => unsub();
             }, [scannerSessionId, isMobileScannerActive, students]);
 
+            // --- AUTO FOCUS LOGIC ---
             useEffect(() => {
                 const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
 
@@ -478,6 +488,7 @@
                 }
             }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
 
+            // --- LOGIC ---
             const saveData = (newS, newSec) => {
                 if(useLocalStorage) {
                     const d = loadLocalData();
@@ -508,6 +519,7 @@
                     setScoreModalData(JSON.parse(JSON.stringify(s)));
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
+                    // Also close mobile pair modal if open
                     setIsMobilePairOpen(false);
                 } else {
                     setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
@@ -620,6 +632,7 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
+
                 } else if (pendingAction === 'import') {
                     if (fileInputRef.current) fileInputRef.current.click();
                 } else if (pendingAction === 'clear') {
@@ -791,7 +804,7 @@
                             <div className="print-only">
                                 <div className="student-report-header print-header">
                                     <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
-                                    <p><strong>โรงเรียน...........................................................................................</strong></p>
+                                    <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
                                     <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
                                 </div>
                                 <div className="print-container">
@@ -845,13 +858,13 @@
                                 <div className="print-footer">
                                     <div className="signature-block">
                                         <div className="signature-line"></div>
-                                        <p>ลงชื่อครูผู้สอน</p>
-                                        <p>(...........................................................)</p>
+                                        <p>(นายนวรัตน์  เครือก๋า)</p>
+                                        <p>นักศึกษาฝึกวิชาชีพครู</p>
                                     </div>
                                     <div className="signature-block">
                                         <div className="signature-line"></div>
-                                        <p>หัวหน้ากลุ่มสาระฯ</p>
-                                        <p>(...........................................................)</p>
+                                        <p>(นางสาวพรวดี ใจเที่ยงธรรม)</p>
+                                        <p>ครู</p>
                                     </div>
                                     <div className="signature-block">
                                         <div className="signature-line"></div>
@@ -939,7 +952,7 @@
                                             <div style={{marginBottom: '5px'}}><Icons.FileSpreadsheet size={32}/></div>
                                             <h1>รายงานผลการเรียนรายบุคคล</h1>
                                             <h2>รายวิชาชีววิทยา 2</h2>
-                                            <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียน................................................................</h3>
+                                            <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h3>
                                         </div>
                                         <div className="student-info">
                                             <div>
@@ -1012,8 +1025,8 @@
                                             </div>
                                             <div className="signature-block">
                                                 <div className="signature-line"></div>
-                                                <p>(...........................................................)</p>
-                                                <p>ครูที่ปรึกษา / ครูผู้สอน</p>
+                                                <p>(นายนวรัตน์  เครือก๋า)</p>
+                                                <p>ครูผู้สอน</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1058,7 +1071,7 @@
                                                     <input ref={teacherInputRef} className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
                                                 </div>
                                                 <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-sky-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
-                                                <button onClick={handleGenerateScanner} className="bg-white border border-sky-200 text-sky-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-sky-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
+                                                <button onClick={handleGenerateScanner} className="bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-indigo-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
                                                 <button onClick={handlePrint} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-slate-200 shadow-sm transition"><Icons.Print size={18}/> Print</button>
                                             </div>
                                             <div className="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border">นักเรียน: {processedStudents.length}</div>
@@ -1112,26 +1125,26 @@
                                                 </thead>
                                                 <tbody>
                                                     {processedStudents.map((s, sIdx) => (
-                                                        <tr key={s.id} className={`border-b hover:bg-sky-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                                                            <td className="p-2 text-center border-r bg-inherit sticky-left-0 group-hover:bg-sky-50 z-20 font-mono text-slate-500">{s.no}</td>
-                                                            <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-sky-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
-                                                            <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-sky-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
+                                                        <tr key={s.id} className={`border-b hover:bg-primary-50 group transition-colors ${sIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                                                            <td className="p-2 text-center border-r bg-inherit sticky-left-0 group-hover:bg-primary-50 z-20 font-mono text-slate-500">{s.no}</td>
+                                                            <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
+                                                            <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
                                                                 const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
-                                                                    return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-sky-50"><Icons.Minus size={12} className="mx-auto"/></td>
+                                                                    return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
                                                                 return sec.groups?.map(g => g.columns?.map(col => {
                                                                     const val = calculateColumnValue(s, g, col);
                                                                     return (
-                                                                        <td key={col.id} className={`p-1 text-center border-r group-hover:bg-sky-50 ${col.type!=='manual'?'bg-slate-100 text-slate-800 font-bold text-xs border-slate-200': theme.text + ' font-medium'}`}>
+                                                                        <td key={col.id} className={`p-1 text-center border-r group-hover:bg-primary-50 ${col.type!=='manual'?'bg-slate-100 text-slate-800 font-bold text-xs border-slate-200': theme.text + ' font-medium'}`}>
                                                                             {val && val !== '-' ? val : <span className="text-slate-200 font-light">-</span>}
                                                                         </td>
                                                                     );
                                                                 }))
                                                             })}
                                                             <td className="p-2 text-center">
-                                                                <button onClick={() => setScoreModalData(JSON.parse(JSON.stringify(s)))} className="bg-white border border-sky-200 text-sky-600 p-1.5 rounded-lg hover:bg-sky-600 hover:text-white transition shadow-sm"><Icons.Edit size={16}/></button>
+                                                                <button onClick={() => setScoreModalData(JSON.parse(JSON.stringify(s)))} className="bg-white border border-primary-200 text-primary-600 p-1.5 rounded-lg hover:bg-primary-600 hover:text-white transition shadow-sm"><Icons.Edit size={16}/></button>
                                                             </td>
                                                         </tr>
                                                     ))}
