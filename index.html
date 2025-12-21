@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GradePro Cloud</title>
     
-    <!-- Google Fonts: Krub -->
+    <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -20,15 +20,24 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Krub', 'sans-serif'], 
-                        display: ['Krub', 'sans-serif'] 
+                        sans: ['Sarabun', 'sans-serif'], 
+                        display: ['Prompt', 'sans-serif'] 
                     },
                     colors: { 
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
+                        // Vibrant Pastel Palette
+                        primary: { 50:'#f0f9ff', 100:'#e0f2fe', 200:'#bae6fd', 300:'#7dd3fc', 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1', 800:'#075985', 900:'#0c4a6e' },
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
-                        danger: { 50:'#fef2f2', 500:'#ef4444' }
+                        danger: { 50:'#fef2f2', 500:'#ef4444' },
+                        
+                        // Custom Pastels
+                        pastelBlue: '#bfdbfe',
+                        pastelPink: '#fbcfe8',
+                        pastelPurple: '#e9d5ff',
+                        pastelGreen: '#bbf7d0',
+                        pastelOrange: '#fed7aa',
+                        pastelBg: '#f8fafc'
                     }
                 }
             }
@@ -36,55 +45,106 @@
     </script>
     
     <!-- Libraries -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        * { font-family: 'Krub', sans-serif; }
-        body { background-color: #f8fafc; color: #334155; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        * { font-family: 'Sarabun', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display, button, .tab-btn, th, .header-text, input, select { font-family: 'Prompt', sans-serif !important; }
+        
+        body { 
+            background-color: #f8fafc;
+            /* Soft Gradient Background */
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,90%,1) 0, transparent 50%);
+            color: #334155; 
+            min-height: 100vh;
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); 
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Modern Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
+        
+        /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
-        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; text-align: left; max-height: 120px; }
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
         
+        /* Vertical Text for Headers */
+        .vertical-header { 
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg); 
+            white-space: nowrap; 
+            text-align: left;
+            max-height: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
+
+        /* --- PRINT STYLES --- */
         .print-only { display: none; }
+        
         @media print {
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Sarabun', sans-serif !important; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .overflow-auto, .overflow-hidden, .overflow-x-auto { overflow: visible !important; height: auto !important; max-height: none !important; }
             .sticky-header, .sticky-left-0, .sticky-left-1, .sticky-left-2 { position: static !important; border: none !important; box-shadow: none !important; }
+            
             .print-only { display: block !important; width: 100%; }
+
+            /* Student Report (Portrait) */
             @page { size: A4 portrait; margin: 15mm; }
+            
+            /* Teacher Report (Landscape 2-Column) */
             .teacher-print-wrapper { column-count: 2; column-gap: 10mm; width: 100%; }
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
+            
+            /* Common Table */
             table.print-table { width: 100% !important; border-collapse: collapse; border: 1px solid #000; font-size: 10pt; page-break-inside: auto; }
             table.print-table th, table.print-table td { border: 1px solid #000 !important; padding: 4px !important; text-align: center; color: #000 !important; background-color: transparent !important; }
             table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
             table.print-table td.text-left { text-align: left !important; padding-left: 5px !important; }
             tr { break-inside: avoid; page-break-inside: avoid; }
+
+            /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
             .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
+            
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
+
+            /* Student Info */
             .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+            
+            /* Vertical Header Print */
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -143,7 +203,7 @@
             Trash: (p) => <Icon {...p} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
             Plus: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
             Camera: (p) => <Icon {...p} p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
-            Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
+            Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
             AlertTriangle: (p) => <Icon {...p} p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
             FolderPlus: (p) => <Icon {...p} p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
             Upload: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>} />,
@@ -193,7 +253,7 @@
             { name: 'Rose', bg: 'bg-secondary-50', border: 'border-secondary-100', text: 'text-secondary-600', header: 'bg-secondary-100', icon: 'text-secondary-400', subHeader: 'text-secondary-500', button: 'bg-secondary-500 text-white' },
             { name: 'Purple', bg: 'bg-primary-50', border: 'border-primary-200', text: 'text-primary-800', header: 'bg-primary-200', icon: 'text-primary-500', subHeader: 'text-primary-600', button: 'bg-primary-500 text-white' },
             { name: 'Green', bg: 'bg-success-50', border: 'border-success-100', text: 'text-success-700', header: 'bg-success-100', icon: 'text-success-500', subHeader: 'text-success-600', button: 'bg-success-500 text-white' },
-            { name: 'Orange', bg: 'bg-warning-50', border: 'border-warning-100', text: 'text-warning-700', header: 'bg-warning-100', icon: 'text-warning-500', subHeader: 'text-warning-600', button: 'bg-warning-500 text-white' },
+            { name: 'Orange', bg: 'bg-warning-50', border: 'border-warning-100', text: 'text-warning-700', header: 'bg-warning-100', icon: 'text-warning-400', subHeader: 'text-warning-600', button: 'bg-warning-500 text-white' },
         ];
 
         const { useState, useEffect, useMemo, useRef } = React;
@@ -243,10 +303,7 @@
                 const checkStatus = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), (docSnap) => {
                     if (docSnap.exists() && docSnap.data().lastScanned) {
                         setStatus(`ได้รับข้อมูล: ${docSnap.data().lastScanned}`);
-                        // Play Beep on PC when data received
-                        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                        audio.volume = 0.5;
-                        audio.play().catch(()=>{});
+                        // Play Beep on PC when data received (removed to rely on main App for sound)
                     }
                 });
                 return () => checkStatus();
@@ -523,14 +580,14 @@
                         style={{ transform: `translate(${position.x}px, ${position.y}px)`, transition: isDragging ? 'none' : 'transform 0.1s' }}
                     >
                         <div 
-                            className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-slate-50 -m-3 mb-2 p-3 rounded-t-2xl select-none"
+                            className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-primary-50 -m-3 mb-2 p-3 rounded-t-2xl select-none"
                             onMouseDown={handleMouseDown}
                             onTouchStart={handleTouchStart}
                             title="กดค้างเพื่อลากย้าย"
                         >
                             <div className="overflow-hidden">
-                                <div className="text-[9px] text-gray-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={10}/> Drag</div>
-                                <div className="text-sm font-bold text-slate-700 flex items-center gap-2 truncate">
+                                <div className="text-[9px] text-primary-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={10}/> Drag Me</div>
+                                <div className="text-sm font-bold text-primary-700 flex items-center gap-2 truncate">
                                     {target.name}
                                 </div>
                             </div>
@@ -540,13 +597,13 @@
                             {keys.map(k => (
                                 <button key={k} 
                                     onClick={() => onInput(k)}
-                                    className={`h-10 rounded-lg text-lg font-bold shadow-sm active:scale-90 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-slate-50 text-slate-600 hover:bg-white border border-slate-200'}`}
+                                    className={`h-10 rounded-lg text-lg font-bold shadow-sm active:scale-95 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}
                                 >
                                     {k === 'Del' ? <Icons.Backspace size={20}/> : k}
                                 </button>
                             ))}
                         </div>
-                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-xl font-bold text-base shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                        <button onClick={onConfirm} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-2 rounded-xl font-bold text-base shadow-md active:scale-95 transition flex items-center justify-center gap-2">
                             <Icons.Save size={18}/> บันทึก
                         </button>
                     </div>
@@ -1129,30 +1186,35 @@
                                                     <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-primary-600"/></div>
                                                     <div><div className="font-bold text-xl text-slate-800">{searchResult.name}</div><div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div></div>
                                                 </div>
-                                                {sections.map((sec, idx) => (
-                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                        <div className={`bg-primary-100 p-3 font-bold text-primary-700 border-b font-display`}>{sec.title}</div>
-                                                        <div className="bg-white p-3 space-y-2">
-                                                            {sec.groups?.map(g => g.columns?.map(c => {
-                                                                const val = calculateColumnValue(searchResult, g, c);
-                                                                const isSpecial = c.type === 'sum' || c.type === 'percent';
-                                                                const isMissing = !val || val === '-';
-                                                                return (
-                                                                    <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
-                                                                        <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
-                                                                            {c.name}
-                                                                            {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
-                                                                        </span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            {isMissing && c.link && (<a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>)}
-                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
+                                                {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                    return (
+                                                        <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                            <div className="bg-white p-3 space-y-2">
+                                                                {sec.groups?.map(g => g.columns?.map(c => {
+                                                                    const val = calculateColumnValue(searchResult, g, c);
+                                                                    const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                    const isMissing = !val || val === '-';
+                                                                    return (
+                                                                        <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                            <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                                {c.name}
+                                                                                {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                            </span>
+                                                                            <div className="flex items-center gap-2">
+                                                                                {isMissing && c.link && (
+                                                                                    <a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>
+                                                                                )}
+                                                                                <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                );
-                                                            }))}
+                                                                    );
+                                                                }))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
