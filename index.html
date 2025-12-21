@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud - ระบบบริหารจัดการชั้นเรียนและผลการเรียน</title>
+    <title>GradePro Cloud - ระบบบริหารจัดการชั้นเรียน</title>
     
-    <!-- Fonts: ใช้แบบผสมผสานเพื่อความสวยงาม -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Libraries ที่จำเป็น -->
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,26 +18,20 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- การตั้งค่า Tailwind Theme -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Sarabun', 'sans-serif'], // เนื้อหาทั่วไป
-                        display: ['Prompt', 'sans-serif'], // หัวข้อ
-                        ui: ['Krub', 'sans-serif'] // UI Elements
+                        sans: ['Sarabun', 'sans-serif'], 
+                        display: ['Prompt', 'sans-serif'] 
                     },
                     colors: { 
-                        // ชุดสีพาสเทลแบบสดใส (Vibrant Pastel)
                         primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
-                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 200:'#f5d0fe', 300:'#f0abfc', 400:'#e879f9', 500:'#d946ef', 600:'#c026d3' },
-                        success: { 50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a' },
-                        warning: { 50:'#fffbeb', 100:'#fef3c7', 500:'#f59e0b', 600:'#d97706' },
-                        danger: { 50:'#fef2f2', 100:'#fee2e2', 500:'#ef4444', 600:'#dc2626' },
-                        // สีพื้นหลังเฉพาะส่วน
-                        bgBase: '#f8fafc',
-                        cardBg: 'rgba(255, 255, 255, 0.95)'
+                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
+                        success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
+                        warning: { 50:'#fffbeb', 500:'#f59e0b' },
+                        danger: { 50:'#fef2f2', 500:'#ef4444' }
                     }
                 }
             }
@@ -45,99 +39,54 @@
     </script>
 
     <style>
-        /* Global Styles */
         body { 
-            background-color: #f8fafc;
-            color: #334155;
+            background-color: #f8fafc; 
+            color: #334155; 
             min-height: 100vh;
-            /* พื้นหลังแบบไล่เฉดสีที่ซับซ้อน */
             background-image: 
-                radial-gradient(at 40% 20%, hsla(28,100%,74%,0.05) 0px, transparent 50%),
-                radial-gradient(at 80% 0%, hsla(189,100%,56%,0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 50%, hsla(340,100%,76%,0.05) 0px, transparent 50%),
-                radial-gradient(at 80% 50%, hsla(340,100%,76%,0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, hsla(22,100%,77%,0.05) 0px, transparent 50%),
-                radial-gradient(at 80% 100%, hsla(242,100%,70%,0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 0%, hsla(343,100%,76%,0.05) 0px, transparent 50%);
-            font-family: 'Sarabun', sans-serif;
-            overflow-y: hidden; /* App-like feel for main body */
+                radial-gradient(at 0% 0%, hsla(253,16%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,90%,1) 0, transparent 50%);
+            overflow-y: hidden;
         }
-        
-        h1, h2, h3, h4, h5, h6, .font-display, button, .tab-btn { font-family: 'Prompt', sans-serif !important; }
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.8); 
+            background: rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); 
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); 
         }
 
-        /* Animations */
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        /* Custom Scrollbar */
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
         
-        /* Sticky Column Definitions */
-        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; background-color: white; }
-        .sticky-left-1 { position: sticky; left: 50px; z-index: 20; border-right: 1px solid #e2e8f0; background-color: white; }
-        .sticky-left-2 { position: sticky; left: 130px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); background-color: white; }
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
-        .vertical-header { 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            white-space: nowrap; 
-            text-align: left; 
-            max-height: 140px; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            padding: 4px 0;
-        }
+        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; max-height: 120px; overflow: hidden; text-overflow: ellipsis; }
+        #reader video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
 
-        /* Camera Styling */
-        #reader video, #mobile-reader video { object-fit: cover; border-radius: 1rem; width: 100%; height: 100%; }
-
-        /* Print Styles - Highly Detailed */
         .print-only { display: none; }
         @media print {
-            @page { size: A4; margin: 10mm; }
-            body { background: white !important; overflow: visible !important; height: auto !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .no-print, nav, button, input, select, .glass-card, .fixed { display: none !important; }
+            body { background: white !important; overflow: visible !important; height: auto !important; }
+            .no-print, nav, button, input:not([type="text"]), select, .glass-card, .fixed, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
+            .max-w-7xl { max-width: none !important; padding: 0 !important; margin: 0 !important; }
             .print-only { display: block !important; width: 100%; }
-            
-            /* Teacher Report Layout */
-            .teacher-print-mode @page { size: A4 landscape; }
-            .print-container { column-count: 2; column-gap: 5mm; width: 100%; }
-            .print-column { break-inside: avoid; }
-            
-            table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; border: 1px solid #000; margin-bottom: 10px; }
+            .print-container { column-count: 2; column-gap: 5mm; }
+            table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; break-inside: avoid; }
             table.print-table th, table.print-table td { border: 1px solid #000; padding: 4px; text-align: center; }
-            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
-            table.print-table td.text-left { text-align: left; padding-left: 5px; }
-            
-            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
-            
-            .student-report-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            .student-report-header h1 { font-size: 18pt; font-weight: bold; margin: 0; }
-            .student-report-header p { font-size: 14pt; margin: 0; }
-            
-            .student-info { border: 1px solid #000; padding: 10px; margin-bottom: 15px; font-size: 12pt; border-radius: 4px; }
-            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
-
-            .print-footer { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; margin: 0 auto; text-align: left; font-size: 9pt; }
+            .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; }
             .signature-block { text-align: center; width: 30%; }
-            .signature-line { border-bottom: 1px dotted #000; margin: 30px auto 5px; width: 90%; }
+            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
         }
     </style>
 </head>
@@ -145,32 +94,20 @@
     <div id="error-display"></div>
     <div id="root"></div>
 
-    <!-- Error Handling Script -->
     <script>
         window.onerror = function(message, source, lineno, colno, error) {
             const el = document.getElementById('error-display');
-            // Ignore common non-critical errors
             if(message.includes("permission-denied") || message.includes("Script error") || message.includes("ResizeObserver")) return;
             el.style.display = 'block';
-            el.innerHTML = `
-                <div class="bg-red-50 text-red-800 p-4 rounded-lg shadow-lg border border-red-200 m-4">
-                    <h3 class="font-bold text-lg flex items-center gap-2">⚠️ Application Error</h3>
-                    <p class="font-mono text-sm mt-2">${message}</p>
-                    <p class="text-xs text-gray-500 mt-1">Line: ${lineno}</p>
-                    <button onclick="this.parentElement.style.display='none'" class="mt-4 bg-red-600 text-white px-4 py-2 rounded shadow text-sm">Close</button>
-                </div>
-            `;
+            el.innerHTML = `<div class="bg-red-50 text-red-800 p-4 rounded-lg shadow-lg border border-red-200 m-4"><h3 class="font-bold">⚠️ Error</h3><p>${message}</p></div>`;
         };
     </script>
 
-    <!-- Application Script -->
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // --- CONFIGURATION ---
-        // ตั้งค่าเริ่มต้นเป็น Hybrid Mode (พยายามต่อออนไลน์ก่อน ถ้าไม่ได้จะใช้ Local Storage)
         let USE_LOCAL_STORAGE = false; 
 
         const firebaseConfig = {
@@ -194,22 +131,14 @@
         }
 
         const appId = 'grade-pro-v3'; 
-        const LOCAL_KEY = 'gradepro_full_data_v1';
+        const LOCAL_KEY = 'gradepro_final_v2';
 
-        // --- DATA HELPERS ---
-        const loadLocalData = () => { 
-            try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[], attendance:{}}; } 
-            catch(e) { return {students:[], sections:[], attendance:{}}; } 
-        };
+        // --- HELPERS ---
+        const loadLocalData = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[], attendance:{}}; } catch(e) { return {students:[], sections:[], attendance:{}}; } };
         const saveLocalData = (data) => localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
-        const getSafeDate = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const formatDate = (dateStr) => {
-            if(!dateStr) return '';
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-        };
+        const getSafeDate = () => new Date().toISOString().split('T')[0]; 
 
-        // --- ICONS (SVG Components) ---
+        // --- ICONS ---
         const Icon = ({ p, size=18, className="", onClick }) => ( <svg onClick={onClick} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{cursor: onClick ? 'pointer' : 'inherit'}}>{p}</svg> );
         const Icons = {
             Cloud: (p) => <Icon {...p} p={<><path d="M17.5 19c0-1.7-1.3-3-3-3h-11a4 4 0 0 1-0-8h1a5 5 0 0 1 9.9-1 3 3 0 0 1 3.1 3"/></>} />,
@@ -271,7 +200,6 @@
             ]
         };
 
-        // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
             { name: 'Sky', bg: 'bg-primary-50', border: 'border-primary-100', text: 'text-primary-700', header: 'bg-primary-100', icon: 'text-primary-400', subHeader: 'text-primary-600', button: 'bg-primary-400 text-white' },
             { name: 'Rose', bg: 'bg-secondary-50', border: 'border-secondary-100', text: 'text-secondary-600', header: 'bg-secondary-100', icon: 'text-secondary-400', subHeader: 'text-secondary-500', button: 'bg-secondary-500 text-white' },
@@ -280,41 +208,30 @@
             { name: 'Orange', bg: 'bg-warning-50', border: 'border-warning-100', text: 'text-warning-700', header: 'bg-warning-100', icon: 'text-warning-400', subHeader: 'text-warning-600', button: 'bg-warning-500 text-white' },
         ];
 
-        const { useState, useEffect, useMemo, useRef } = React;
+        const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
         // --- COMPONENTS ---
-        
         function ScannerController({ isOpen, onScan }) {
             useEffect(() => {
                 if(!isOpen) return;
                 const scanner = new Html5Qrcode("scanner-video");
-                const startScanner = async () => {
-                    try {
-                        await scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-                            (text) => { onScan(text.trim()); }, 
-                            () => {}
-                        );
-                    } catch(e) { console.error(e); }
-                };
-                startScanner();
+                scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => onScan(text.trim()), () => {}).catch(e => console.error(e));
                 return () => { try { scanner.stop(); } catch(e){} };
             }, [isOpen]);
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Attendance QR Modal (PC Left Side)
-        function AttendanceQRModal({ roomId, onClose, onSessionCreated }) {
+        function AttendanceQRModal({ roomId }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
 
             useEffect(() => {
-                const safeRoom = roomId ? roomId.replace(/[^a-zA-Z0-9]/g, '-') : 'ALL';
+                if (!roomId || roomId === 'All') return;
+                const safeRoom = roomId.replace(/[^a-zA-Z0-9]/g, '-');
                 const today = getSafeDate();
                 const newSessionId = `ATT-${safeRoom}-${today}`;
                 setSessionId(newSessionId);
-                if (onSessionCreated) onSessionCreated(newSessionId);
 
-                // Create session in DB (Optional for offline, but good for structure)
                 if (!USE_LOCAL_STORAGE) {
                     setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_sessions', newSessionId), { 
                         roomId: roomId, active: true, date: today, timestamp: Date.now()
@@ -325,28 +242,19 @@
                     if (qrRef.current) {
                         qrRef.current.innerHTML = "";
                         const url = window.location.href.split('?')[0] + '?attendance_session=' + newSessionId;
-                        new QRCode(qrRef.current, {
-                            text: url, width: 220, height: 220,
-                            colorDark : "#6366f1", colorLight : "#ffffff",
-                            correctLevel : QRCode.CorrectLevel.H
-                        });
+                        new QRCode(qrRef.current, { text: url, width: 220, height: 220, colorDark : "#6366f1", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
                     }
                 }, 100);
             }, [roomId]);
 
             return (
                 <div className="flex flex-col items-center justify-center">
-                    <div className="bg-white p-3 rounded-xl border-2 border-dashed border-primary-200 shadow-sm mb-2">
-                        <div ref={qrRef}></div>
-                    </div>
-                    <div className="text-center">
-                         <div className="text-xs text-primary-500 font-bold bg-primary-50 px-2 py-1 rounded inline-block">ID: {sessionId}</div>
-                    </div>
+                    <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary-200 shadow-sm mb-2"><div ref={qrRef}></div></div>
+                    <div className="text-center"><div className="text-xs text-primary-500 font-bold bg-primary-50 px-2 py-1 rounded inline-block">ID: {sessionId}</div></div>
                 </div>
             );
         }
 
-        // Mobile Pair Modal (PC)
         function MobilePairModal({ sessionId, onClose }) {
             const qrRef = useRef(null);
             const [status, setStatus] = useState('กำลังรอการเชื่อมต่อ...');
@@ -357,13 +265,11 @@
                     qrRef.current.innerHTML = "";
                     new QRCode(qrRef.current, { text: url, width: 200, height: 200, colorDark : "#ec4899", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
                 }
-                
                 if (!USE_LOCAL_STORAGE) {
                     const checkStatus = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), (docSnap) => {
                         if (docSnap.exists() && docSnap.data().lastScanned) {
                             setStatus(`ได้รับข้อมูล: ${docSnap.data().lastScanned}`);
-                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.volume = 0.5; audio.play().catch(()=>{});
+                            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(()=>{});
                         }
                     });
                     return () => checkStatus();
@@ -374,12 +280,10 @@
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
                     <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative shadow-2xl">
                         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600"><Icons.QrCode size={32}/></div>
                         <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">Mobile Pair</h3>
                         <p className="text-gray-500 mb-6 text-sm">สแกนเพื่อเปลี่ยนมือถือเป็นเครื่องยิงบาร์โค้ด</p>
                         {USE_LOCAL_STORAGE && <p className="text-xs text-orange-500 mb-2">*โหมดออฟไลน์: ฟีเจอร์นี้อาจใช้งานไม่ได้เต็มรูปแบบ</p>}
                         <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm"></div>
-                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
                         <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold transition-all ${status.includes('ได้รับ') ? 'bg-green-100 text-green-700 scale-105' : 'bg-gray-100 text-gray-400'}`}>{status}</div>
                     </div>
                 </div>
@@ -398,19 +302,13 @@
                         (text) => {
                             if (text.includes("scan_session")) return;
                             setStatus(`ส่ง: ${text}`);
-                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.volume = 0.5; audio.play().catch(()=>{});
-
+                            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(()=>{});
                             if (!USE_LOCAL_STORAGE) {
-                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { 
-                                    lastScanned: text, timestamp: Date.now() 
-                                }, { merge: true })
-                                .then(() => setStatus(`ส่งสำเร็จ: ${text}`))
-                                .catch(err => setStatus(`ส่งไม่ผ่าน: ${err.message}`));
+                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { lastScanned: text, timestamp: Date.now() }, { merge: true })
+                                .then(() => setStatus(`ส่งสำเร็จ: ${text}`)).catch(err => setStatus(`ส่งไม่ผ่าน: ${err.message}`));
                             }
                             if(navigator.vibrate) navigator.vibrate(200);
-                        }, 
-                        () => {}
+                        }, () => {}
                     ).catch(err => { setStatus("เปิดกล้องไม่ได้: " + err); setIsScanning(false); });
                 }, 100);
             };
@@ -418,10 +316,7 @@
             return (
                 <div className="fixed inset-0 bg-gray-900 z-[200] flex flex-col items-center justify-center p-4 text-white">
                     <h3 className="text-white text-xl font-bold mb-4 flex gap-2"><Icons.Camera/> Mobile Scanner</h3>
-                    {!isScanning ? 
-                        <button onClick={startScan} className="bg-green-500 w-48 h-48 rounded-full flex items-center justify-center text-lg font-bold shadow-lg animate-bounce">เริ่มสแกน</button> : 
-                        <div id="mobile-reader" className="w-full max-w-sm aspect-square bg-black rounded-xl overflow-hidden border-4 border-green-400"></div>
-                    }
+                    {!isScanning ? <button onClick={startScan} className="bg-green-500 w-48 h-48 rounded-full flex items-center justify-center text-lg font-bold shadow-lg animate-bounce">เริ่มสแกน</button> : <div id="mobile-reader" className="w-full max-w-sm aspect-square bg-black rounded-xl overflow-hidden border-4 border-green-400"></div>}
                     <div className="mt-6 text-center">{status}</div>
                     <button onClick={onClose} className="mt-8 bg-red-600 px-6 py-2 rounded-lg font-bold">ปิด</button>
                 </div>
@@ -454,9 +349,7 @@
                          if(!found) { setStatus('error'); alert("ไม่พบรหัสนักเรียน (Offline)"); return; }
                          sData = found;
                     }
-
                     const today = getSafeDate();
-                    
                     if(!USE_LOCAL_STORAGE) {
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_records', `${today}_${studentId}`), {
                             studentId: studentId, name: sData.name, room: sData.room, no: sData.no, timestamp: Date.now(), type: 'self', date: today
@@ -465,12 +358,9 @@
                         const data = loadLocalData();
                         if (!data.attendance) data.attendance = {};
                         if (!data.attendance[today]) data.attendance[today] = {};
-                        data.attendance[today][studentId] = {
-                             studentId: studentId, name: sData.name, room: sData.room, no: sData.no, timestamp: Date.now(), type: 'self', date: today
-                        };
+                        data.attendance[today][studentId] = { studentId: studentId, name: sData.name, room: sData.room, no: sData.no, timestamp: Date.now(), type: 'self', date: today };
                         saveLocalData(data);
                     }
-
                     localStorage.setItem('last_checkin_date', today);
                     setStudentName(sData.name);
                     setStatus('success');
@@ -494,7 +384,6 @@
                     <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm text-center">
                         <h1 className="text-2xl font-bold text-gray-800 mb-6">ลงชื่อเข้าเรียน</h1>
                         <input type="tel" className="w-full p-4 border-2 rounded-xl text-center text-xl mb-4 focus:border-primary-500 outline-none" placeholder="รหัสนักเรียน" value={studentId} onChange={e => setStudentId(e.target.value)} />
-                        {status === 'error' && <p className="text-red-500 text-sm mb-2">ไม่พบรหัสนักเรียน</p>}
                         <button onClick={handleCheckIn} disabled={status==='loading'} className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold shadow-lg transition transform active:scale-95">
                             {status==='loading' ? 'กำลังตรวจสอบ...' : 'ยืนยัน'}
                         </button>
@@ -503,7 +392,6 @@
             );
         }
 
-        // Virtual Numpad
         function VirtualNumpad({ isOpen, target, onInput, onClose, onConfirm }) {
             if (!isOpen || !target) return null;
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'Del'];
@@ -541,6 +429,7 @@
             const [sections, setSections] = useState([]);
             const [loading, setLoading] = useState(true);
             const [user, setUser] = useState(null);
+            
             const [searchId, setSearchId] = useState('');
             const [searchResult, setSearchResult] = useState(null);
             const [password, setPassword] = useState('');
@@ -555,6 +444,8 @@
             const [isImportOpen, setIsImportOpen] = useState(false);
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
+            const [scanTarget, setScanTarget] = useState('');
+            const [returnToScanner, setReturnToScanner] = useState(false); 
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
@@ -640,7 +531,7 @@
                     }
                 });
                 return () => unsub();
-            }, [scannerSessionId, isMobileScannerActive, students, scanMode]); // Added scanMode dep
+            }, [scannerSessionId, isMobileScannerActive, students, scanMode]); 
             
             useEffect(() => {
                 if (teacherTab !== 'attendance' || !user) return;
@@ -690,17 +581,22 @@
                 else { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', studentData.id), studentData, {merge:true}); }
             };
             
-            const handleScan = (code) => {
+            const handleScan = useCallback((code) => {
                 if (scanMode === 'attendance' || teacherTab === 'attendance') {
                      const s = students.find(x => x.id === code || x.name.includes(code));
-                     if(s) toggleAttendance(s.id, s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
+                     if(s) {
+                        // For attendance scan, we add if not present, but for teacher scan input we might want to toggle.
+                        // Let's make manual scan always toggle for feedback.
+                        toggleAttendance(s.id, s);
+                     } else setWarning({show:true, msg:'ไม่พบข้อมูล'});
                 } else {
                      const s = students.find(x => x.id === code || x.name.includes(code));
                      if (s) { setScoreModalData(JSON.parse(JSON.stringify(s))); setTeacherSearchId(''); setIsScannerOpen(false); setIsMobilePairOpen(false); } 
                      else { setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'}); }
                 }
-            };
-            const handleTeacherSearch = (code) => handleScan(code); // Alias
+            }, [scanMode, teacherTab, students, attendanceRecords]);
+
+            const handleTeacherSearch = (code) => handleScan(code); 
 
             const navigateStudent = (direction) => { if(!scoreModalData) return; const currentIndex = processedStudents.findIndex(s => s.id === scoreModalData.id); const nextIndex = currentIndex + direction; if(nextIndex >= 0 && nextIndex < processedStudents.length) { updateStudent(scoreModalData); setScoreModalData(JSON.parse(JSON.stringify(processedStudents[nextIndex]))); } };
             const handlePrint = () => window.print();
