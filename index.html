@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- QRCode.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" xintegrity="sha512-CNgIRspuACwg2iBqdbDWpTZLqb38nIs6e1wbcep87qKP2tupDXnrG0vRL1tJLiKfTR+50JlijW44bTrDlZx7aw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +36,7 @@
     </script>
     
     <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -51,6 +51,7 @@
                               radial-gradient(at 80% 0%, hsla(189,100%,56%,0.1) 0px, transparent 50%),
                               radial-gradient(at 0% 50%, hsla(340,100%,76%,0.1) 0px, transparent 50%);
             color: #334155; 
+            min-height: 100vh;
         }
         
         .glass-card { 
@@ -65,7 +66,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -76,7 +76,7 @@
         /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
         /* Vertical Text */
@@ -176,9 +176,7 @@
         const appId = 'grade-pro-v3'; 
         
         const LOCAL_KEY = 'gradepro_local_data';
-        const loadLocalData = () => {
-            try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[]}; } catch(e) { return {students:[], sections:[]}; }
-        };
+        const loadLocalData = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[]}; } catch(e) { return {students:[], sections:[]}; } };
         const saveLocalData = (data) => localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
 
         // --- ICONS ---
@@ -190,7 +188,6 @@
             Search: (p) => <Icon {...p} p={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
             User: (p) => <Icon {...p} p={<><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
             Lock: (p) => <Icon {...p} p={<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
-            LogOut: (p) => <Icon {...p} p={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>} />,
             Edit: (p) => <Icon {...p} p={<><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></>} />,
             Trash: (p) => <Icon {...p} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
             Plus: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
@@ -216,7 +213,7 @@
             Print: (p) => <Icon {...p} p={<><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></>} />,
             Backspace: (p) => <Icon {...p} p={<><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></>} />,
             Keyboard: (p) => <Icon {...p} p={<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M6 12h.001"/><path d="M10 12h.001"/><path d="M14 12h.001"/><path d="M18 12h.001"/><path d="M7 16h10"/></>} />,
-            Calculator: (p) => <Icon {...p} p={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
+            Calculator: (p) => <Icon {...p} p={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
             Link: (p) => <Icon {...p} p={<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>} />,
             ExternalLink: (p) => <Icon {...p} p={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
             CheckCircle: (p) => <Icon {...p} p={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
@@ -238,7 +235,13 @@
                 ]
             }
         ];
-        const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
+        
+        // Add more demo data for better preview
+        const SEED_DATA = [
+            { id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } },
+            { id: '66002', no: '2', name: 'นางสาวใจดี มีสุข', room: '1/1', scores: { 'c1': 10, 'c2': 9 } },
+            { id: '66003', no: '3', name: 'นายรักเรียน เพียรศึกษา', room: '1/1', scores: { 'c1': 8, 'c2': 7 } }
+        ];
 
         // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
@@ -270,7 +273,7 @@
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Attendance QR Modal (Correctly Defined)
+        // 1. QR Generator Component for Attendance (PC) - Defined before App
         function AttendanceQRModal({ roomId, onClose, onSessionCreated }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
@@ -281,35 +284,44 @@
                 setSessionId(newSessionId);
                 if (onSessionCreated) onSessionCreated(newSessionId);
 
+                // Create session in DB (or Mock)
                 if (!useLocalStorage) {
                     setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_sessions', newSessionId), { 
                         roomId: roomId, active: true, timestamp: Date.now(), date: new Date().toLocaleDateString('th-TH')
                     });
                 }
-                
+
+                // Wait a bit for DOM
                 setTimeout(() => {
                     if (qrRef.current) {
                         qrRef.current.innerHTML = "";
                         const url = window.location.href.split('?')[0] + '?attendance_session=' + newSessionId;
-                        new QRCode(qrRef.current, { text: url, width: 250, height: 250, colorDark : "#6366f1", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+                        new QRCode(qrRef.current, {
+                            text: url,
+                            width: 200,
+                            height: 200,
+                            colorDark : "#6366f1",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
                     }
                 }, 100);
             }, [roomId]);
 
             return (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
-                    <div className="bg-white rounded-3xl p-8 text-center max-w-md w-full relative shadow-2xl">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
-                        <h3 className="text-2xl font-bold text-primary-700 mb-2 font-display">เช็คชื่อเข้าเรียน</h3>
-                        <p className="text-gray-500 mb-6 text-sm">สแกน QR Code เพื่อลงชื่อเข้าเรียน</p>
-                        <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm flex justify-center"></div>
-                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
+                <div className="flex flex-col items-center justify-center h-full">
+                    <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-primary-200 shadow-sm mb-4">
+                        <div ref={qrRef}></div>
+                    </div>
+                    <div className="text-center">
+                        <h3 className="font-bold text-primary-700 text-lg mb-1">สแกนเพื่อเช็คชื่อ</h3>
+                        <p className="text-gray-400 text-xs font-mono bg-white px-2 py-1 rounded border border-gray-100 inline-block">ID: {sessionId}</p>
                     </div>
                 </div>
             );
         }
 
-        // Mobile Pair Modal
+        // Mobile Pair Modal (PC) - QR Generator
         function MobilePairModal({ sessionId, onClose }) {
             const qrRef = useRef(null);
             const [status, setStatus] = useState('กำลังรอการเชื่อมต่อ...');
@@ -383,7 +395,7 @@
             };
 
             return (
-                <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
+                <div className="fixed inset-0 bg-gray-900 z-[200] flex flex-col items-center justify-center p-4 text-white">
                     <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2"><Icons.Camera/> Mobile Scanner</h3>
                     {!isScanning ? (
                         <div className="text-center w-full max-w-sm">
@@ -472,8 +484,8 @@
             return (
                 <div className="fixed top-28 right-4 z-[70] pointer-events-none">
                     <div className="bg-white p-3 rounded-2xl shadow-xl border border-gray-200 pointer-events-auto w-60 ring-1 ring-black/5 animate-fade-in" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}>
-                        <div className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-slate-50 -m-3 mb-2 p-3 rounded-t-2xl select-none" onMouseDown={e=>onStart(e.clientX, e.clientY)} onTouchStart={e=>onStart(e.touches[0].clientX, e.touches[0].clientY)}>
-                            <div className="text-xs font-bold text-gray-500 flex gap-2"><Icons.FileSpreadsheet size={14}/> {target.name} (Max {target.max})</div>
+                        <div className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-primary-50 -m-3 mb-2 p-3 rounded-t-2xl select-none" onMouseDown={e=>onStart(e.clientX, e.clientY)} onTouchStart={e=>onStart(e.touches[0].clientX, e.touches[0].clientY)}>
+                            <div className="text-xs font-bold text-primary-700 flex gap-2"><Icons.FileSpreadsheet size={14}/> {target.name}</div>
                             <button onClick={onClose}><Icons.X size={16}/></button>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mb-2">
@@ -485,6 +497,7 @@
             );
         }
 
+        // --- MAIN APP ---
         function App() {
             const [view, setView] = useState('student');
             const [students, setStudents] = useState([]);
@@ -499,6 +512,7 @@
             const [teacherTab, setTeacherTab] = useState('scores'); 
             const [selectedRoom, setSelectedRoom] = useState('All');
             const [teacherSearchId, setTeacherSearchId] = useState('');
+            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const [warning, setWarning] = useState({ show: false, msg: '' });
             const [collapsedSections, setCollapsedSections] = useState({});
             const [scoreModalData, setScoreModalData] = useState(null); 
@@ -507,6 +521,8 @@
             const [isImportOpen, setIsImportOpen] = useState(false);
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
+            const [scanTarget, setScanTarget] = useState('');
+            const [returnToScanner, setReturnToScanner] = useState(false); 
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
@@ -530,9 +546,10 @@
             const [importProgress, setImportProgress] = useState(0);
             const [isImporting, setIsImporting] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
-            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
+            const [scanMode, setScanMode] = useState('score'); // 'score' or 'attendance'
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
+            const attendanceInputRef = useRef(null);
 
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
@@ -550,10 +567,17 @@
                 if(useLocalStorage) {
                     setUser({uid: 'offline'});
                     const d = loadLocalData();
-                    if(!d.sections || d.sections.length === 0) { d.sections = SEED_SECTIONS; d.students = d.students?.length > 0 ? d.students : SEED_DATA; saveLocalData(d); }
+                    if(!d.sections || d.sections.length === 0) { 
+                        d.sections = SEED_SECTIONS; 
+                        d.students = d.students?.length > 0 ? d.students : SEED_DATA;
+                        saveLocalData(d); 
+                    }
                     setSections(d.sections); setStudents(d.students); setLoading(false);
                 } else {
-                    const initAuth = async () => { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token); else await signInAnonymously(auth); };
+                    const initAuth = async () => {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    };
                     initAuth();
                     return onAuthStateChanged(auth, setUser);
                 }
@@ -562,7 +586,10 @@
             useEffect(() => {
                 if(!user || useLocalStorage) return;
                 const unsub1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), d => d.exists() && setSections(d.data().sections || []));
-                const unsub2 = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'students'), s => { setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))); setLoading(false); });
+                const unsub2 = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'students'), s => {
+                    setStudents(s.docs.map(d => ({id: d.id, ...d.data()})));
+                    setLoading(false);
+                });
                 return () => { unsub1(); unsub2(); };
             }, [user]);
 
@@ -570,10 +597,15 @@
                 if (!scannerSessionId || isMobileScannerActive) return; 
                 const unsub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId), (doc) => {
                     const data = doc.data();
-                    if (data && data.lastScanned) { const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); audio.volume = 0.5; audio.play().catch(()=>{}); handleTeacherSearch(data.lastScanned.trim()); }
+                    if (data && data.lastScanned) {
+                        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                        audio.volume = 0.5; audio.play().catch(()=>{});
+                        // Use unified handleScan to route logic
+                        handleScan(data.lastScanned.trim());
+                    }
                 });
                 return () => unsub();
-            }, [scannerSessionId, isMobileScannerActive, students]);
+            }, [scannerSessionId, isMobileScannerActive, students, scanMode]); // Added scanMode dep
             
             useEffect(() => {
                 if (teacherTab !== 'attendance' || !user) return;
@@ -584,7 +616,11 @@
                 } else {
                     const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance_records'), where('date', '==', today));
                     const unsub = onSnapshot(q, (snapshot) => {
-                        const records = {}; snapshot.forEach(doc => { const data = doc.data(); records[data.studentId] = data; });
+                        const records = {};
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            records[data.studentId] = data; 
+                        });
                         setAttendanceRecords(records);
                     });
                     return () => unsub();
@@ -595,53 +631,400 @@
                 if (teacherTab !== 'stats' || !user) return;
                 const fetchStats = async () => {
                     const studentsInRoom = students.filter(s => s.room === selectedRoom);
-                    const stats = studentsInRoom.map(s => ({ ...s, present: Math.floor(Math.random() * 20), total: 20, percent: Math.random() * 100 })); // Simulated stats for now
+                    const stats = studentsInRoom.map(s => ({ ...s, present: Math.floor(Math.random() * 20), total: 20, percent: Math.random() * 100 })); 
                     setStatsData(stats);
                 };
                 fetchStats();
             }, [teacherTab, selectedRoom, students]);
 
+            useEffect(() => {
+                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
+                if (!isAnyModalOpen) {
+                    if (view === 'student' && studentInputRef.current) setTimeout(() => studentInputRef.current.focus(), 100);
+                    else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) setTimeout(() => teacherInputRef.current.focus(), 100);
+                    else if (view === 'teacher' && teacherTab === 'attendance' && attendanceInputRef.current) setTimeout(() => attendanceInputRef.current.focus(), 100);
+                }
+            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
+
             const saveData = (newS, newSec) => {
-                if(useLocalStorage) { const d = loadLocalData(); if(newS) d.students = newS; if(newSec) d.sections = newSec; saveLocalData(d); if(newS) setStudents(newS); if(newSec) setSections(newSec); } 
-                else { if(newSec) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), {sections: newSec}, {merge:true}); }
+                if(useLocalStorage) {
+                    const d = loadLocalData();
+                    if(newS) d.students = newS; if(newSec) d.sections = newSec;
+                    saveLocalData(d);
+                    if(newS) setStudents(newS); if(newSec) setSections(newSec);
+                } else {
+                    if(newSec) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), {sections: newSec}, {merge:true});
+                }
             };
+
             const updateStudent = async (studentData) => {
                 Object.keys(studentData).forEach(key => studentData[key] === undefined && delete studentData[key]);
-                if(useLocalStorage) { const newS = students.map(s => s.id === studentData.id ? studentData : s); if(!newS.find(s => s.id === studentData.id)) newS.push(studentData); saveData(newS, null); } 
-                else { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', studentData.id), studentData, {merge:true}); }
+                if(useLocalStorage) {
+                    const newS = students.map(s => s.id === studentData.id ? studentData : s);
+                    if(!newS.find(s => s.id === studentData.id)) newS.push(studentData);
+                    saveData(newS, null);
+                } else {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', studentData.id), studentData, {merge:true});
+                }
             };
-            const handleTeacherSearch = (scannedId) => { const s = students.find(x => x.id === scannedId || x.name.includes(scannedId)); if (s) { setScoreModalData(JSON.parse(JSON.stringify(s))); setTeacherSearchId(''); setIsScannerOpen(false); setIsMobilePairOpen(false); } else { setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'}); } };
-            const handlePrint = () => window.print();
-            const handleNumpadInput = (key) => { if (!scoreModalData || !numpadState.colId) return; const colId = numpadState.colId; const currentVal = String(scoreModalData.scores?.[colId] || ''); let newVal = key === 'Del' ? currentVal.slice(0, -1) : (key === '.' && currentVal.includes('.') ? currentVal : currentVal + key); if (parseFloat(newVal) > numpadState.max) { setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` }); if(navigator.vibrate) navigator.vibrate([100, 50, 100]); return; } setScoreModalData({ ...scoreModalData, scores: { ...scoreModalData.scores, [colId]: newVal } }); };
+
+            // Unified Scan Handler
+            const handleScan = (code) => {
+                if (scanMode === 'score') handleTeacherSearch(code);
+                else if (scanMode === 'attendance') handleAttendanceScan(code);
+            };
+
+            const handleTeacherSearch = (scannedId) => {
+                const s = students.find(x => x.id === scannedId || x.name.includes(scannedId));
+                if (s) {
+                    setScoreModalData(JSON.parse(JSON.stringify(s)));
+                    setTeacherSearchId('');
+                    setIsScannerOpen(false);
+                    // Play Beep on PC
+                    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                    audio.volume = 0.5; audio.play().catch(()=>{});
+                } else {
+                    setWarning({show:true, msg:'ไม่พบข้อมูลนักเรียน'});
+                }
+            };
+
+            const handleAttendanceScan = (scannedId) => {
+                const s = students.find(x => x.id === scannedId || x.name.includes(scannedId));
+                if (s) {
+                    if (!attendanceRecords[s.id]) {
+                        toggleAttendance(s.id, s);
+                        // Beep is handled by caller or we do it here if from input
+                        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                        audio.volume = 0.5; audio.play().catch(()=>{});
+                    }
+                    setIsScannerOpen(false); // Close camera if used
+                } else {
+                    setWarning({show:true, msg:'ไม่พบข้อมูลในห้องนี้'});
+                }
+            };
+
+            const navigateStudent = (direction) => {
+                if(!scoreModalData) return;
+                const currentIndex = processedStudents.findIndex(s => s.id === scoreModalData.id);
+                const nextIndex = currentIndex + direction;
+                if(nextIndex >= 0 && nextIndex < processedStudents.length) {
+                    updateStudent(scoreModalData); 
+                    setScoreModalData(JSON.parse(JSON.stringify(processedStudents[nextIndex])));
+                }
+            };
             
+            const handlePrint = () => {
+                window.print();
+            };
+            
+            const handleNumpadInput = (key) => {
+                if (!scoreModalData || !numpadState.colId) return;
+                
+                const colId = numpadState.colId;
+                const currentVal = String(scoreModalData.scores?.[colId] || '');
+                let newVal = currentVal;
+
+                if (key === 'Del') {
+                    newVal = currentVal.slice(0, -1);
+                } else {
+                    // Prevent multiple dots
+                    if (key === '.' && currentVal.includes('.')) return;
+                    newVal = currentVal + key;
+                }
+
+                // Validate Max
+                if (parseFloat(newVal) > numpadState.max) {
+                    setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
+                    if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    return;
+                }
+
+                setScoreModalData({
+                    ...scoreModalData,
+                    scores: { ...scoreModalData.scores, [colId]: newVal }
+                });
+            };
+            
+            // Toggle Attendance Manually (Teacher) - Date Based
             const toggleAttendance = async (studentId, studentData) => {
-                const today = new Date().toLocaleDateString('th-TH'); const recordId = `${today}_${studentId}`; const existing = attendanceRecords[studentId];
-                if (useLocalStorage) { const data = loadLocalData(); if (!data.attendance) data.attendance = {}; if (!data.attendance[today]) data.attendance[today] = {}; if (existing) { delete data.attendance[today][studentId]; const newRecords = {...attendanceRecords}; delete newRecords[studentId]; setAttendanceRecords(newRecords); } else { const newRecord = { studentId, name: studentData.name, room: studentData.room, no: studentData.no, timestamp: Date.now(), type: 'manual', date: today }; data.attendance[today][studentId] = newRecord; setAttendanceRecords({...attendanceRecords, [studentId]: newRecord}); } saveLocalData(data); } 
-                else { if (existing) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_records', recordId)); else await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_records', recordId), { studentId, name: studentData.name, room: studentData.room, no: studentData.no, timestamp: Date.now(), type: 'manual', date: today }); }
+                const today = new Date().toLocaleDateString('th-TH');
+                const recordId = `${today}_${studentId}`;
+                const existing = attendanceRecords[studentId];
+                
+                if (useLocalStorage) {
+                    const data = loadLocalData();
+                    if (!data.attendance) data.attendance = {};
+                    if (!data.attendance[today]) data.attendance[today] = {};
+                    
+                    if (existing) {
+                        delete data.attendance[today][studentId];
+                        const newRecords = {...attendanceRecords};
+                        delete newRecords[studentId];
+                        setAttendanceRecords(newRecords);
+                    } else {
+                        const newRecord = {
+                            studentId, name: studentData.name, room: studentData.room, no: studentData.no, timestamp: Date.now(), type: 'manual', date: today
+                        };
+                        data.attendance[today][studentId] = newRecord;
+                        setAttendanceRecords({...attendanceRecords, [studentId]: newRecord});
+                    }
+                    saveLocalData(data);
+                } else {
+                    if (existing) {
+                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_records', recordId));
+                    } else {
+                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_records', recordId), {
+                            studentId, name: studentData.name, room: studentData.room, no: studentData.no, timestamp: Date.now(), type: 'manual', date: today
+                        });
+                    }
+                }
             };
             
-            const requestAdminAction = (type) => { setPendingAction(type); setConfirmPasswordInput(''); setIsPasswordConfirmOpen(true); };
-            const executeAdminAction = () => { if (confirmPasswordInput !== '65411597') { alert('รหัสผ่านไม่ถูกต้อง'); return; } setIsPasswordConfirmOpen(false); if (pendingAction === 'export') { const dataStr = JSON.stringify({ students, sections }); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', `gradepro_backup.json`); linkElement.click(); } else if (pendingAction === 'clear') { if(confirm('ยืนยันล้างข้อมูล?')) { saveData([], []); alert('เรียบร้อย'); } } };
-            const handleFileImport = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { try { const json = JSON.parse(event.target.result); if (Array.isArray(json.students) && Array.isArray(json.sections)) { if(confirm(`ยืนยันการนำเข้าข้อมูล? \n- นักเรียน: ${json.students.length} คน\n- บทเรียน: ${json.sections.length} บท`)) { saveData(json.students, json.sections); alert('นำเข้าข้อมูลสำเร็จ'); } } else { alert('รูปแบบไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); e.target.value = null; };
-            const handleBulkImport = async () => { if (!importText.trim()) return; setIsImporting(true); setImportProgress(0); const lines = importText.trim().split('\n'); const newStudents = []; for (let line of lines) { const p = line.trim().split(/[\t,]+/); if (p.length >= 2) { const id = p[0].trim(); const name = p[1].trim(); const room = p[2]?.trim() || ''; const no = p[3]?.trim() || ''; if(id && name) { newStudents.push({ id, name, room, no, scores: {} }); } } } if (newStudents.length === 0) { alert("ไม่พบข้อมูลที่ถูกต้อง"); setIsImporting(false); return; } if (useLocalStorage) { const existingIds = new Set(students.map(s => s.id)); const uniqueNew = newStudents.filter(s => !existingIds.has(s.id)); const updatedStudents = [...students, ...uniqueNew]; for(let i=0; i<=100; i+=10) { setImportProgress(i); await new Promise(r => setTimeout(r, 20)); } saveData(updatedStudents, null); } else { const CHUNK_SIZE = 450; const chunks = []; for (let i = 0; i < newStudents.length; i += CHUNK_SIZE) { chunks.push(newStudents.slice(i, i + CHUNK_SIZE)); } let processedCount = 0; for (let i = 0; i < chunks.length; i++) { const chunk = chunks[i]; const batch = writeBatch(db); chunk.forEach(s => { const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id); batch.set(docRef, s, { merge: true }); }); await batch.commit(); processedCount += chunk.length; setImportProgress(Math.round((processedCount / newStudents.length) * 100)); } } alert(`นำเข้าสำเร็จ ${newStudents.length} รายการ`); setIsImporting(false); setImportProgress(0); setIsImportOpen(false); setImportText(''); };
+            // Admin Actions Handlers
+            const requestAdminAction = (type) => {
+                setPendingAction(type);
+                setConfirmPasswordInput('');
+                setIsPasswordConfirmOpen(true);
+            };
+
+            const executeAdminAction = () => {
+                if (confirmPasswordInput !== '65411597') {
+                    alert('รหัสผ่านไม่ถูกต้อง');
+                    return;
+                }
+                setIsPasswordConfirmOpen(false);
+
+                if (pendingAction === 'export') {
+                    const dataStr = JSON.stringify({ students, sections });
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', `gradepro_backup_${new Date().toISOString().slice(0,10)}.json`);
+                    linkElement.click();
+                } else if (pendingAction === 'export_excel') {
+                    // Generate CSV for Excel
+                    let csvContent = "\uFEFF"; // BOM for Thai support
+                    
+                    // 1. Headers
+                    const headers = ["เลขที่", "รหัส", "ชื่อ-นามสกุล", "ห้อง"];
+                    const colIds = [];
+                    
+                    sections.forEach(sec => {
+                        sec.groups.forEach(grp => {
+                            grp.columns.forEach(col => {
+                                headers.push(`${sec.title}-${col.name} (เต็ม ${col.max})`);
+                                colIds.push(col.id);
+                            });
+                        });
+                    });
+                    
+                    csvContent += headers.join(",") + "\n";
+                    
+                    // 2. Rows
+                    // Sort by room then no
+                    const sortedStudents = [...students].sort((a,b) => {
+                        if (a.room !== b.room) return a.room.localeCompare(b.room);
+                        return (parseInt(a.no)||0) - (parseInt(b.no)||0);
+                    });
+
+                    sortedStudents.forEach(s => {
+                        const row = [
+                            `"${s.no || ''}"`,
+                            `"${s.id || ''}"`,
+                            `"${s.name || ''}"`,
+                            `"${s.room || ''}"`
+                        ];
+                        
+                        colIds.forEach(cid => {
+                            let score = s.scores && s.scores[cid] !== undefined ? s.scores[cid] : "";
+                            let foundCol = null;
+                            let foundGroup = null;
+                            for(const sec of sections) {
+                                for(const grp of sec.groups) {
+                                    const c = grp.columns.find(cl => cl.id === cid);
+                                    if(c) { foundCol = c; foundGroup = grp; break; }
+                                }
+                                if(foundCol) break;
+                            }
+
+                            if(foundCol && foundCol.type !== 'manual') {
+                                score = calculateColumnValue(s, foundGroup, foundCol);
+                                if(score === '-') score = "";
+                            }
+
+                            row.push(`"${score}"`);
+                        });
+                        
+                        csvContent += row.join(",") + "\n";
+                    });
+                    
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `gradepro_score_sheet_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                } else if (pendingAction === 'import') {
+                    if (fileInputRef.current) fileInputRef.current.click();
+                } else if (pendingAction === 'clear') {
+                    if(confirm('⚠️ คำเตือน: ข้อมูลนักเรียนและคะแนนทั้งหมดจะถูกลบถาวร ยืนยันหรือไม่?')) {
+                        saveData([], []);
+                        alert('ล้างข้อมูลเรียบร้อยแล้ว');
+                    }
+                }
+            };
+
+            const handleFileImport = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const json = JSON.parse(event.target.result);
+                        if (Array.isArray(json.students) && Array.isArray(json.sections)) {
+                            if(confirm(`ยืนยันการนำเข้าข้อมูล? \n- นักเรียน: ${json.students.length} คน\n- บทเรียน: ${json.sections.length} บท`)) {
+                                saveData(json.students, json.sections);
+                                alert('นำเข้าข้อมูลสำเร็จ');
+                            }
+                        } else {
+                            alert('รูปแบบไฟล์ไม่ถูกต้อง');
+                        }
+                    } catch (err) {
+                        alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null;
+            };
+            
+            const handleBulkImport = async () => {
+                if (!importText.trim()) return;
+                setIsImporting(true);
+                setImportProgress(0);
+
+                const lines = importText.trim().split('\n');
+                const newStudents = [];
+
+                for (let line of lines) {
+                    const p = line.trim().split(/[\t,]+/);
+                    if (p.length >= 2) {
+                        const id = p[0].trim();
+                        const name = p[1].trim();
+                        const room = p[2]?.trim() || '';
+                        const no = p[3]?.trim() || '';
+                        if(id && name) {
+                            newStudents.push({ id, name, room, no, scores: {} });
+                        }
+                    }
+                }
+
+                if (newStudents.length === 0) {
+                    alert("ไม่พบข้อมูลที่ถูกต้อง");
+                    setIsImporting(false);
+                    return;
+                }
+
+                if (useLocalStorage) {
+                    const existingIds = new Set(students.map(s => s.id));
+                    const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
+                    const updatedStudents = [...students, ...uniqueNew];
+                    for(let i=0; i<=100; i+=10) {
+                        setImportProgress(i);
+                        await new Promise(r => setTimeout(r, 20));
+                    }
+                    saveData(updatedStudents, null);
+                } else {
+                    const CHUNK_SIZE = 450; 
+                    const chunks = [];
+                    for (let i = 0; i < newStudents.length; i += CHUNK_SIZE) {
+                        chunks.push(newStudents.slice(i, i + CHUNK_SIZE));
+                    }
+
+                    let processedCount = 0;
+                    for (let i = 0; i < chunks.length; i++) {
+                        const chunk = chunks[i];
+                        const batch = writeBatch(db);
+                        chunk.forEach(s => {
+                            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id);
+                            batch.set(docRef, s, { merge: true });
+                        });
+                        await batch.commit();
+                        processedCount += chunk.length;
+                        setImportProgress(Math.round((processedCount / newStudents.length) * 100));
+                    }
+                }
+
+                alert(`นำเข้าสำเร็จ ${newStudents.length} รายการ`);
+                setIsImporting(false);
+                setImportProgress(0);
+                setIsImportOpen(false);
+                setImportText('');
+            };
+
+
+            // Structure Management
             const handleSaveSection = () => { if(!sectionSettings.title) return; let newSecs = [...sections]; if(sectionSettings.id) { newSecs = newSecs.map(s => s.id === sectionSettings.id ? {...s, title: sectionSettings.title} : s); } else { newSecs.push({id: `sec_${Date.now()}`, title: sectionSettings.title, color: 'primary', groups: []}); } saveData(null, newSecs); setIsSectionSettingsOpen(false); };
             const handleDeleteSection = (secId) => { if(!confirm('ยืนยันลบ?')) return; saveData(null, sections.filter(s => s.id !== secId)); };
             const handleSaveGroup = () => { if(!groupModalData.title) return; const newSecs = sections.map(s => { if(s.id === groupModalData.sectionId) { const groups = [...(s.groups || [])]; if(groupModalData.id) { const idx = groups.findIndex(g => g.id === groupModalData.id); groups[idx] = {...groups[idx], title: groupModalData.title}; } else { groups.push({id: `g_${Date.now()}`, title: groupModalData.title, columns: []}); } return {...s, groups}; } return s; }); saveData(null, newSecs); setIsGroupModalOpen(false); };
             const handleDeleteGroup = (secId, groupId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => s.id === secId ? {...s, groups: s.groups.filter(g => g.id !== groupId)} : s); saveData(null, newSecs); };
             const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
-            const calculateColumnValue = (student, group, col) => { if (!group || !group.columns) return '-'; if (col.type === 'manual') return student.scores?.[col.id]; const manualCols = group.columns.filter(c => c.type === 'manual'); const totalMax = manualCols.reduce((acc, c) => acc + (parseInt(c.max) || 0), 0); let currentTotal = 0; manualCols.forEach(c => { const val = parseFloat(student.scores?.[c.id]); if (!isNaN(val)) currentTotal += val; }); if (col.type === 'sum') return parseFloat(currentTotal.toFixed(2)); if (col.type === 'percent') { const weight = parseInt(col.max) || 100; return totalMax > 0 ? parseFloat(((currentTotal / totalMax) * weight).toFixed(2)) : 0; } return '-'; };
-            const processedStudents = useMemo(() => { let filtered = students; if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom); if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId)); return filtered.sort((a,b) => { if(sortConfig.key === 'no') return (parseInt(a.no)||0) - (parseInt(b.no)||0) * (sortConfig.direction==='asc'?1:-1); return a.id.localeCompare(b.id); }); }, [students, selectedRoom, teacherSearchId, sortConfig]);
-            const uniqueRooms = useMemo(() => [...new Set(students.map(s => s.room).filter(Boolean))].sort(), [students]);
-            const totalScorePreview = useMemo(() => { if(!scoreModalData) return 0; let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(scoreModalData.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); }, [scoreModalData]);
-            const handleGenerateScanner = () => { const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase(); setScannerSessionId(newSessionId); setIsMobilePairOpen(true); if(!useLocalStorage) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', newSessionId), { created: Date.now() }); };
 
+            // Calculations
+            const calculateColumnValue = (student, group, col) => {
+                if (!group || !group.columns) return '-';
+                if (col.type === 'manual') return student.scores?.[col.id];
+                const manualCols = group.columns.filter(c => c.type === 'manual');
+                const totalMax = manualCols.reduce((acc, c) => acc + (parseInt(c.max) || 0), 0);
+                let currentTotal = 0; let hasScore = false;
+                manualCols.forEach(c => { const val = parseFloat(student.scores?.[c.id]); if (!isNaN(val)) { currentTotal += val; hasScore = true; } });
+                if (col.type === 'sum') return hasScore ? parseFloat(currentTotal.toFixed(2)) : '-';
+                if (col.type === 'percent') { if (!hasScore || totalMax === 0) return '-'; const weight = parseInt(col.max) || 100; return parseFloat(((currentTotal / totalMax) * weight).toFixed(2)); }
+                return '-';
+            };
+
+            const processedStudents = useMemo(() => {
+                let filtered = students;
+                if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom);
+                if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId));
+                return filtered.sort((a,b) => {
+                    if(sortConfig.key === 'no') return (parseInt(a.no)||0) - (parseInt(b.no)||0) * (sortConfig.direction==='asc'?1:-1);
+                    return a.id.localeCompare(b.id);
+                });
+            }, [students, selectedRoom, teacherSearchId, sortConfig]);
+
+            const uniqueRooms = useMemo(() => [...new Set(students.map(s => s.room).filter(Boolean))].sort(), [students]);
+
+            const totalScorePreview = useMemo(() => {
+                if(!scoreModalData) return 0;
+                let total = 0;
+                sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(scoreModalData.scores?.[c.id] || 0); })));
+                return parseFloat(total.toFixed(2));
+            }, [scoreModalData]);
+
+            // --- MOBILE PAIR LOGIC ---
+            const handleGenerateScanner = () => {
+                const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                setScannerSessionId(newSessionId);
+                setIsMobilePairOpen(true);
+                // Create session doc
+                if(!useLocalStorage) {
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', newSessionId), { created: Date.now() });
+                }
+            };
+
+            // --- RENDER ---
             if (loading) return <div className="flex h-screen items-center justify-center font-bold text-primary-600 animate-pulse font-display">กำลังโหลดข้อมูล...</div>;
+            // Mobile Scanner View (No Header)
             if (isMobileScannerActive) return <MobileScannerView sessionId={scannerSessionId} onClose={() => { setIsMobileScannerActive(false); window.history.replaceState(null, '', window.location.pathname); }} />;
             if (isAttendanceCheckInActive) return <StudentCheckInView sessionId={attendanceSessionId} />;
 
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
+                    {/* NAVBAR */}
                     <nav className="bg-white border-b px-4 py-3 sticky top-0 z-50 shadow-sm glass-card">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-2 font-bold text-xl text-primary-600 font-display">
@@ -654,7 +1037,10 @@
                         </div>
                     </nav>
 
+                    {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
+                        
+                        {/* TEACHER PRINT VIEW (Optimized 2-Column Layout) */}
                         {view === 'teacher' && (
                             <div className="print-only">
                                 <div className="student-report-header print-header">
@@ -667,18 +1053,41 @@
                                         const half = Math.ceil(processedStudents.length / 2);
                                         const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
                                         if (studentsInCol.length === 0) return null;
+                                        
                                         return (
                                             <div className="print-column" key={colIndex}>
                                                 <table className="print-table">
                                                     <thead>
-                                                        <tr><th className="w-no">เลขที่</th><th className="w-id">รหัส</th><th className="w-name">ชื่อ-นามสกุล</th>
-                                                            {sections.map(sec => sec.groups.map(g => g.columns.map(c => <th key={c.id} className="w-score"><div className="vertical-header-print">{c.name}</div><div style={{borderTop:'1px solid #ccc', fontSize:'8pt'}}>({c.max})</div></th>)))}
+                                                        <tr>
+                                                            <th className="w-no">เลขที่</th>
+                                                            <th className="w-id">รหัส</th>
+                                                            <th className="w-name">ชื่อ-นามสกุล</th>
+                                                            {sections.map(sec => 
+                                                                sec.groups.map(g => 
+                                                                    g.columns.map(c => (
+                                                                        <th key={c.id} className="w-score">
+                                                                            <div className="vertical-header-print">{c.name}</div>
+                                                                            <div style={{borderTop: '1px solid #ccc', fontSize: '8pt', marginTop: '2px'}}>({c.max})</div>
+                                                                        </th>
+                                                                    ))
+                                                                )
+                                                            )}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {studentsInCol.map(s => (
-                                                            <tr key={s.id}><td>{s.no}</td><td>{s.id}</td><td className="text-left">{s.name}</td>
-                                                                {sections.map(sec => sec.groups.map(g => g.columns.map(c => { const val = calculateColumnValue(s, g, c); return <td key={c.id}>{val && val !== '-' ? val : ''}</td>; })))}
+                                                            <tr key={s.id}>
+                                                                <td>{s.no}</td>
+                                                                <td>{s.id}</td>
+                                                                <td className="text-left">{s.name}</td>
+                                                                {sections.map(sec => 
+                                                                    sec.groups.map(g => 
+                                                                        g.columns.map(c => {
+                                                                            const val = calculateColumnValue(s, g, c);
+                                                                            return <td key={c.id}>{val && val !== '-' ? val : ''}</td>;
+                                                                        })
+                                                                    )
+                                                                )}
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -688,9 +1097,21 @@
                                     })}
                                 </div>
                                 <div className="print-footer">
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์  เครือก๋า)</p><p>นักศึกษาฝึกวิชาชีพครู</p></div>
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นางสาวพรวดี ใจเที่ยงธรรม)</p><p>ครู</p></div>
-                                    <div className="signature-block"><div className="signature-line"></div><p>ผู้อำนวยการสถานศึกษา</p><p>(...........................................................)</p></div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>(นายนวรัตน์  เครือก๋า)</p>
+                                        <p>นักศึกษาฝึกวิชาชีพครู</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>(นางสาวพรวดี ใจเที่ยงธรรม)</p>
+                                        <p>ครู</p>
+                                    </div>
+                                    <div className="signature-block">
+                                        <div className="signature-line"></div>
+                                        <p>ผู้อำนวยการสถานศึกษา</p>
+                                        <p>(...........................................................)</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -698,52 +1119,74 @@
                         {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <>
+                                {/* SCREEN ONLY CONTENT */}
                                 <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
                                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
                                         <div className="flex justify-between items-start mb-6">
                                             <h2 className="text-3xl font-extrabold text-slate-800 font-display text-center flex-1">ตรวจสอบคะแนน</h2>
-                                            {searchResult && (<button onClick={handlePrint} className="bg-slate-100 text-slate-600 p-2 rounded-full hover:bg-slate-200 transition" title="พิมพ์ใบรายงานผลการเรียน"><Icons.Print size={20}/></button>)}
+                                            {searchResult && (
+                                                <button onClick={handlePrint} className="bg-slate-100 text-slate-600 p-2 rounded-full hover:bg-slate-200 transition" title="พิมพ์ใบรายงานผลการเรียน">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                                </button>
+                                            )}
                                         </div>
                                         <div className="flex gap-2">
                                             <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-primary-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
-                                            <button id="search-btn" onClick={() => { const s = students.find(x => x.id === searchId); if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'}); }} className="bg-primary-600 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
+                                            <button id="search-btn" onClick={() => {
+                                                const s = students.find(x => x.id === searchId);
+                                                if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'});
+                                            }} className="bg-primary-600 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
                                         </div>
                                         {searchResult && (
                                             <div className="mt-8 space-y-6 animate-fade-in">
                                                 <div className="bg-primary-50 p-4 rounded-xl flex items-center gap-4 border border-primary-100">
                                                     <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-primary-600"/></div>
-                                                    <div><div className="font-bold text-xl text-slate-800">{searchResult.name}</div><div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div></div>
-                                                </div>
-                                                {sections.map((sec, idx) => (
-                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                        <div className={`bg-primary-100 p-3 font-bold text-primary-700 border-b font-display`}>{sec.title}</div>
-                                                        <div className="bg-white p-3 space-y-2">
-                                                            {sec.groups?.map(g => g.columns?.map(c => {
-                                                                const val = calculateColumnValue(searchResult, g, c);
-                                                                const isSpecial = c.type === 'sum' || c.type === 'percent';
-                                                                const isMissing = !val || val === '-';
-                                                                return (
-                                                                    <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
-                                                                        <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
-                                                                            {c.name}
-                                                                            {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
-                                                                        </span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            {isMissing && c.link && (<a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>)}
-                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            }))}
-                                                        </div>
+                                                    <div>
+                                                        <div className="font-bold text-xl text-slate-800">{searchResult.name}</div>
+                                                        <div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div>
                                                     </div>
-                                                ))}
+                                                </div>
+                                                {sections.map((sec, idx) => {
+                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
+                                                    return (
+                                                        <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
+                                                            <div className="bg-white p-3 space-y-2">
+                                                                {sec.groups?.map(g => g.columns?.map(c => {
+                                                                    const val = calculateColumnValue(searchResult, g, c);
+                                                                    const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                    const isMissing = !val || val === '-';
+                                                                    return (
+                                                                        <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                            <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                                {c.name}
+                                                                                {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                            </span>
+                                                                            <div className="flex items-center gap-2">
+                                                                                {isMissing && c.link && (
+                                                                                    <a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1">
+                                                                                        <Icons.AlertTriangle size={12}/> ตามงาน
+                                                                                    </a>
+                                                                                )}
+                                                                                <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>
+                                                                                    {val || '-'} 
+                                                                                    <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span>
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
+                                {/* PRINT ONLY CONTENT (STUDENT REPORT CARD) */}
                                 {searchResult && (
                                     <div className="print-only">
                                         <div className="student-report-header">
@@ -753,28 +1196,74 @@
                                             <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h3>
                                         </div>
                                         <div className="student-info">
-                                            <div><span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span><span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span></div>
-                                            <div><span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span><span><strong>เลขที่:</strong> {searchResult.no}</span></div>
-                                            <div><span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                                            <div>
+                                                <span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span>
+                                                <span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span>
+                                                <span><strong>เลขที่:</strong> {searchResult.no}</span>
+                                            </div>
+                                            <div>
+                                                <span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                            </div>
                                         </div>
+                                        
                                         <table className="print-table">
-                                            <thead><tr><th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th><th style={{width: '20%'}}>คะแนนเต็ม</th><th style={{width: '20%'}}>คะแนนที่ได้</th></tr></thead>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th>
+                                                    <th style={{width: '20%'}}>คะแนนเต็ม</th>
+                                                    <th style={{width: '20%'}}>คะแนนที่ได้</th>
+                                                </tr>
+                                            </thead>
                                             <tbody>
                                                 {sections.map(sec => (
                                                     <React.Fragment key={sec.id}>
-                                                        <tr style={{backgroundColor: '#f9fafb'}}><td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td></tr>
+                                                        <tr style={{backgroundColor: '#f9fafb'}}>
+                                                            <td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td>
+                                                        </tr>
                                                         {sec.groups?.map(g => g.columns?.map(c => {
                                                             const val = calculateColumnValue(searchResult, g, c);
-                                                            return <tr key={c.id}><td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td><td>{c.max}</td><td>{val || '-'}</td></tr>;
+                                                            return (
+                                                                <tr key={c.id}>
+                                                                    <td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td>
+                                                                    <td>{c.max}</td>
+                                                                    <td>{val || '-'}</td>
+                                                                </tr>
+                                                            );
                                                         }))}
                                                     </React.Fragment>
                                                 ))}
-                                                <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '14pt'}}>{(() => { let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); })()}</td></tr>
+                                                {/* Total Summary Row (Optional calculation logic needed for exact total) */}
+                                                <tr style={{borderTop: '2px solid black'}}>
+                                                    <td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td>
+                                                    <td></td>
+                                                    <td style={{fontWeight: 'bold', fontSize: '14pt'}}>
+                                                        {(() => {
+                                                            let total = 0;
+                                                            // Simple sum of all manual inputs for now, adjust based on real logic (e.g. sum of weighted)
+                                                            sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
+                                                                if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0);
+                                                            })));
+                                                            return parseFloat(total.toFixed(2));
+                                                        })()}
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
+
                                         <div className="print-footer">
-                                            <div className="signature-block"><div className="signature-line"></div><p>({searchResult.name})</p><p>นักเรียนผู้รับรอง</p></div>
-                                            <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์ เครือก๋า)</p><p>ครูผู้สอน</p></div>
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>({searchResult.name})</p>
+                                                <p>นักเรียนผู้รับรอง</p>
+                                            </div>
+                                            <div className="signature-block">
+                                                <div className="signature-line"></div>
+                                                <p>(นายนวรัตน์  เครือก๋า)</p>
+                                                <p>ครูผู้สอน</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -803,10 +1292,10 @@
                                     <button onClick={() => setTeacherTab('stats')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='stats' ? 'bg-orange-100 text-orange-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.BarChart/> สถิติ</button>
                                 </div>
                                 
-                                {/* ATTENDANCE TAB */}
+                                {/* ATTENDANCE TAB - SPLIT VIEW */}
                                 {teacherTab === 'attendance' && (
-                                    <div className="space-y-4">
-                                         <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between sticky top-20 z-40 glass-card">
+                                    <div className="h-[calc(100vh-140px)] flex flex-col">
+                                         <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between glass-card mb-4">
                                             <div className="flex items-center gap-2">
                                                 <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600"><Icons.CheckCircle size={24}/></div>
                                                 <h3 className="font-bold text-lg text-slate-700">เช็คชื่อเข้าเรียน</h3>
@@ -815,71 +1304,103 @@
                                                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
                                                     <span className="text-sm font-bold text-slate-600">ห้อง:</span>
                                                     <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-indigo-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
-                                                        <option value="All">ทั้งหมด</option>
+                                                        <option value="All">เลือกห้องเรียน...</option>
                                                         {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
                                                     </select>
                                                 </div>
-                                                <button onClick={() => { 
-                                                    const roomId = selectedRoom !== 'All' ? selectedRoom.replace(/[^a-zA-Z0-9]/g, '-') : 'ALL';
-                                                    setScannerSessionId(`ATT-${roomId}-${Date.now()}`); 
-                                                    setIsAttendanceQROpen(true); 
-                                                }} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.QrCode size={18}/> สร้าง QR เช็คชื่อ</button>
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-4">
-                                            {/* Left: QR Code (Visible when checking in) */}
-                                            {isAttendanceQROpen && (
-                                                <div className="w-1/3 bg-white rounded-xl shadow-sm border p-6 flex flex-col items-center justify-center relative">
-                                                    <h3 className="text-xl font-bold text-primary-700 mb-4">สแกนเพื่อเช็คชื่อ</h3>
-                                                    <AttendanceQRModal roomId={scannerSessionId} onClose={() => setIsAttendanceQROpen(false)} />
-                                                    <button onClick={() => setIsAttendanceQROpen(false)} className="mt-6 w-full bg-red-50 text-red-600 py-2 rounded-xl font-bold hover:bg-red-100 transition">ปิด QR Code</button>
+                                        {selectedRoom === 'All' ? (
+                                            <div className="flex-1 flex flex-col items-center justify-center bg-indigo-50/50 rounded-2xl border-2 border-dashed border-indigo-200 text-indigo-400">
+                                                <Icons.CheckCircle size={64} className="mb-4 opacity-50"/>
+                                                <p className="font-bold text-lg">กรุณาเลือกห้องเรียนเพื่อเริ่มเช็คชื่อ</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-1 gap-6 overflow-hidden">
+                                                {/* Left: QR Code & Scanner */}
+                                                <div className="w-1/3 min-w-[320px] bg-white rounded-2xl shadow-lg border border-indigo-100 flex flex-col p-6 items-center text-center overflow-y-auto">
+                                                    <div className="mb-4">
+                                                        <h3 className="text-xl font-bold text-indigo-800">QR Code เช็คชื่อ</h3>
+                                                        <p className="text-sm text-gray-500">ห้อง {selectedRoom}</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-center w-full mb-6">
+                                                        <AttendanceQRModal roomId={selectedRoom} />
+                                                    </div>
+                                                    
+                                                    <div className="w-full border-t border-gray-100 my-4"></div>
+                                                    <h3 className="font-bold text-gray-700 mb-2 flex items-center justify-center gap-2"><Icons.UserPlus size={16}/> ครูเช็คชื่อเอง</h3>
+                                                    
+                                                    <div className="flex gap-2 w-full mb-2">
+                                                        <input 
+                                                            ref={attendanceInputRef}
+                                                            className="flex-1 border-2 border-indigo-100 rounded-xl px-3 py-2 text-center focus:border-indigo-500 outline-none" 
+                                                            placeholder="ยิงบาร์โค้ด / พิมพ์รหัส..." 
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleScan(e.target.value);
+                                                                    e.target.value = '';
+                                                                }
+                                                            }}
+                                                        />
+                                                        <button onClick={() => setIsScannerOpen(true)} className="bg-indigo-100 text-indigo-600 p-2 rounded-xl hover:bg-indigo-200 transition shadow-sm" title="เปิดกล้องสแกน"><Icons.Camera size={20}/></button>
+                                                    </div>
+                                                    <p className="text-xs text-gray-400">ใช้เครื่องยิงบาร์โค้ด หรือกดรูปกล้องเพื่อสแกนบัตร</p>
                                                 </div>
-                                            )}
 
-                                            {/* Right: List */}
-                                            <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                                <table className="w-full text-sm text-left">
-                                                    <thead className="bg-indigo-50 text-indigo-800 font-display border-b border-indigo-100">
-                                                        <tr>
-                                                            <th className="p-3 text-center w-16">เลขที่</th>
-                                                            <th className="p-3 w-32">รหัส</th>
-                                                            <th className="p-3">ชื่อ-นามสกุล</th>
-                                                            <th className="p-3 text-center w-40">สถานะ</th>
-                                                            <th className="p-3 text-center w-40">จัดการ</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-100">
-                                                        {processedStudents.map(s => {
-                                                            const record = attendanceRecords[s.id];
-                                                            const isPresent = !!record;
-                                                            return (
-                                                                <tr key={s.id} className="hover:bg-indigo-50 transition-colors">
-                                                                    <td className="p-3 text-center text-slate-500">{s.no}</td>
-                                                                    <td className="p-3 font-mono text-slate-500">{s.id}</td>
-                                                                    <td className="p-3 font-bold text-slate-700">{s.name}</td>
-                                                                    <td className="p-3 text-center">
-                                                                        {isPresent ? 
-                                                                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center justify-center gap-1 mx-auto w-24"><Icons.CheckCircle size={14}/> มาเรียน</span> : 
-                                                                            <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-xs font-bold flex items-center justify-center gap-1 mx-auto w-24"><Icons.XCircle size={14}/> ขาดเรียน</span>
-                                                                        }
-                                                                    </td>
-                                                                    <td className="p-3 text-center">
-                                                                        <button 
-                                                                            onClick={() => toggleAttendance(s.id, s)}
-                                                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${isPresent ? 'border-red-200 text-red-500 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}
-                                                                        >
-                                                                            {isPresent ? 'ยกเลิก' : 'เช็คชื่อให้'}
-                                                                        </button>
-                                                                    </td>
+                                                {/* Right: Student List */}
+                                                <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
+                                                    <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                                                        <div className="font-bold text-gray-700">รายชื่อนักเรียน ({processedStudents.filter(s=>s.room===selectedRoom).length})</div>
+                                                        <div className="flex gap-2">
+                                                            <div className="text-xs font-bold px-3 py-1 bg-green-100 text-green-700 rounded-full flex items-center gap-1"><Icons.CheckCircle size={12}/> มา: {processedStudents.filter(s => s.room === selectedRoom && attendanceRecords[s.id]).length}</div>
+                                                            <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-700 rounded-full flex items-center gap-1"><Icons.XCircle size={12}/> ขาด: {processedStudents.filter(s => s.room === selectedRoom && !attendanceRecords[s.id]).length}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 overflow-y-auto">
+                                                        <table className="w-full text-sm text-left">
+                                                            <thead className="bg-white text-gray-500 font-bold border-b sticky top-0 shadow-sm z-10">
+                                                                <tr>
+                                                                    <th className="p-3 text-center w-16 bg-white">เลขที่</th>
+                                                                    <th className="p-3 w-32 bg-white">รหัส</th>
+                                                                    <th className="p-3 bg-white">ชื่อ-นามสกุล</th>
+                                                                    <th className="p-3 text-center w-32 bg-white">สถานะ</th>
+                                                                    <th className="p-3 text-center w-24 bg-white">จัดการ</th>
                                                                 </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                                {processedStudents.length === 0 && <div className="p-8 text-center text-gray-400">เลือกห้องเรียนเพื่อดูรายชื่อ</div>}
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-100">
+                                                                {processedStudents.filter(s => s.room === selectedRoom).map(s => {
+                                                                    const record = attendanceRecords[s.id];
+                                                                    const isPresent = !!record;
+                                                                    return (
+                                                                        <tr key={s.id} className={`transition-colors duration-300 ${isPresent ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
+                                                                            <td className="p-3 text-center text-gray-500 font-mono">{s.no}</td>
+                                                                            <td className="p-3 font-mono text-gray-400 text-xs">{s.id}</td>
+                                                                            <td className="p-3 font-bold text-gray-700">{s.name}</td>
+                                                                            <td className="p-3 text-center">
+                                                                                {isPresent ? 
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold animate-fade-in"><Icons.CheckCircle size={12}/> มาเรียน</span> : 
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-400 text-xs font-bold">รอเช็ค...</span>
+                                                                                }
+                                                                            </td>
+                                                                            <td className="p-3 text-center">
+                                                                                <button 
+                                                                                    onClick={() => toggleAttendance(s.id, s)}
+                                                                                    className={`p-1.5 rounded-lg transition ${isPresent ? 'text-red-400 hover:bg-red-50' : 'text-green-500 hover:bg-green-50'}`}
+                                                                                    title={isPresent ? "ยกเลิกการมาเรียน" : "เช็คชื่อ"}
+                                                                                >
+                                                                                    {isPresent ? <Icons.Trash size={16}/> : <Icons.CheckCircle size={16}/>}
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 )}
 
