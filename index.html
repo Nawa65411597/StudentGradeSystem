@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GradePro Cloud</title>
     
-    <!-- Google Fonts: Prompt & Sarabun -->
+    <!-- Google Fonts: Krub -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -20,24 +20,17 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Sarabun', 'sans-serif'], 
-                        display: ['Prompt', 'sans-serif'] 
+                        sans: ['Krub', 'sans-serif'], 
+                        display: ['Krub', 'sans-serif'] 
                     },
                     colors: { 
-                        // Vibrant Pastel Palette
-                        primary: { 50:'#f0f9ff', 100:'#e0f2fe', 200:'#bae6fd', 300:'#7dd3fc', 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1', 800:'#075985', 900:'#0c4a6e' },
+                        // Pastel Indigo Theme
+                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
+                        // Secondary Pastels
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
                         success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
-                        danger: { 50:'#fef2f2', 500:'#ef4444' },
-                        
-                        // Custom Pastels
-                        pastelBlue: '#bfdbfe',
-                        pastelPink: '#fbcfe8',
-                        pastelPurple: '#e9d5ff',
-                        pastelGreen: '#bbf7d0',
-                        pastelOrange: '#fed7aa',
-                        pastelBg: '#f8fafc'
+                        danger: { 50:'#fef2f2', 500:'#ef4444' }
                     }
                 }
             }
@@ -45,42 +38,31 @@
     </script>
     
     <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        * { font-family: 'Sarabun', sans-serif; }
-        h1, h2, h3, h4, h5, h6, .font-display, button, .tab-btn, th, .header-text, input, select { font-family: 'Prompt', sans-serif !important; }
-        
-        body { 
-            background-color: #f8fafc;
-            /* Soft Gradient Background */
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,90%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,90%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,90%,1) 0, transparent 50%);
-            color: #334155; 
-            min-height: 100vh;
-        }
+        * { font-family: 'Krub', sans-serif; }
+        body { background-color: #f8fafc; color: #334155; }
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
         }
         
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Modern Scrollbar */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
@@ -88,10 +70,10 @@
         /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 8px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
-        /* Vertical Text for Headers */
+        /* Vertical Text */
         .vertical-header { 
             writing-mode: vertical-rl; 
             transform: rotate(180deg); 
@@ -102,13 +84,13 @@
             text-overflow: ellipsis;
         }
 
-        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
+        #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 0.75rem; }
 
         /* --- PRINT STYLES --- */
         .print-only { display: none; }
         
         @media print {
-            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Sarabun', sans-serif !important; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; font-family: 'Krub', sans-serif !important; }
             .no-print, nav, button, input:not([type="text"]), select, .fixed, .shadow-sm, .glass-card, .screen-only { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl, .max-w-xl, .max-w-4xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -133,18 +115,18 @@
 
             /* Header/Footer */
             .print-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Sarabun', sans-serif !important; }
+            .print-header h1 { font-size: 16pt; font-weight: bold; margin: 0; font-family: 'Krub', sans-serif !important; }
             .print-header p { font-size: 12pt; margin: 0; }
             
             .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; font-size: 10pt; }
             .signature-block { text-align: center; width: 30%; }
             .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
 
-            /* Student Info */
+            /* Student Info Box */
             .student-info-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
             .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
             
-            /* Vertical Header Print */
+            /* Vertical Header in Print */
             .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
         }
     </style>
@@ -166,9 +148,11 @@
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- CONFIG ---
+        const useLocalStorage = false; // ONLINE MODE (Firebase)
+        
         const firebaseConfig = {
             apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
             authDomain: "studentgradesystem-2a33f.firebaseapp.com",
@@ -183,7 +167,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = 'grade-pro-v3'; 
-        const useLocalStorage = false;
         
         const LOCAL_KEY = 'gradepro_local_data';
         const loadLocalData = () => JSON.parse(localStorage.getItem(LOCAL_KEY) || '{"students":[], "sections":[]}');
@@ -203,7 +186,7 @@
             Trash: (p) => <Icon {...p} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>} />,
             Plus: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>} />,
             Camera: (p) => <Icon {...p} p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
-            Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
+            Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
             AlertTriangle: (p) => <Icon {...p} p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
             FolderPlus: (p) => <Icon {...p} p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
             Upload: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>} />,
@@ -228,7 +211,8 @@
             Link: (p) => <Icon {...p} p={<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>} />,
             ExternalLink: (p) => <Icon {...p} p={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
             CheckCircle: (p) => <Icon {...p} p={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
-            XCircle: (p) => <Icon {...p} p={<><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></>} />
+            XCircle: (p) => <Icon {...p} p={<><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></>} />,
+            BarChart: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></>} />
         };
 
         const SEED_SECTIONS = [
@@ -280,61 +264,13 @@
             return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
         }
 
-        // Mobile Pair Modal (PC) - QR Generator
-        function MobilePairModal({ sessionId, onClose }) {
-            const qrRef = useRef(null);
-            const [status, setStatus] = useState('กำลังรอการเชื่อมต่อ...');
-
-            useEffect(() => {
-                if (qrRef.current) {
-                    const url = window.location.href.split('?')[0] + '?scan_session=' + sessionId;
-                    qrRef.current.innerHTML = "";
-                    new QRCode(qrRef.current, {
-                        text: url,
-                        width: 200,
-                        height: 200,
-                        colorDark : "#ec4899", // Pastel Pink QR
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                }
-                
-                // Poll for updates (Simulated socket)
-                const checkStatus = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), (docSnap) => {
-                    if (docSnap.exists() && docSnap.data().lastScanned) {
-                        setStatus(`ได้รับข้อมูล: ${docSnap.data().lastScanned}`);
-                        // Play Beep on PC when data received (removed to rely on main App for sound)
-                    }
-                });
-                return () => checkStatus();
-            }, [sessionId]);
-
-            return (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
-                    <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative shadow-2xl">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600"><Icons.QrCode size={32}/></div>
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">Mobile Pair</h3>
-                        <p className="text-gray-500 mb-6 text-sm">ใช้มือถือสแกน QR Code นี้<br/>เพื่อเปลี่ยนมือถือเป็นเครื่องยิงบาร์โค้ด</p>
-                        
-                        <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm"></div>
-                        
-                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
-                        
-                        <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold transition-all ${status.includes('ได้รับ') ? 'bg-green-100 text-green-700 scale-105' : 'bg-gray-100 text-gray-400'}`}>
-                            {status}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-        
         // 1. QR Generator Component for Attendance (PC)
         function AttendanceQRModal({ roomId, onClose, onSessionCreated }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
 
             useEffect(() => {
+                // Ensure roomID is safe string
                 const safeRoom = roomId ? roomId.replace(/[^a-zA-Z0-9]/g, '-') : 'ALL';
                 const newSessionId = `ATT-${safeRoom}-${Date.now()}`;
                 setSessionId(newSessionId);
@@ -374,96 +310,6 @@
                         <p className="text-gray-500 mb-6 text-sm">สแกน QR Code เพื่อลงชื่อเข้าเรียน</p>
                         <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm flex justify-center"></div>
                         <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Mobile Scanner View (Phone) - Camera
-        function MobileScannerView({ sessionId, onClose }) {
-            const [status, setStatus] = useState('แตะปุ่มเพื่อเริ่มสแกน');
-            const [lastScanned, setLastScanned] = useState(null);
-            const [isScanning, setIsScanning] = useState(false);
-            const scannerRef = useRef(null);
-
-            useEffect(() => {
-                if (!isScanning) return;
-
-                const timer = setTimeout(() => {
-                    const html5QrCode = new Html5Qrcode("mobile-reader");
-                    scannerRef.current = html5QrCode;
-
-                    html5QrCode.start(
-                        { facingMode: "environment" }, 
-                        { fps: 10, qrbox: 250 },
-                        (text) => {
-                            if (text.includes("scan_session")) return; 
-                            if (lastScanned === text) return;
-                            
-                            setLastScanned(text);
-                            setStatus(`กำลังส่ง: ${text}`);
-
-                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.volume = 0.5;
-                            audio.play().catch(e => console.log('Audio play failed', e));
-
-                            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { 
-                                lastScanned: text, 
-                                timestamp: Date.now() 
-                            }, { merge: true })
-                            .then(() => setStatus(`ส่งสำเร็จ: ${text}`))
-                            .catch(err => setStatus(`ส่งไม่ผ่าน: ${err.message}`));
-
-                            if(navigator.vibrate) navigator.vibrate(200);
-                            
-                            setTimeout(() => { 
-                                setLastScanned(null); 
-                                setStatus("พร้อมสแกน..."); 
-                            }, 2000);
-                        },
-                        (errorMessage) => {
-                            // parse error, ignore
-                        }
-                    ).catch(err => {
-                        setStatus("ไม่สามารถเปิดกล้องได้: " + err);
-                        setIsScanning(false);
-                    });
-                }, 100);
-
-                return () => {
-                    clearTimeout(timer);
-                    if (scannerRef.current) {
-                        scannerRef.current.stop().catch(err => console.error(err));
-                    }
-                };
-            }, [isScanning, sessionId]);
-
-            return (
-                <div className="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-4">
-                    <h3 className="text-white text-xl font-bold mb-4 font-display flex items-center gap-2">
-                        <Icons.Camera/> Mobile Scanner
-                    </h3>
-                    
-                    {isScanning ? (
-                        <div id="mobile-reader" className="bg-white rounded-xl overflow-hidden w-full max-w-sm border-4 border-indigo-300 shadow-2xl h-80"></div>
-                    ) : (
-                        <div className="text-center w-full max-w-sm">
-                             <div className="w-full h-64 bg-gray-800 rounded-xl flex items-center justify-center mb-6 border-2 border-dashed border-gray-600">
-                                <span className="text-gray-400">กล้องปิดอยู่</span>
-                             </div>
-                             <button onClick={() => setIsScanning(true)} className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg text-lg w-full animate-bounce">
-                                แตะเพื่อเริ่มสแกน
-                             </button>
-                        </div>
-                    )}
-                    
-                    <div className="mt-6 flex flex-col items-center gap-2 w-full max-w-sm">
-                        <div className={`px-4 py-3 rounded-xl font-mono text-sm font-bold text-center w-full transition-all ${status.includes('สำเร็จ') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800'}`}>
-                            {status}
-                        </div>
-                        <button onClick={onClose} className="mt-4 bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold shadow-lg w-full">
-                            ปิดการทำงาน
-                        </button>
                     </div>
                 </div>
             );
@@ -580,14 +426,14 @@
                         style={{ transform: `translate(${position.x}px, ${position.y}px)`, transition: isDragging ? 'none' : 'transform 0.1s' }}
                     >
                         <div 
-                            className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-primary-50 -m-3 mb-2 p-3 rounded-t-2xl select-none"
+                            className="flex justify-between items-center mb-2 border-b pb-2 cursor-move bg-slate-50 -m-3 mb-2 p-3 rounded-t-2xl select-none"
                             onMouseDown={handleMouseDown}
                             onTouchStart={handleTouchStart}
                             title="กดค้างเพื่อลากย้าย"
                         >
                             <div className="overflow-hidden">
-                                <div className="text-[9px] text-primary-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={10}/> Drag Me</div>
-                                <div className="text-sm font-bold text-primary-700 flex items-center gap-2 truncate">
+                                <div className="text-[9px] text-gray-400 uppercase font-bold tracking-wide flex items-center gap-1"><Icons.FileSpreadsheet size={10}/> Drag</div>
+                                <div className="text-sm font-bold text-slate-700 flex items-center gap-2 truncate">
                                     {target.name}
                                 </div>
                             </div>
@@ -597,7 +443,7 @@
                             {keys.map(k => (
                                 <button key={k} 
                                     onClick={() => onInput(k)}
-                                    className={`h-10 rounded-lg text-lg font-bold shadow-sm active:scale-95 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}
+                                    className={`h-10 rounded-lg text-lg font-bold shadow-sm active:scale-90 transition-transform duration-100 flex items-center justify-center ${k === 'Del' ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-slate-50 text-slate-700 hover:bg-white border border-slate-200'}`}
                                 >
                                     {k === 'Del' ? <Icons.Backspace size={20}/> : k}
                                 </button>
@@ -652,6 +498,7 @@
             const [attendanceSessionId, setAttendanceSessionId] = useState(null);
             const [attendanceRecords, setAttendanceRecords] = useState({}); 
             const [isAttendanceCheckInActive, setIsAttendanceCheckInActive] = useState(false);
+            const [statsData, setStatsData] = useState([]);
 
             // Numpad State
             const [numpadState, setNumpadState] = useState({ isOpen: false, colId: null, max: 0, name: '' });
@@ -667,7 +514,7 @@
             
             // Admin Action States
             const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
-            const [pendingAction, setPendingAction] = useState(null);
+            const [pendingAction, setPendingAction] = useState(null); // { type: 'export'|'import'|'clear'|'export_excel' }
             const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
             const fileInputRef = useRef(null);
 
@@ -721,19 +568,6 @@
                 return () => { unsub1(); unsub2(); };
             }, [user]);
 
-            // Scanner Listener (PC listening to Mobile)
-            useEffect(() => {
-                if (!scannerSessionId || isMobileScannerActive) return; 
-                const sessionDoc = doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', scannerSessionId);
-                const unsub = onSnapshot(sessionDoc, (doc) => {
-                    const data = doc.data();
-                    if (data && data.lastScanned) {
-                        handleTeacherSearch(data.lastScanned.trim());
-                    }
-                });
-                return () => unsub();
-            }, [scannerSessionId, isMobileScannerActive, students]);
-            
             // Attendance Records Listener (Date based)
             useEffect(() => {
                 if (teacherTab !== 'attendance' || !user) return;
@@ -750,10 +584,51 @@
                 });
                 return () => unsub();
             }, [teacherTab, user]);
+            
+            // Statistics Logic
+            useEffect(() => {
+                if (teacherTab !== 'stats' || !user) return;
+
+                const fetchStats = async () => {
+                    // 1. Fetch total sessions for this room
+                    const sessionQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance_sessions'), where('roomId', '==', selectedRoom));
+                    const sessionSnap = await getDocs(sessionQ);
+                    const totalSessions = sessionSnap.size;
+
+                    if (totalSessions === 0) {
+                         setStatsData([]); return;
+                    }
+
+                    // 2. Fetch all records for this room (could be optimized)
+                    // We need all historical records. 
+                    // To simplify for this demo, we'll fetch all records for room if possible, or just iterate sessions
+                    // Better approach: Iterate students in room, query count of records for each.
+                    // Even better: Store aggregate stats in student doc.
+                    // Simple approach for now: Query all records for the room if possible. But `attendance_records` stores student info.
+                    
+                    // Let's iterate students in current room view
+                    const studentsInRoom = students.filter(s => s.room === selectedRoom);
+                    
+                    // We need to fetch attendance count for each.
+                    // This is N queries. For small class ok.
+                    const stats = [];
+                    
+                    for (const s of studentsInRoom) {
+                        const attQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance_records'), where('studentId', '==', s.id));
+                        const attSnap = await getDocs(attQ);
+                        const presentCount = attSnap.size;
+                        const percent = (presentCount / totalSessions) * 100;
+                        stats.push({ ...s, present: presentCount, total: totalSessions, percent });
+                    }
+                    setStatsData(stats);
+                };
+
+                fetchStats();
+            }, [teacherTab, selectedRoom, students]);
 
             // --- AUTO FOCUS LOGIC ---
             useEffect(() => {
-                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen || isAttendanceQROpen;
+                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen || isAttendanceQROpen;
 
                 if (!isAnyModalOpen) {
                     if (view === 'student' && studentInputRef.current) {
@@ -762,7 +637,7 @@
                         setTimeout(() => teacherInputRef.current.focus(), 100);
                     }
                 }
-            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, isAttendanceQROpen, loading]);
+            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, isAttendanceQROpen, loading]);
 
             // --- LOGIC ---
             const saveData = (newS, newSec) => {
@@ -795,7 +670,6 @@
                     setScoreModalData(JSON.parse(JSON.stringify(s)));
                     setTeacherSearchId('');
                     setIsScannerOpen(false);
-                    setIsMobilePairOpen(false);
                     // Play Beep on PC
                     const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
                     audio.volume = 0.5;
@@ -821,7 +695,6 @@
             
             const handleNumpadInput = (key) => {
                 if (!scoreModalData || !numpadState.colId) return;
-                
                 const colId = numpadState.colId;
                 const currentVal = String(scoreModalData.scores?.[colId] || '');
                 let newVal = currentVal;
@@ -829,12 +702,10 @@
                 if (key === 'Del') {
                     newVal = currentVal.slice(0, -1);
                 } else {
-                    // Prevent multiple dots
                     if (key === '.' && currentVal.includes('.')) return;
                     newVal = currentVal + key;
                 }
 
-                // Validate Max
                 if (parseFloat(newVal) > numpadState.max) {
                     setWarning({ show: true, msg: `คะแนนห้ามเกิน ${numpadState.max}` });
                     if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -850,6 +721,8 @@
             // Toggle Attendance Manually (Teacher) - Date Based
             const toggleAttendance = async (studentId, studentData) => {
                 const today = new Date().toLocaleDateString('th-TH');
+                // Clean roomId to be safe for ID
+                const safeRoom = studentData.room.replace(/[^a-zA-Z0-9]/g, '-');
                 const recordId = `${today}_${studentId}`;
                 const existing = attendanceRecords[studentId];
                 
@@ -1013,13 +886,10 @@
                     const existingIds = new Set(students.map(s => s.id));
                     const uniqueNew = newStudents.filter(s => !existingIds.has(s.id));
                     const updatedStudents = [...students, ...uniqueNew];
-                    
-                    // Simulate progress
                     for(let i=0; i<=100; i+=10) {
                         setImportProgress(i);
                         await new Promise(r => setTimeout(r, 20));
                     }
-                    
                     saveData(updatedStudents, null);
                 } else {
                     const CHUNK_SIZE = 450; 
@@ -1104,8 +974,8 @@
             // --- RENDER ---
             if (loading) return <div className="flex h-screen items-center justify-center font-bold text-primary-600 animate-pulse font-display">กำลังโหลดข้อมูล...</div>;
             // Mobile Scanner View (No Header)
-            if (isMobileScannerActive) return <MobileScannerView sessionId={scannerSessionId} onClose={() => { setIsMobileScannerActive(false); window.history.replaceState(null, '', window.location.pathname); }} />;
-            if (isAttendanceCheckInActive) return <StudentCheckInView sessionId={attendanceSessionId} />;
+            if (isMobileScannerActive) return <div>Mobile Scanner View Active</div>; // Placeholder
+            if (isAttendanceCheckInActive) return <div>Student CheckIn View Active</div>; // Placeholder
 
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
@@ -1186,35 +1056,30 @@
                                                     <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-primary-600"/></div>
                                                     <div><div className="font-bold text-xl text-slate-800">{searchResult.name}</div><div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div></div>
                                                 </div>
-                                                {sections.map((sec, idx) => {
-                                                    const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
-                                                    return (
-                                                        <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
-                                                            <div className={`${theme.header} p-3 font-bold ${theme.text} border-b font-display`}>{sec.title}</div>
-                                                            <div className="bg-white p-3 space-y-2">
-                                                                {sec.groups?.map(g => g.columns?.map(c => {
-                                                                    const val = calculateColumnValue(searchResult, g, c);
-                                                                    const isSpecial = c.type === 'sum' || c.type === 'percent';
-                                                                    const isMissing = !val || val === '-';
-                                                                    return (
-                                                                        <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
-                                                                            <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
-                                                                                {c.name}
-                                                                                {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
-                                                                            </span>
-                                                                            <div className="flex items-center gap-2">
-                                                                                {isMissing && c.link && (
-                                                                                    <a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>
-                                                                                )}
-                                                                                <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
-                                                                            </div>
+                                                {sections.map((sec, idx) => (
+                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                        <div className={`bg-primary-100 p-3 font-bold text-primary-700 border-b font-display`}>{sec.title}</div>
+                                                        <div className="bg-white p-3 space-y-2">
+                                                            {sec.groups?.map(g => g.columns?.map(c => {
+                                                                const val = calculateColumnValue(searchResult, g, c);
+                                                                const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                const isMissing = !val || val === '-';
+                                                                return (
+                                                                    <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                        <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                            {c.name}
+                                                                            {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                        </span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            {isMissing && c.link && (<a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>)}
+                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
                                                                         </div>
-                                                                    );
-                                                                }))}
-                                                            </div>
+                                                                    </div>
+                                                                );
+                                                            }))}
                                                         </div>
-                                                    );
-                                                })}
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
@@ -1276,6 +1141,7 @@
                                     <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
                                     <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
                                     <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
+                                    <button onClick={() => setTeacherTab('stats')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='stats' ? 'bg-orange-100 text-orange-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.BarChart/> สถิติ</button>
                                 </div>
                                 
                                 {/* ATTENDANCE TAB */}
@@ -1357,6 +1223,67 @@
                                         </div>
                                     </div>
                                 )}
+                                
+                                {/* STATS TAB */}
+                                {teacherTab === 'stats' && (
+                                    <div className="space-y-4">
+                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between sticky top-20 z-40 glass-card">
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-orange-100 p-2 rounded-lg text-orange-600"><Icons.BarChart size={24}/></div>
+                                                <h3 className="font-bold text-lg text-slate-700">สถิติการมาเรียน</h3>
+                                            </div>
+                                             <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
+                                                <span className="text-sm font-bold text-slate-600">ห้อง:</span>
+                                                <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-orange-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
+                                                    <option value="All">ทั้งหมด</option>
+                                                    {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-orange-50 text-orange-800 font-display border-b border-orange-100">
+                                                    <tr>
+                                                        <th className="p-3 text-center w-16">เลขที่</th>
+                                                        <th className="p-3 w-32">รหัส</th>
+                                                        <th className="p-3">ชื่อ-นามสกุล</th>
+                                                        <th className="p-3 text-center">มาเรียน (ครั้ง)</th>
+                                                        <th className="p-3 text-center">ทั้งหมด (คาบ)</th>
+                                                        <th className="p-3 text-center">ร้อยละ (%)</th>
+                                                        <th className="p-3 text-center">สถานะ</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {statsData.map(s => {
+                                                        let statusColor = 'bg-gray-100 text-gray-500';
+                                                        let statusText = 'ไม่มีข้อมูล';
+                                                        if (s.total > 0) {
+                                                            if (s.percent >= 80) { statusColor = 'bg-green-100 text-green-700'; statusText = 'ปกติ'; }
+                                                            else if (s.percent >= 50) { statusColor = 'bg-yellow-100 text-yellow-700'; statusText = 'เฝ้าระวัง'; }
+                                                            else { statusColor = 'bg-red-100 text-red-700'; statusText = 'วิกฤต'; }
+                                                        }
+
+                                                        return (
+                                                            <tr key={s.id} className="hover:bg-orange-50 transition-colors">
+                                                                <td className="p-3 text-center text-slate-500">{s.no}</td>
+                                                                <td className="p-3 font-mono text-slate-500">{s.id}</td>
+                                                                <td className="p-3 font-bold text-slate-700">{s.name}</td>
+                                                                <td className="p-3 text-center font-bold text-slate-700">{s.present}</td>
+                                                                <td className="p-3 text-center text-slate-500">{s.total}</td>
+                                                                <td className="p-3 text-center font-bold">{s.total > 0 ? s.percent.toFixed(0) + '%' : '-'}</td>
+                                                                <td className="p-3 text-center">
+                                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusColor}`}>{statusText}</span>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                            {statsData.length === 0 && <div className="p-8 text-center text-gray-400">เลือกห้องเรียนเพื่อดูสถิติ</div>}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* SCORES TAB */}
                                 {teacherTab === 'scores' && (
@@ -1434,6 +1361,7 @@
                                                             <td className="p-2 font-mono border-r bg-inherit sticky-left-1 group-hover:bg-primary-50 z-20 text-xs font-bold text-slate-500">{s.id}</td>
                                                             <td className="p-2 border-r bg-inherit sticky-left-2 group-hover:bg-primary-50 z-20 font-medium text-slate-700 truncate max-w-[200px]">{s.name}</td>
                                                             {sections.map((sec, idx) => {
+                                                                const theme = SECTION_THEMES[idx % SECTION_THEMES.length];
                                                                 if(collapsedSections[sec.id]) {
                                                                     return <td key={sec.id} className="p-2 border-r text-center text-slate-300 bg-slate-50 group-hover:bg-primary-50"><Icons.Minus size={12} className="mx-auto"/></td>
                                                                 }
