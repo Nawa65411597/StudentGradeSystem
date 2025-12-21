@@ -76,7 +76,7 @@
         /* Sticky Headers */
         .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
         /* Vertical Text */
@@ -240,7 +240,7 @@
         ];
         const SEED_DATA = [{ id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } }];
 
-        // --- THEME PALETTES ---
+        // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
             { name: 'Sky', bg: 'bg-primary-50', border: 'border-primary-100', text: 'text-primary-700', header: 'bg-primary-100', icon: 'text-primary-400', subHeader: 'text-primary-600', button: 'bg-primary-400 text-white' },
             { name: 'Rose', bg: 'bg-secondary-50', border: 'border-secondary-100', text: 'text-secondary-600', header: 'bg-secondary-100', icon: 'text-secondary-400', subHeader: 'text-secondary-500', button: 'bg-secondary-500 text-white' },
@@ -350,6 +350,7 @@
 
         function MobileScannerView({ sessionId, onClose }) {
             const [status, setStatus] = useState('แตะปุ่มเพื่อเริ่มสแกน');
+            const [lastScanned, setLastScanned] = useState(null);
             const [isScanning, setIsScanning] = useState(false);
             const scannerRef = useRef(null);
 
@@ -490,6 +491,8 @@
             const [sections, setSections] = useState([]);
             const [loading, setLoading] = useState(true);
             const [user, setUser] = useState(null);
+            
+            // UI States
             const [searchId, setSearchId] = useState('');
             const [searchResult, setSearchResult] = useState(null);
             const [password, setPassword] = useState('');
@@ -527,6 +530,7 @@
             const [importProgress, setImportProgress] = useState(0);
             const [isImporting, setIsImporting] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
+            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
 
@@ -534,8 +538,15 @@
                 const params = new URLSearchParams(window.location.search);
                 const scanSession = params.get('scan_session');
                 const attendSession = params.get('attendance_session');
-                if (scanSession) { setIsMobileScannerActive(true); setScannerSessionId(scanSession); } 
-                else if (attendSession) { setIsAttendanceCheckInActive(true); setAttendanceSessionId(attendSession); }
+                
+                if (scanSession) {
+                    setIsMobileScannerActive(true);
+                    setScannerSessionId(scanSession); 
+                } else if (attendSession) {
+                    setIsAttendanceCheckInActive(true);
+                    setAttendanceSessionId(attendSession);
+                }
+
                 if(useLocalStorage) {
                     setUser({uid: 'offline'});
                     const d = loadLocalData();
@@ -684,6 +695,7 @@
                             </div>
                         )}
                         
+                        {/* STUDENT VIEW */}
                         {view === 'student' && (
                             <>
                                 <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
