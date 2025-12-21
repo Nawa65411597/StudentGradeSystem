@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud - ระบบจัดการคะแนนและเช็คชื่อ</title>
+    <title>GradePro Cloud - ระบบบริหารจัดการชั้นเรียนและผลการเรียน</title>
     
-    <!-- Fonts -->
+    <!-- Fonts: ใช้แบบผสมผสานเพื่อความสวยงาม -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Libraries -->
+    <!-- Libraries ที่จำเป็น -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,20 +18,26 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- การตั้งค่า Tailwind Theme -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Sarabun', 'sans-serif'], 
-                        display: ['Prompt', 'sans-serif'] 
+                        sans: ['Sarabun', 'sans-serif'], // เนื้อหาทั่วไป
+                        display: ['Prompt', 'sans-serif'], // หัวข้อ
+                        ui: ['Krub', 'sans-serif'] // UI Elements
                     },
                     colors: { 
+                        // ชุดสีพาสเทลแบบสดใส (Vibrant Pastel)
                         primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
-                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
-                        success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
-                        warning: { 50:'#fffbeb', 500:'#f59e0b' },
-                        danger: { 50:'#fef2f2', 500:'#ef4444' }
+                        secondary: { 50:'#fdf4ff', 100:'#fae8ff', 200:'#f5d0fe', 300:'#f0abfc', 400:'#e879f9', 500:'#d946ef', 600:'#c026d3' },
+                        success: { 50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a' },
+                        warning: { 50:'#fffbeb', 100:'#fef3c7', 500:'#f59e0b', 600:'#d97706' },
+                        danger: { 50:'#fef2f2', 100:'#fee2e2', 500:'#ef4444', 600:'#dc2626' },
+                        // สีพื้นหลังเฉพาะส่วน
+                        bgBase: '#f8fafc',
+                        cardBg: 'rgba(255, 255, 255, 0.95)'
                     }
                 }
             }
@@ -39,67 +45,132 @@
     </script>
 
     <style>
+        /* Global Styles */
         body { 
-            background-color: #f8fafc; 
-            color: #334155; 
+            background-color: #f8fafc;
+            color: #334155;
             min-height: 100vh;
+            /* พื้นหลังแบบไล่เฉดสีที่ซับซ้อน */
             background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,90%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,90%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,90%,1) 0, transparent 50%);
-            overflow-y: hidden; /* App-like feel */
+                radial-gradient(at 40% 20%, hsla(28,100%,74%,0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, hsla(189,100%,56%,0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(340,100%,76%,0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 50%, hsla(340,100%,76%,0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(22,100%,77%,0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, hsla(242,100%,70%,0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 0%, hsla(343,100%,76%,0.05) 0px, transparent 50%);
+            font-family: 'Sarabun', sans-serif;
+            overflow-y: hidden; /* App-like feel for main body */
         }
+        
+        h1, h2, h3, h4, h5, h6, .font-display, button, .tab-btn { font-family: 'Prompt', sans-serif !important; }
         
         .glass-card { 
-            background: rgba(255, 255, 255, 0.85); 
+            background: rgba(255, 255, 255, 0.8); 
             backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); 
         }
 
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        /* Animations */
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        #error-display { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; padding: 20px; color: red; overflow: auto; }
+        
+        /* Sticky Column Definitions */
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; background-color: white; }
+        .sticky-left-1 { position: sticky; left: 50px; z-index: 20; border-right: 1px solid #e2e8f0; background-color: white; }
+        .sticky-left-2 { position: sticky; left: 130px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); background-color: white; }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
         
-        .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; max-height: 120px; overflow: hidden; text-overflow: ellipsis; }
-        #reader video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
+        .vertical-header { 
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg); 
+            white-space: nowrap; 
+            text-align: left; 
+            max-height: 140px; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            padding: 4px 0;
+        }
 
+        /* Camera Styling */
+        #reader video, #mobile-reader video { object-fit: cover; border-radius: 1rem; width: 100%; height: 100%; }
+
+        /* Print Styles - Highly Detailed */
         .print-only { display: none; }
         @media print {
-            body { background: white !important; overflow: visible !important; height: auto !important; }
-            .no-print, nav, button, input:not([type="text"]), select, .glass-card, .screen-only { display: none !important; }
+            @page { size: A4; margin: 10mm; }
+            body { background: white !important; overflow: visible !important; height: auto !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print, nav, button, input, select, .glass-card, .fixed { display: none !important; }
             #root { width: 100%; margin: 0; padding: 0; }
-            .max-w-7xl { max-width: none !important; padding: 0 !important; margin: 0 !important; }
             .print-only { display: block !important; width: 100%; }
-            .print-container { column-count: 2; column-gap: 5mm; }
-            table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; break-inside: avoid; }
+            
+            /* Teacher Report Layout */
+            .teacher-print-mode @page { size: A4 landscape; }
+            .print-container { column-count: 2; column-gap: 5mm; width: 100%; }
+            .print-column { break-inside: avoid; }
+            
+            table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; border: 1px solid #000; margin-bottom: 10px; }
             table.print-table th, table.print-table td { border: 1px solid #000; padding: 4px; text-align: center; }
-            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; margin: 0 auto; text-align: left; font-size: 9pt; }
-            .print-footer { margin-top: 20px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+            table.print-table th { background-color: #f0f0f0 !important; font-weight: bold; }
+            table.print-table td.text-left { text-align: left; padding-left: 5px; }
+            
+            .vertical-header-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 80px; white-space: nowrap; margin: 0 auto; text-align: left; font-size: 9pt; }
+            
+            .student-report-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .student-report-header h1 { font-size: 18pt; font-weight: bold; margin: 0; }
+            .student-report-header p { font-size: 14pt; margin: 0; }
+            
+            .student-info { border: 1px solid #000; padding: 10px; margin-bottom: 15px; font-size: 12pt; border-radius: 4px; }
+            .student-info div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+            .print-footer { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
             .signature-block { text-align: center; width: 30%; }
-            .signature-line { border-bottom: 1px dotted #000; margin: 25px auto 5px; width: 90%; }
+            .signature-line { border-bottom: 1px dotted #000; margin: 30px auto 5px; width: 90%; }
         }
     </style>
 </head>
 <body>
+    <div id="error-display"></div>
     <div id="root"></div>
 
+    <!-- Error Handling Script -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const el = document.getElementById('error-display');
+            // Ignore common non-critical errors
+            if(message.includes("permission-denied") || message.includes("Script error") || message.includes("ResizeObserver")) return;
+            el.style.display = 'block';
+            el.innerHTML = `
+                <div class="bg-red-50 text-red-800 p-4 rounded-lg shadow-lg border border-red-200 m-4">
+                    <h3 class="font-bold text-lg flex items-center gap-2">⚠️ Application Error</h3>
+                    <p class="font-mono text-sm mt-2">${message}</p>
+                    <p class="text-xs text-gray-500 mt-1">Line: ${lineno}</p>
+                    <button onclick="this.parentElement.style.display='none'" class="mt-4 bg-red-600 text-white px-4 py-2 rounded shadow text-sm">Close</button>
+                </div>
+            `;
+        };
+    </script>
+
+    <!-- Application Script -->
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // --- CONFIG ---
-        // ใช้ Online Mode เป็นหลักเพื่อให้ฟีเจอร์สแกนข้ามเครื่องทำงานได้
+        // --- CONFIGURATION ---
+        // ตั้งค่าเริ่มต้นเป็น Hybrid Mode (พยายามต่อออนไลน์ก่อน ถ้าไม่ได้จะใช้ Local Storage)
         let USE_LOCAL_STORAGE = false; 
 
         const firebaseConfig = {
@@ -118,15 +189,18 @@
             auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
-            console.warn("Firebase Init Error (Offline Mode Active):", e);
+            console.warn("Firebase Init Failed (Offline Mode Active):", e);
             USE_LOCAL_STORAGE = true;
         }
 
         const appId = 'grade-pro-v3'; 
-        const LOCAL_KEY = 'gradepro_final_data';
+        const LOCAL_KEY = 'gradepro_full_data_v1';
 
-        // --- HELPERS ---
-        const loadLocalData = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[], attendance:{}}; } catch(e) { return {students:[], sections:[], attendance:{}}; } };
+        // --- DATA HELPERS ---
+        const loadLocalData = () => { 
+            try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[], attendance:{}}; } 
+            catch(e) { return {students:[], sections:[], attendance:{}}; } 
+        };
         const saveLocalData = (data) => localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
         const getSafeDate = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const formatDate = (dateStr) => {
@@ -135,7 +209,7 @@
             return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
-        // --- ICONS ---
+        // --- ICONS (SVG Components) ---
         const Icon = ({ p, size=18, className="", onClick }) => ( <svg onClick={onClick} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{cursor: onClick ? 'pointer' : 'inherit'}}>{p}</svg> );
         const Icons = {
             Cloud: (p) => <Icon {...p} p={<><path d="M17.5 19c0-1.7-1.3-3-3-3h-11a4 4 0 0 1-0-8h1a5 5 0 0 1 9.9-1 3 3 0 0 1 3.1 3"/></>} />,
@@ -229,7 +303,7 @@
         }
 
         // Attendance QR Modal (PC Left Side)
-        function AttendanceQRModal({ roomId, onClose }) {
+        function AttendanceQRModal({ roomId, onClose, onSessionCreated }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
 
@@ -238,6 +312,7 @@
                 const today = getSafeDate();
                 const newSessionId = `ATT-${safeRoom}-${today}`;
                 setSessionId(newSessionId);
+                if (onSessionCreated) onSessionCreated(newSessionId);
 
                 // Create session in DB (Optional for offline, but good for structure)
                 if (!USE_LOCAL_STORAGE) {
@@ -419,6 +494,7 @@
                     <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm text-center">
                         <h1 className="text-2xl font-bold text-gray-800 mb-6">ลงชื่อเข้าเรียน</h1>
                         <input type="tel" className="w-full p-4 border-2 rounded-xl text-center text-xl mb-4 focus:border-primary-500 outline-none" placeholder="รหัสนักเรียน" value={studentId} onChange={e => setStudentId(e.target.value)} />
+                        {status === 'error' && <p className="text-red-500 text-sm mb-2">ไม่พบรหัสนักเรียน</p>}
                         <button onClick={handleCheckIn} disabled={status==='loading'} className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold shadow-lg transition transform active:scale-95">
                             {status==='loading' ? 'กำลังตรวจสอบ...' : 'ยืนยัน'}
                         </button>
@@ -471,7 +547,6 @@
             const [teacherTab, setTeacherTab] = useState('scores'); 
             const [selectedRoom, setSelectedRoom] = useState('All');
             const [teacherSearchId, setTeacherSearchId] = useState('');
-            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const [warning, setWarning] = useState({ show: false, msg: '' });
             const [collapsedSections, setCollapsedSections] = useState({});
             const [scoreModalData, setScoreModalData] = useState(null); 
@@ -504,6 +579,7 @@
             const [isImporting, setIsImporting] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
             const [scanMode, setScanMode] = useState('score'); 
+            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
             const attendanceInputRef = useRef(null);
@@ -653,6 +729,23 @@
             const handleDeleteGroup = (secId, groupId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.filter(g => g.id !== groupId)}; } return s; }); saveData(null, newSecs); }; 
             const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
+            const calculateColumnValue = (student, group, col) => { if (!group || !group.columns) return '-'; if (col.type === 'manual') return student.scores?.[col.id]; const manualCols = group.columns.filter(c => c.type === 'manual'); const totalMax = manualCols.reduce((acc, c) => acc + (parseInt(c.max) || 0), 0); let currentTotal = 0; manualCols.forEach(c => { const val = parseFloat(student.scores?.[c.id]); if (!isNaN(val)) currentTotal += val; }); if (col.type === 'sum') return parseFloat(currentTotal.toFixed(2)); if (col.type === 'percent') { const weight = parseInt(col.max) || 100; return totalMax > 0 ? parseFloat(((currentTotal / totalMax) * weight).toFixed(2)) : 0; } return '-'; };
+            const processedStudents = useMemo(() => { let filtered = students; if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom); if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId)); return filtered.sort((a,b) => (parseInt(a.no)||0) - (parseInt(b.no)||0)); }, [students, selectedRoom, teacherSearchId, sortConfig]);
+            const uniqueRooms = useMemo(() => [...new Set(students.map(s => s.room).filter(Boolean))].sort(), [students]);
+            const totalScorePreview = useMemo(() => { if(!scoreModalData) return 0; let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(scoreModalData.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); }, [scoreModalData]);
+            const handleGenerateScanner = () => { const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase(); setScannerSessionId(newSessionId); setIsMobilePairOpen(true); if(!USE_LOCAL_STORAGE) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', newSessionId), { created: Date.now() }); };
+            const handleUpdateStudent = async () => { if(!newStudent.id) return; await updateStudent({...newStudent, scores:{}}); setIsAddStudentOpen(false); setNewStudent({id:'', no:'', name:'', room:''}); };
+            const handleDeleteStudent = async (id) => { if(!confirm('ยืนยันลบ?')) return; if(USE_LOCAL_STORAGE) { const newS = students.filter(s=>s.id!==id); saveData(newS, null); } else { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', id)); } };
+
+            useEffect(() => {
+                if (teacherTab !== 'stats' || selectedRoom === 'All') return;
+                const roomStudents = students.filter(s => s.room === selectedRoom);
+                const mockStats = roomStudents.map(s => {
+                    const present = Math.floor(Math.random() * 20); 
+                    return { ...s, present, total: 20, percent: (present/20)*100 };
+                });
+                setStatsData(mockStats);
+            }, [teacherTab, selectedRoom]);
 
             if (loading) return <div className="flex h-screen items-center justify-center font-bold text-primary-600 animate-pulse">Loading GradePro...</div>;
             if (isMobileScannerActive) return <MobileScannerView sessionId={scannerSessionId} onClose={() => { setIsMobileScannerActive(false); window.location.search = ''; }} />;
@@ -749,7 +842,7 @@
                                                                                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold group-hover:bg-red-100 group-hover:text-red-500">ขาด</span>
                                                                                 }
                                                                             </td>
-                                                                            <td className="p-3 text-center"><button onClick={() => toggleAttendance(s.id, s)} className={`p-1.5 rounded-lg ${isPresent ? 'text-red-400' : 'text-green-500'}`}>{isPresent ? <Icons.Trash size={14}/> : <Icons.CheckCircle size={14}/>}</button></td>
+                                                                            <td className="p-3 text-center"><button className={`p-1.5 rounded-lg ${isPresent ? 'text-red-400' : 'text-green-500'}`}>{isPresent ? <Icons.Trash size={14}/> : <Icons.CheckCircle size={14}/>}</button></td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -1097,7 +1190,7 @@
                                 </div>
                             </div>
                         )}
-                        
+
                         {isAddStudentOpen && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                                 <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
