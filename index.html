@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud</title>
+    <title>GradePro Cloud - ระบบจัดการคะแนนและเช็คชื่อ</title>
     
-    <!-- Google Fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -22,11 +22,14 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
+                    fontFamily: { 
+                        sans: ['Sarabun', 'sans-serif'], 
+                        display: ['Prompt', 'sans-serif'] 
+                    },
                     colors: { 
-                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca' },
+                        primary: { 50:'#eef2ff', 100:'#e0e7ff', 200:'#c7d2fe', 300:'#a5b4fc', 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3', 900:'#312e81' },
                         secondary: { 50:'#fdf4ff', 100:'#fae8ff', 500:'#d946ef' },
-                        success: { 50:'#f0fdf4', 500:'#22c55e' },
+                        success: { 50:'#f0fdf4', 500:'#22c55e', 600:'#16a34a' },
                         warning: { 50:'#fffbeb', 500:'#f59e0b' },
                         danger: { 50:'#fef2f2', 500:'#ef4444' }
                     }
@@ -36,14 +39,37 @@
     </script>
 
     <style>
-        body { background-color: #f8fafc; color: #334155; min-height: 100vh; overflow-y: hidden; } /* Fix body scroll */
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        body { 
+            background-color: #f8fafc; 
+            color: #334155; 
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,90%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,90%,1) 0, transparent 50%);
+            overflow-y: hidden; /* App-like feel */
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); 
+        }
+
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .sticky-left-0 { position: sticky; left: 0; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-1 { position: sticky; left: 48px; z-index: 20; border-right: 1px solid #e2e8f0; }
+        .sticky-left-2 { position: sticky; left: 128px; z-index: 20; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
         .sticky-header { position: sticky; top: 0; z-index: 30; }
+        
         .vertical-header { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; max-height: 120px; overflow: hidden; text-overflow: ellipsis; }
         #reader video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
 
@@ -54,8 +80,6 @@
             #root { width: 100%; margin: 0; padding: 0; }
             .max-w-7xl { max-width: none !important; padding: 0 !important; margin: 0 !important; }
             .print-only { display: block !important; width: 100%; }
-            @page { size: A4 portrait; margin: 10mm; }
-            .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
             .print-container { column-count: 2; column-gap: 5mm; }
             table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; break-inside: avoid; }
             table.print-table th, table.print-table td { border: 1px solid #000; padding: 4px; text-align: center; }
@@ -74,8 +98,9 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // --- CONFIGURATION ---
-        const USE_LOCAL_STORAGE = true; // Set to true for instant demo/offline usage
+        // --- CONFIG ---
+        // ใช้ Online Mode เป็นหลักเพื่อให้ฟีเจอร์สแกนข้ามเครื่องทำงานได้
+        let USE_LOCAL_STORAGE = false; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
@@ -92,16 +117,20 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-        } catch (e) { console.warn("Firebase Init Error:", e); }
+        } catch (e) {
+            console.warn("Firebase Init Error (Offline Mode Active):", e);
+            USE_LOCAL_STORAGE = true;
+        }
 
         const appId = 'grade-pro-v3'; 
-        const LOCAL_KEY = 'gradepro_data_v5';
+        const LOCAL_KEY = 'gradepro_final_data';
 
-        // --- DATA HELPERS ---
+        // --- HELPERS ---
         const loadLocalData = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {students:[], sections:[], attendance:{}}; } catch(e) { return {students:[], sections:[], attendance:{}}; } };
         const saveLocalData = (data) => localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
-        const getSafeDate = () => new Date().toISOString().split('T')[0];
+        const getSafeDate = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const formatDate = (dateStr) => {
+            if(!dateStr) return '';
             const d = new Date(dateStr);
             return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
         };
@@ -119,47 +148,56 @@
             Camera: (p) => <Icon {...p} p={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
             Settings: (p) => <Icon {...p} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
             AlertTriangle: (p) => <Icon {...p} p={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>} />,
+            FolderPlus: (p) => <Icon {...p} p={<><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></>} />,
             Upload: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>} />,
             Download: (p) => <Icon {...p} p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>} />,
             Database: (p) => <Icon {...p} p={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
+            ArrowUp: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></>} />,
             Users: (p) => <Icon {...p} p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
             UserPlus: (p) => <Icon {...p} p={<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></>} />,
             ChevronDown: (p) => <Icon {...p} p={<><polyline points="6 9 12 15 18 9"/></>} />,
             X: (p) => <Icon {...p} p={<><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>} />,
             FileSpreadsheet: (p) => <Icon {...p} p={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></>} />,
+            Filter: (p) => <Icon {...p} p={<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>} />,
+            Save: (p) => <Icon {...p} p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>} />,
+            ChevronRight: (p) => <Icon {...p} p={<><polyline points="9 18 15 12 9 6"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} p={<><polyline points="15 18 9 12 15 6"/></>} />,
+            QrCode: (p) => <Icon {...p} p={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Minus: (p) => <Icon {...p} p={<><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Print: (p) => <Icon {...p} p={<><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></>} />,
             Backspace: (p) => <Icon {...p} p={<><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></>} />,
             Keyboard: (p) => <Icon {...p} p={<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M6 12h.001"/><path d="M10 12h.001"/><path d="M14 12h.001"/><path d="M18 12h.001"/><path d="M7 16h10"/></>} />,
-            Calculator: (p) => <Icon {...p} p={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
-            QrCode: (p) => <Icon {...p} p={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Calculator: (p) => <Icon {...p} p={<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></>} />,
+            Link: (p) => <Icon {...p} p={<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>} />,
+            ExternalLink: (p) => <Icon {...p} p={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
             CheckCircle: (p) => <Icon {...p} p={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
             XCircle: (p) => <Icon {...p} p={<><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></>} />,
-            BarChart: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></>} />,
-            ChevronLeft: (p) => <Icon {...p} p={<><polyline points="15 18 9 12 15 6"/></>} />,
-            ChevronRight: (p) => <Icon {...p} p={<><polyline points="9 18 15 12 9 6"/></>} />,
-            Minus: (p) => <Icon {...p} p={<><line x1="5" y1="12" x2="19" y2="12"/></>} />
+            BarChart: (p) => <Icon {...p} p={<><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></>} />
         };
 
-        const SEED_SECTIONS = [
-            { 
-                id: 'sec1', title: 'บทที่ 1: สารพันธุกรรม', color: 'primary', 
-                groups: [
-                    { 
-                        id: 'g1', title: 'คะแนนเก็บ (20)', 
-                        columns: [
-                           { id: 'c1', name: 'สมุด', max: 10, type: 'manual', link: '' },
-                           { id: 'c2', name: 'ใบงาน', max: 10, type: 'manual', link: '' }
-                        ]
-                    }
-                ]
-            }
-        ];
-        const SEED_DATA = [
-            { id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } },
-            { id: '66002', no: '2', name: 'นางสาวใจดี มีสุข', room: '1/1', scores: { 'c1': 10, 'c2': 9 } },
-            { id: '66003', no: '3', name: 'นายรักเรียน เพียรศึกษา', room: '1/1', scores: { 'c1': 8, 'c2': 7 } }
-        ];
+        const SEED_DATA = {
+            students: [
+                { id: '66001', no: '1', name: 'นายสมชาย เรียนดี', room: '1/1', scores: { 'c1': 9, 'c2': 8 } },
+                { id: '66002', no: '2', name: 'นางสาวใจดี มีสุข', room: '1/1', scores: { 'c1': 10, 'c2': 9 } },
+                { id: '66003', no: '3', name: 'นายรักเรียน เพียรศึกษา', room: '1/1', scores: { 'c1': 8, 'c2': 7 } }
+            ],
+            sections: [
+                { 
+                    id: 'sec1', title: 'บทที่ 1: สารพันธุกรรม', color: 'primary', 
+                    groups: [
+                        { 
+                            id: 'g1', title: 'คะแนนเก็บ (20)', 
+                            columns: [
+                               { id: 'c1', name: 'สมุด', max: 10, type: 'manual', link: '' },
+                               { id: 'c2', name: 'ใบงาน', max: 10, type: 'manual', link: '' }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
 
+        // --- THEME PALETTES (Pastel) ---
         const SECTION_THEMES = [
             { name: 'Sky', bg: 'bg-primary-50', border: 'border-primary-100', text: 'text-primary-700', header: 'bg-primary-100', icon: 'text-primary-400', subHeader: 'text-primary-600', button: 'bg-primary-400 text-white' },
             { name: 'Rose', bg: 'bg-secondary-50', border: 'border-secondary-100', text: 'text-secondary-600', header: 'bg-secondary-100', icon: 'text-secondary-400', subHeader: 'text-secondary-500', button: 'bg-secondary-500 text-white' },
@@ -172,6 +210,25 @@
 
         // --- COMPONENTS ---
         
+        function ScannerController({ isOpen, onScan }) {
+            useEffect(() => {
+                if(!isOpen) return;
+                const scanner = new Html5Qrcode("scanner-video");
+                const startScanner = async () => {
+                    try {
+                        await scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+                            (text) => { onScan(text.trim()); }, 
+                            () => {}
+                        );
+                    } catch(e) { console.error(e); }
+                };
+                startScanner();
+                return () => { try { scanner.stop(); } catch(e){} };
+            }, [isOpen]);
+            return <div id="scanner-video" className="w-full h-full bg-black rounded-lg overflow-hidden"></div>;
+        }
+
+        // Attendance QR Modal (PC Left Side)
         function AttendanceQRModal({ roomId, onClose }) {
             const qrRef = useRef(null);
             const [sessionId, setSessionId] = useState(null);
@@ -182,20 +239,19 @@
                 const newSessionId = `ATT-${safeRoom}-${today}`;
                 setSessionId(newSessionId);
 
-                // Create session
+                // Create session in DB (Optional for offline, but good for structure)
                 if (!USE_LOCAL_STORAGE) {
                     setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance_sessions', newSessionId), { 
                         roomId: roomId, active: true, date: today, timestamp: Date.now()
-                    });
+                    }).catch(e => console.warn('Online sync failed', e));
                 }
 
-                // Generate QR
                 setTimeout(() => {
                     if (qrRef.current) {
                         qrRef.current.innerHTML = "";
                         const url = window.location.href.split('?')[0] + '?attendance_session=' + newSessionId;
                         new QRCode(qrRef.current, {
-                            text: url, width: 200, height: 200,
+                            text: url, width: 220, height: 220,
                             colorDark : "#6366f1", colorLight : "#ffffff",
                             correctLevel : QRCode.CorrectLevel.H
                         });
@@ -215,6 +271,46 @@
             );
         }
 
+        // Mobile Pair Modal (PC)
+        function MobilePairModal({ sessionId, onClose }) {
+            const qrRef = useRef(null);
+            const [status, setStatus] = useState('กำลังรอการเชื่อมต่อ...');
+
+            useEffect(() => {
+                if (qrRef.current) {
+                    const url = window.location.href.split('?')[0] + '?scan_session=' + sessionId;
+                    qrRef.current.innerHTML = "";
+                    new QRCode(qrRef.current, { text: url, width: 200, height: 200, colorDark : "#ec4899", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+                }
+                
+                if (!USE_LOCAL_STORAGE) {
+                    const checkStatus = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), (docSnap) => {
+                        if (docSnap.exists() && docSnap.data().lastScanned) {
+                            setStatus(`ได้รับข้อมูล: ${docSnap.data().lastScanned}`);
+                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                            audio.volume = 0.5; audio.play().catch(()=>{});
+                        }
+                    });
+                    return () => checkStatus();
+                }
+            }, [sessionId]);
+
+            return (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-8 text-center max-w-sm w-full relative shadow-2xl">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2 hover:bg-gray-200 transition"><Icons.X size={20}/></button>
+                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600"><Icons.QrCode size={32}/></div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2 font-display">Mobile Pair</h3>
+                        <p className="text-gray-500 mb-6 text-sm">สแกนเพื่อเปลี่ยนมือถือเป็นเครื่องยิงบาร์โค้ด</p>
+                        {USE_LOCAL_STORAGE && <p className="text-xs text-orange-500 mb-2">*โหมดออฟไลน์: ฟีเจอร์นี้อาจใช้งานไม่ได้เต็มรูปแบบ</p>}
+                        <div ref={qrRef} className="bg-white p-4 rounded-xl border-2 border-dashed border-primary-200 inline-block mb-4 shadow-sm"></div>
+                        <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded border border-gray-100 mb-4 break-all">ID: {sessionId}</div>
+                        <div className={`px-4 py-2 rounded-full font-mono text-sm font-bold transition-all ${status.includes('ได้รับ') ? 'bg-green-100 text-green-700 scale-105' : 'bg-gray-100 text-gray-400'}`}>{status}</div>
+                    </div>
+                </div>
+            );
+        }
+
         function MobileScannerView({ sessionId, onClose }) {
             const [status, setStatus] = useState('แตะปุ่มเพื่อเริ่มสแกน');
             const [isScanning, setIsScanning] = useState(false);
@@ -227,14 +323,15 @@
                         (text) => {
                             if (text.includes("scan_session")) return;
                             setStatus(`ส่ง: ${text}`);
-                            // Beep
                             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
                             audio.volume = 0.5; audio.play().catch(()=>{});
 
                             if (!USE_LOCAL_STORAGE) {
                                 setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', sessionId), { 
                                     lastScanned: text, timestamp: Date.now() 
-                                }, { merge: true });
+                                }, { merge: true })
+                                .then(() => setStatus(`ส่งสำเร็จ: ${text}`))
+                                .catch(err => setStatus(`ส่งไม่ผ่าน: ${err.message}`));
                             }
                             if(navigator.vibrate) navigator.vibrate(200);
                         }, 
@@ -274,12 +371,12 @@
                     if (!USE_LOCAL_STORAGE) {
                         const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', studentId);
                         const sSnap = await getDoc(sRef);
-                        if (!sSnap.exists()) { setStatus('error'); return; }
+                        if (!sSnap.exists()) { setStatus('error'); alert("ไม่พบรหัสนักเรียน"); return; }
                         sData = sSnap.data();
                     } else {
                          const localData = loadLocalData();
                          const found = localData.students.find(s => s.id === studentId);
-                         if(!found) { setStatus('error'); return; }
+                         if(!found) { setStatus('error'); alert("ไม่พบรหัสนักเรียน (Offline)"); return; }
                          sData = found;
                     }
 
@@ -322,7 +419,6 @@
                     <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm text-center">
                         <h1 className="text-2xl font-bold text-gray-800 mb-6">ลงชื่อเข้าเรียน</h1>
                         <input type="tel" className="w-full p-4 border-2 rounded-xl text-center text-xl mb-4 focus:border-primary-500 outline-none" placeholder="รหัสนักเรียน" value={studentId} onChange={e => setStudentId(e.target.value)} />
-                        {status === 'error' && <p className="text-red-500 text-sm mb-2">ไม่พบรหัสนักเรียน</p>}
                         <button onClick={handleCheckIn} disabled={status==='loading'} className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold shadow-lg transition transform active:scale-95">
                             {status==='loading' ? 'กำลังตรวจสอบ...' : 'ยืนยัน'}
                         </button>
@@ -331,6 +427,7 @@
             );
         }
 
+        // Virtual Numpad
         function VirtualNumpad({ isOpen, target, onInput, onClose, onConfirm }) {
             if (!isOpen || !target) return null;
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'Del'];
@@ -368,15 +465,12 @@
             const [sections, setSections] = useState([]);
             const [loading, setLoading] = useState(true);
             const [user, setUser] = useState(null);
-            
-            // UI States
             const [searchId, setSearchId] = useState('');
             const [searchResult, setSearchResult] = useState(null);
             const [password, setPassword] = useState('');
-            const [teacherTab, setTeacherTab] = useState('attendance'); 
+            const [teacherTab, setTeacherTab] = useState('scores'); 
             const [selectedRoom, setSelectedRoom] = useState('All');
             const [teacherSearchId, setTeacherSearchId] = useState('');
-            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const [warning, setWarning] = useState({ show: false, msg: '' });
             const [collapsedSections, setCollapsedSections] = useState({});
             const [scoreModalData, setScoreModalData] = useState(null); 
@@ -385,8 +479,6 @@
             const [isImportOpen, setIsImportOpen] = useState(false);
             const [importText, setImportText] = useState('');
             const [isScannerOpen, setIsScannerOpen] = useState(false);
-            const [scanTarget, setScanTarget] = useState('');
-            const [returnToScanner, setReturnToScanner] = useState(false); 
             const [isMobilePairOpen, setIsMobilePairOpen] = useState(false);
             const [scannerSessionId, setScannerSessionId] = useState(null);
             const [isMobileScannerActive, setIsMobileScannerActive] = useState(false);
@@ -411,6 +503,7 @@
             const [isImporting, setIsImporting] = useState(false);
             const [newStudent, setNewStudent] = useState({ id: '', no: '', name: '', room: '' });
             const [scanMode, setScanMode] = useState('score'); 
+            const [sortConfig, setSortConfig] = useState({key: 'no', direction: 'asc'});
             const studentInputRef = useRef(null);
             const teacherInputRef = useRef(null);
             const attendanceInputRef = useRef(null);
@@ -467,11 +560,11 @@
                     if (data && data.lastScanned) {
                         const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
                         audio.volume = 0.5; audio.play().catch(()=>{});
-                        handleTeacherSearch(data.lastScanned.trim());
+                        handleScan(data.lastScanned.trim());
                     }
                 });
                 return () => unsub();
-            }, [scannerSessionId, isMobileScannerActive, students]);
+            }, [scannerSessionId, isMobileScannerActive, students, scanMode]); // Added scanMode dep
             
             useEffect(() => {
                 if (teacherTab !== 'attendance' || !user) return;
@@ -493,20 +586,23 @@
                 if (teacherTab !== 'stats' || !user) return;
                 const fetchStats = async () => {
                     const studentsInRoom = students.filter(s => s.room === selectedRoom);
-                    const stats = studentsInRoom.map(s => ({ ...s, present: Math.floor(Math.random() * 20), total: 20, percent: Math.random() * 100 })); 
+                    const stats = studentsInRoom.map(s => {
+                        const present = Math.floor(Math.random() * 20); 
+                        return { ...s, present, total: 20, percent: (present/20)*100 };
+                    });
                     setStatsData(stats);
                 };
                 fetchStats();
             }, [teacherTab, selectedRoom, students]);
 
             useEffect(() => {
-                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
+                const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen || isAttendanceQROpen;
                 if (!isAnyModalOpen) {
                     if (view === 'student' && studentInputRef.current) setTimeout(() => studentInputRef.current.focus(), 100);
                     else if (view === 'teacher' && teacherTab === 'scores' && teacherInputRef.current) setTimeout(() => teacherInputRef.current.focus(), 100);
                     else if (view === 'teacher' && teacherTab === 'attendance' && attendanceInputRef.current) setTimeout(() => attendanceInputRef.current.focus(), 100);
                 }
-            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, loading]);
+            }, [view, teacherTab, isScannerOpen, scoreModalData, studentModalData, isAddStudentOpen, isImportOpen, isMobilePairOpen, isSectionSettingsOpen, isGroupModalOpen, isColumnModalOpen, isPasswordConfirmOpen, isAttendanceQROpen, loading]);
 
             const saveData = (newS, newSec) => {
                 if(USE_LOCAL_STORAGE) { const d = loadLocalData(); if(newS) d.students = newS; if(newSec) d.sections = newSec; saveLocalData(d); if(newS) setStudents(newS); if(newSec) setSections(newSec); } 
@@ -558,7 +654,7 @@
             const handleSaveColumn = () => { if(!columnModalData.name) return; const newSecs = sections.map(s => { if(s.id === columnModalData.sectionId) { return {...s, groups: s.groups.map(g => { if(g.id === columnModalData.groupId) { const cols = [...(g.columns || [])]; const newCol = { id: columnModalData.id || `c_${Date.now()}`, name: columnModalData.name, max: parseInt(columnModalData.max) || 10, type: columnModalData.type || 'manual', link: columnModalData.link || '' }; if(columnModalData.id) { const idx = cols.findIndex(c => c.id === columnModalData.id); cols[idx] = newCol; } else { cols.push(newCol); } return {...g, columns: cols}; } return g; })}; } return s; }); saveData(null, newSecs); setIsColumnModalOpen(false); };
             const handleDeleteColumn = (secId, groupId, colId) => { if(!confirm('ยืนยันลบ?')) return; const newSecs = sections.map(s => { if(s.id === secId) { return {...s, groups: s.groups.map(g => g.id === groupId ? {...g, columns: g.columns.filter(c => c.id !== colId)} : g)}; } return s; }); saveData(null, newSecs); };
             const calculateColumnValue = (student, group, col) => { if (!group || !group.columns) return '-'; if (col.type === 'manual') return student.scores?.[col.id]; const manualCols = group.columns.filter(c => c.type === 'manual'); const totalMax = manualCols.reduce((acc, c) => acc + (parseInt(c.max) || 0), 0); let currentTotal = 0; manualCols.forEach(c => { const val = parseFloat(student.scores?.[c.id]); if (!isNaN(val)) currentTotal += val; }); if (col.type === 'sum') return parseFloat(currentTotal.toFixed(2)); if (col.type === 'percent') { const weight = parseInt(col.max) || 100; return totalMax > 0 ? parseFloat(((currentTotal / totalMax) * weight).toFixed(2)) : 0; } return '-'; };
-            const processedStudents = useMemo(() => { let filtered = students; if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom); if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId)); return filtered.sort((a,b) => (parseInt(a.no)||0) - (parseInt(b.no)||0)); }, [students, selectedRoom, teacherSearchId]);
+            const processedStudents = useMemo(() => { let filtered = students; if(selectedRoom !== 'All') filtered = filtered.filter(s => s.room === selectedRoom); if(teacherSearchId) filtered = filtered.filter(s => s.id.includes(teacherSearchId) || s.name.includes(teacherSearchId)); return filtered.sort((a,b) => (parseInt(a.no)||0) - (parseInt(b.no)||0)); }, [students, selectedRoom, teacherSearchId, sortConfig]);
             const uniqueRooms = useMemo(() => [...new Set(students.map(s => s.room).filter(Boolean))].sort(), [students]);
             const totalScorePreview = useMemo(() => { if(!scoreModalData) return 0; let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(scoreModalData.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); }, [scoreModalData]);
             const handleGenerateScanner = () => { const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase(); setScannerSessionId(newSessionId); setIsMobilePairOpen(true); if(!USE_LOCAL_STORAGE) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scanner_sessions', newSessionId), { created: Date.now() }); };
@@ -594,21 +690,157 @@
                     </nav>
 
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
-                        {/* TEACHER DASHBOARD */}
                         {view === 'teacher' && (
-                            <div className="animate-fade-in">
-                                {/* Menu Tabs */}
-                                <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-200 mx-auto md:mx-0 overflow-x-auto">
-                                    <button onClick={() => setTeacherTab('attendance')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='attendance' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.CheckCircle/> เช็คชื่อ</button>
-                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-secondary-100 text-secondary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> คะแนน</button>
-                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อ</button>
-                                    <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Settings/> โครงสร้าง</button>
-                                    <button onClick={() => setTeacherTab('stats')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='stats' ? 'bg-warning-100 text-warning-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.BarChart/> สถิติ</button>
+                            <div className="print-only">
+                                <div className="student-report-header print-header">
+                                    <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
+                                    <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
+                                    <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
+                                </div>
+                                <div className="print-container">
+                                    {[0, 1].map(colIndex => {
+                                        const half = Math.ceil(processedStudents.length / 2);
+                                        const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
+                                        if (studentsInCol.length === 0) return null;
+                                        return (
+                                            <div className="print-column" key={colIndex}>
+                                                <table className="print-table">
+                                                    <thead>
+                                                        <tr><th className="w-no">เลขที่</th><th className="w-id">รหัส</th><th className="w-name">ชื่อ-นามสกุล</th>
+                                                            {sections.map(sec => sec.groups.map(g => g.columns.map(c => <th key={c.id} className="w-score"><div className="vertical-header-print">{c.name}</div><div style={{borderTop:'1px solid #ccc', fontSize:'8pt'}}>({c.max})</div></th>)))}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {studentsInCol.map(s => (
+                                                            <tr key={s.id}><td>{s.no}</td><td>{s.id}</td><td className="text-left">{s.name}</td>
+                                                                {sections.map(sec => sec.groups.map(g => g.columns.map(c => { const val = calculateColumnValue(s, g, c); return <td key={c.id}>{val && val !== '-' ? val : ''}</td>; })))}
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="print-footer">
+                                    <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์  เครือก๋า)</p><p>นักศึกษาฝึกวิชาชีพครู</p></div>
+                                    <div className="signature-block"><div className="signature-line"></div><p>(นางสาวพรวดี ใจเที่ยงธรรม)</p><p>ครู</p></div>
+                                    <div className="signature-block"><div className="signature-line"></div><p>ผู้อำนวยการสถานศึกษา</p><p>(...........................................................)</p></div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* STUDENT VIEW */}
+                        {view === 'student' && (
+                            <>
+                                <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
+                                    <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
+                                        <div className="flex justify-between items-start mb-6">
+                                            <h2 className="text-3xl font-extrabold text-slate-800 font-display text-center flex-1">ตรวจสอบคะแนน</h2>
+                                            {searchResult && (<button onClick={handlePrint} className="bg-slate-100 text-slate-600 p-2 rounded-full hover:bg-slate-200 transition" title="พิมพ์ใบรายงานผลการเรียน"><Icons.Print size={20}/></button>)}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input ref={studentInputRef} className="w-full p-4 border-2 rounded-2xl text-lg outline-none focus:border-primary-500 transition" placeholder="เลขประจำตัว (เช่น 66001)" value={searchId} onChange={e => setSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('search-btn').click()} />
+                                            <button id="search-btn" onClick={() => { const s = students.find(x => x.id === searchId); if (s) setSearchResult(s); else setWarning({show:true, msg:'ไม่พบข้อมูล'}); }} className="bg-primary-600 text-white px-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95"><Icons.Search size={24}/></button>
+                                        </div>
+                                        {searchResult && (
+                                            <div className="mt-8 space-y-6 animate-fade-in">
+                                                <div className="bg-primary-50 p-4 rounded-xl flex items-center gap-4 border border-primary-100">
+                                                    <div className="bg-white p-3 rounded-full shadow-sm"><Icons.User className="text-primary-600"/></div>
+                                                    <div><div className="font-bold text-xl text-slate-800">{searchResult.name}</div><div className="text-sm text-slate-500">เลขที่: {searchResult.no} | ห้อง: {searchResult.room}</div></div>
+                                                </div>
+                                                {sections.map((sec, idx) => (
+                                                    <div key={sec.id} className="border rounded-xl overflow-hidden shadow-sm">
+                                                        <div className={`bg-primary-100 p-3 font-bold text-primary-700 border-b font-display`}>{sec.title}</div>
+                                                        <div className="bg-white p-3 space-y-2">
+                                                            {sec.groups?.map(g => g.columns?.map(c => {
+                                                                const val = calculateColumnValue(searchResult, g, c);
+                                                                const isSpecial = c.type === 'sum' || c.type === 'percent';
+                                                                const isMissing = !val || val === '-';
+                                                                return (
+                                                                    <div key={c.id} className={`flex justify-between items-center py-2.5 border-b last:border-0 px-3 rounded-lg transition-colors ${isSpecial ? 'bg-slate-100 border-slate-200 shadow-sm' : 'border-gray-100 hover:bg-slate-50'}`}>
+                                                                        <span className={`text-sm flex items-center gap-2 ${isSpecial ? 'font-bold text-slate-700' : 'text-gray-600'}`}>
+                                                                            {c.name}
+                                                                            {isSpecial && <span className="text-[9px] bg-white border border-slate-300 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">{c.type === 'percent' ? '%' : 'SUM'}</span>}
+                                                                        </span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            {isMissing && c.link && (<a href={c.link} target="_blank" className="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded hover:bg-rose-200 font-bold flex items-center gap-1"><Icons.AlertTriangle size={12}/> ตามงาน</a>)}
+                                                                            <span className={`font-bold text-base ${isSpecial ? 'text-slate-800' : 'text-slate-600'}`}>{val || '-'} <span className={`${isSpecial ? 'text-slate-400' : 'text-slate-300'} text-xs font-normal ml-1`}>/{c.max}</span></span>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            }))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* ATTENDANCE TAB */}
+                                {searchResult && (
+                                    <div className="print-only">
+                                        <div className="student-report-header">
+                                            <div style={{marginBottom: '5px'}}><Icons.FileSpreadsheet size={32}/></div>
+                                            <h1>รายงานผลการเรียนรายบุคคล</h1>
+                                            <h2>รายวิชาชีววิทยา 2</h2>
+                                            <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h3>
+                                        </div>
+                                        <div className="student-info">
+                                            <div><span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span><span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span></div>
+                                            <div><span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span><span><strong>เลขที่:</strong> {searchResult.no}</span></div>
+                                            <div><span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                                        </div>
+                                        <table className="print-table">
+                                            <thead><tr><th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th><th style={{width: '20%'}}>คะแนนเต็ม</th><th style={{width: '20%'}}>คะแนนที่ได้</th></tr></thead>
+                                            <tbody>
+                                                {sections.map(sec => (
+                                                    <React.Fragment key={sec.id}>
+                                                        <tr style={{backgroundColor: '#f9fafb'}}><td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td></tr>
+                                                        {sec.groups?.map(g => g.columns?.map(c => {
+                                                            const val = calculateColumnValue(searchResult, g, c);
+                                                            return <tr key={c.id}><td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td><td>{c.max}</td><td>{val || '-'}</td></tr>;
+                                                        }))}
+                                                    </React.Fragment>
+                                                ))}
+                                                <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '14pt'}}>{(() => { let total = 0; sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); }))); return parseFloat(total.toFixed(2)); })()}</td></tr>
+                                            </tbody>
+                                        </table>
+                                        <div className="print-footer">
+                                            <div className="signature-block"><div className="signature-line"></div><p>({searchResult.name})</p><p>นักเรียนผู้รับรอง</p></div>
+                                            <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์ เครือก๋า)</p><p>ครูผู้สอน</p></div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* TEACHER LOGIN */}
+                        {view === 'teacher_login' && (
+                            <div className="max-w-sm mx-auto mt-16 bg-white p-8 rounded-2xl shadow-xl border animate-slide-up text-center screen-only">
+                                <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-primary-600"/></div>
+                                <h3 className="text-xl font-bold mb-6 font-display text-slate-800">สำหรับครูผู้สอน</h3>
+                                <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-primary-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
+                                <button id="login-btn" onClick={() => { if(password==='65411597') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
+                            </div>
+                        )}
+
+                        {/* TEACHER DASHBOARD */}
+                        {view === 'teacher' && (
+                            <div className="animate-fade-in screen-only">
+                                {/* TAB NAVIGATION */}
+                                <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-200 mx-auto md:mx-0">
+                                    <button onClick={() => setTeacherTab('attendance')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='attendance' ? 'bg-indigo-100 text-indigo-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.CheckCircle/> เช็คชื่อ</button>
+                                    <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='scores' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
+                                    <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='students' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
+                                    <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
+                                    <button onClick={() => setTeacherTab('stats')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition ${teacherTab==='stats' ? 'bg-orange-100 text-orange-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.BarChart/> สถิติ</button>
+                                </div>
+                                
+                                {/* ATTENDANCE TAB - SPLIT VIEW */}
                                 {teacherTab === 'attendance' && (
-                                    <div className="h-[calc(100vh-180px)] flex flex-col">
+                                    <div className="h-[calc(100vh-140px)] flex flex-col">
                                          <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between glass-card mb-4">
                                             <div className="flex items-center gap-2">
                                                 <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600"><Icons.CheckCircle size={24}/></div>
@@ -618,7 +850,7 @@
                                                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
                                                     <span className="text-sm font-bold text-slate-600">ห้อง:</span>
                                                     <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-indigo-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
-                                                        <option value="All">เลือกห้อง...</option>
+                                                        <option value="All">เลือกห้องเรียน...</option>
                                                         {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
                                                     </select>
                                                 </div>
@@ -626,42 +858,86 @@
                                         </div>
 
                                         {selectedRoom === 'All' ? (
-                                            <div className="flex-1 flex flex-col items-center justify-center bg-indigo-50/50 rounded-2xl border-2 border-dashed border-indigo-200 text-indigo-400 font-bold">กรุณาเลือกห้องเรียนเพื่อเริ่มเช็คชื่อ</div>
+                                            <div className="flex-1 flex flex-col items-center justify-center bg-indigo-50/50 rounded-2xl border-2 border-dashed border-indigo-200 text-indigo-400">
+                                                <Icons.CheckCircle size={64} className="mb-4 opacity-50"/>
+                                                <p className="font-bold text-lg">กรุณาเลือกห้องเรียนเพื่อเริ่มเช็คชื่อ</p>
+                                            </div>
                                         ) : (
                                             <div className="flex flex-1 gap-6 overflow-hidden">
-                                                {/* Left: QR Panel */}
-                                                <div className="w-1/3 min-w-[300px] bg-white rounded-2xl shadow-lg border border-primary-100 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-400 to-primary-600"></div>
-                                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">สแกนเพื่อเช็คชื่อ</h3>
-                                                    <p className="text-slate-500 mb-6 text-sm">ให้นักเรียนสแกน QR Code นี้</p>
-                                                    <AttendanceQRModal roomId={selectedRoom} />
-                                                    <div className="mt-8 flex gap-2 w-full">
-                                                        <input className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-center outline-none focus:ring-2 focus:ring-primary-500" placeholder="กรอกรหัส นร." onKeyDown={(e) => { if(e.key==='Enter') { toggleAttendance(e.target.value, students.find(s=>s.id===e.target.value)||{}); e.target.value=''; } }} />
+                                                {/* Left: QR Code & Scanner */}
+                                                <div className="w-1/3 min-w-[320px] bg-white rounded-2xl shadow-lg border border-indigo-100 flex flex-col p-6 items-center text-center overflow-y-auto">
+                                                    <div className="mb-4">
+                                                        <h3 className="text-xl font-bold text-indigo-800">QR Code เช็คชื่อ</h3>
+                                                        <p className="text-sm text-gray-500">ห้อง {selectedRoom}</p>
                                                     </div>
+                                                    <div className="flex items-center justify-center w-full mb-6">
+                                                        <AttendanceQRModal roomId={selectedRoom} />
+                                                    </div>
+                                                    
+                                                    <div className="w-full border-t border-gray-100 my-4"></div>
+                                                    <h3 className="font-bold text-gray-700 mb-2 flex items-center justify-center gap-2"><Icons.UserPlus size={16}/> ครูเช็คชื่อเอง</h3>
+                                                    
+                                                    <div className="flex gap-2 w-full mb-2">
+                                                        <input 
+                                                            ref={attendanceInputRef}
+                                                            className="flex-1 border-2 border-indigo-100 rounded-xl px-3 py-2 text-center focus:border-indigo-500 outline-none" 
+                                                            placeholder="ยิงบาร์โค้ด / พิมพ์รหัส..." 
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleScan(e.target.value);
+                                                                    e.target.value = '';
+                                                                }
+                                                            }}
+                                                        />
+                                                        <button onClick={() => setIsScannerOpen(true)} className="bg-indigo-100 text-indigo-600 p-2 rounded-xl hover:bg-indigo-200 transition shadow-sm" title="เปิดกล้องสแกน"><Icons.Camera size={20}/></button>
+                                                    </div>
+                                                    <p className="text-xs text-gray-400">ใช้เครื่องยิงบาร์โค้ด หรือกดรูปกล้องเพื่อสแกนบัตร</p>
                                                 </div>
-                                                {/* Right: Live List */}
+
+                                                {/* Right: Student List */}
                                                 <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
-                                                    <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-                                                        <h3 className="font-bold text-slate-700">รายชื่อ ({processedStudents.filter(s=>s.room===selectedRoom).length})</h3>
+                                                    <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                                                        <div className="font-bold text-gray-700">รายชื่อนักเรียน ({processedStudents.filter(s=>s.room===selectedRoom).length})</div>
                                                         <div className="flex gap-2 text-xs font-bold">
                                                             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full flex items-center gap-1"><div className="w-2 h-2 bg-green-500 rounded-full"></div> มา: {processedStudents.filter(s => s.room === selectedRoom && attendanceRecords[s.id]).length}</span>
+                                                            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full flex items-center gap-1"><div className="w-2 h-2 bg-red-500 rounded-full"></div> ขาด: {processedStudents.filter(s => s.room === selectedRoom && !attendanceRecords[s.id]).length}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex-1 overflow-y-auto p-2">
-                                                        <table className="w-full text-sm text-left border-separate border-spacing-y-1">
-                                                            <thead className="text-slate-400 font-medium sticky top-0 bg-white z-10">
-                                                                <tr><th className="p-2 text-center w-12">#</th><th className="p-2 w-24">รหัส</th><th className="p-2">ชื่อ</th><th className="p-2 text-center w-32">สถานะ</th><th className="p-2 text-center w-20">จัดการ</th></tr>
+                                                    <div className="flex-1 overflow-y-auto">
+                                                        <table className="w-full text-sm text-left">
+                                                            <thead className="bg-white text-gray-500 font-bold border-b sticky top-0 shadow-sm z-10">
+                                                                <tr>
+                                                                    <th className="p-3 text-center w-16 bg-white">เลขที่</th>
+                                                                    <th className="p-3 w-32 bg-white">รหัส</th>
+                                                                    <th className="p-3 bg-white">ชื่อ-นามสกุล</th>
+                                                                    <th className="p-3 text-center w-32 bg-white">สถานะ</th>
+                                                                    <th className="p-3 text-center w-24 bg-white">จัดการ</th>
+                                                                </tr>
                                                             </thead>
-                                                            <tbody>
+                                                            <tbody className="divide-y divide-gray-100">
                                                                 {processedStudents.filter(s => s.room === selectedRoom).map(s => {
-                                                                    const isPresent = !!attendanceRecords[s.id];
+                                                                    const record = attendanceRecords[s.id];
+                                                                    const isPresent = !!record;
                                                                     return (
-                                                                        <tr key={s.id} className={`transition-all duration-300 rounded-lg group ${isPresent ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`} onClick={() => toggleAttendance(s.id, s)}>
-                                                                            <td className="p-3 text-center text-slate-500 font-mono">{s.no}</td>
-                                                                            <td className="p-3 font-mono font-bold text-slate-600">{s.id}</td>
-                                                                            <td className="p-3 font-bold text-slate-700">{s.name}</td>
-                                                                            <td className="p-3 text-center rounded-r-xl">{isPresent ? <span className="text-green-600 font-bold text-xs">มาเรียน</span> : <span className="text-gray-400 text-xs">ขาด</span>}</td>
-                                                                            <td className="p-3 text-center"><button className={`p-1.5 rounded-lg ${isPresent ? 'text-red-400 bg-red-50' : 'text-green-500 bg-green-50'}`}>{isPresent ? <Icons.Trash size={14}/> : <Icons.CheckCircle size={14}/>}</button></td>
+                                                                        <tr key={s.id} className={`transition-colors duration-300 ${isPresent ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
+                                                                            <td className="p-3 text-center text-gray-500 font-mono">{s.no}</td>
+                                                                            <td className="p-3 font-mono text-gray-400 text-xs">{s.id}</td>
+                                                                            <td className="p-3 font-bold text-gray-700">{s.name}</td>
+                                                                            <td className="p-3 text-center">
+                                                                                {isPresent ? 
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold animate-fade-in"><Icons.CheckCircle size={12}/> มาเรียน</span> : 
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-gray-400 text-xs font-bold">รอเช็ค...</span>
+                                                                                }
+                                                                            </td>
+                                                                            <td className="p-3 text-center">
+                                                                                <button 
+                                                                                    onClick={() => toggleAttendance(s.id, s)}
+                                                                                    className={`p-1.5 rounded-lg transition ${isPresent ? 'text-red-400 hover:bg-red-50' : 'text-green-500 hover:bg-green-50'}`}
+                                                                                    title={isPresent ? "ยกเลิกการมาเรียน" : "เช็คชื่อ"}
+                                                                                >
+                                                                                    {isPresent ? <Icons.Trash size={16}/> : <Icons.CheckCircle size={16}/>}
+                                                                                </button>
+                                                                            </td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -677,20 +953,26 @@
                                 {/* SCORES TAB */}
                                 {teacherTab === 'scores' && (
                                     <div className="space-y-4">
-                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between glass-card">
-                                            <div className="flex items-center gap-2">
-                                                <select className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-bold text-primary-700 outline-none" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
-                                                    <option value="All">ทุกห้อง</option>
-                                                    {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
-                                                </select>
-                                                <input ref={teacherInputRef} className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-40 outline-none" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
+                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between sticky top-20 z-40 glass-card">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
+                                                    <Icons.Filter size={16} className="text-slate-400"/><span className="text-sm font-bold text-slate-600">ห้อง:</span>
+                                                    <select className="bg-transparent text-sm font-bold outline-none cursor-pointer text-primary-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
+                                                        <option value="All">ทั้งหมด</option>
+                                                        {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
+                                                    <Icons.Search size={16} className="text-slate-400"/>
+                                                    <input ref={teacherInputRef} className="bg-transparent text-sm outline-none w-32" placeholder="ค้นหา..." value={teacherSearchId} onChange={e => setTeacherSearchId(e.target.value)} onKeyDown={e => e.key==='Enter' && handleTeacherSearch()} />
+                                                </div>
+                                                <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-primary-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:shadow-lg transition transform active:scale-95"><Icons.Camera size={18}/> สแกน</button>
+                                                <button onClick={handleGenerateScanner} className="bg-white border border-primary-200 text-primary-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-primary-50 shadow-sm transition"><Icons.QrCode size={18}/> Mobile Pair</button>
+                                                <button onClick={handlePrint} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-slate-200 shadow-sm transition"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => { setScanTarget('score'); setIsScannerOpen(true); }} className="bg-primary-600 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 shadow hover:bg-primary-700 transition"><Icons.Camera size={18}/> สแกน</button>
-                                                <button onClick={handleGenerateScanner} className="bg-white border border-primary-200 text-primary-700 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-primary-50 transition"><Icons.QrCode size={18}/> Mobile Pair</button>
-                                                <button onClick={handlePrint} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-slate-200 transition"><Icons.Print size={18}/> Print</button>
-                                            </div>
+                                            <div className="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border">นักเรียน: {processedStudents.length}</div>
                                         </div>
+
                                         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative" style={{maxHeight: '75vh', overflow: 'auto'}}>
                                             <table className="w-full text-sm text-left border-collapse">
                                                 <thead className="sticky-header shadow-sm bg-slate-50">
@@ -787,6 +1069,7 @@
                                 {teacherTab === 'stats' && (
                                     <div className="bg-white rounded-xl shadow p-6 text-center">
                                         <h3 className="text-xl font-bold text-slate-700 mb-4">สถิติการเข้าเรียน (ภาพรวม)</h3>
+                                        {/* Implement detailed stats logic here based on statsData */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             {statsData.map(s => (
                                                 <div key={s.id} className="border p-4 rounded-xl flex justify-between items-center">
