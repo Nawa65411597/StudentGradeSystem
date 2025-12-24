@@ -95,12 +95,12 @@
 
         #reader video, #scanner-video video, #mobile-reader video { object-fit: cover; border-radius: 1rem; }
 
-        /* --- PRINT STYLES (NEW DESIGN) --- */
+        /* --- PRINT STYLES (UPDATED FROM PREVIEW) --- */
         .print-only { display: none; }
         
         @media print {
             /* Global Print Reset */
-            @page { size: A4; margin: 10mm 15mm; }
+            @page { size: A4; margin: 10mm 20mm; } /* ขอบบนล่าง 10mm ซ้ายขวา 20mm */
             body { 
                 background-color: white !important; 
                 -webkit-print-color-adjust: exact; 
@@ -126,36 +126,51 @@
             .print-only { display: block !important; width: 100%; }
 
             /* Header Styling */
-            .print-header { text-align: center; margin-bottom: 20px; }
-            .print-header img { height: 100px; margin-bottom: 5px; }
-            .print-header h1 { font-size: 12pt; font-weight: bold; margin: 0; }
-            .print-header h2 { font-size: 12pt; font-weight: bold; margin: 0; }
-            .print-header p { font-size: 10pt; margin: 0; }
+            .report-header { text-align: center; margin-bottom: 20px; }
+            .report-header img { height: 100px; margin-bottom: 5px; } /* Logo 100px */
+            .report-header h1 { font-size: 12pt; font-weight: bold; margin: 0; }
+            .report-header h2 { font-size: 12pt; font-weight: bold; margin: 0; }
+            .report-header p { font-size: 10pt; margin: 0; }
             
+            /* Student Info Box */
+            .student-info {
+                border: 1px solid #000;
+                padding: 8px 15px;
+                margin-bottom: 15px;
+            }
+            .student-info div {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 3px;
+                font-size: 10pt;
+            }
+
             /* Table Styling */
-            table.print-table { 
+            table.report-table { 
                 width: 100% !important; 
                 border-collapse: collapse; 
                 border: 1px solid #000; 
                 font-size: 10pt;
                 margin-bottom: 15px;
             }
-            table.print-table th { 
+            table.report-table th { 
                 background-color: #f0f0f0 !important; 
                 font-weight: bold; 
                 border: 1px solid #000 !important; 
                 padding: 4px;
                 vertical-align: middle;
             }
-            table.print-table td { 
+            table.report-table td { 
                 border: 1px solid #000 !important; 
                 padding: 4px; 
                 text-align: center; 
                 vertical-align: middle;
             }
-            table.print-table td.text-left { text-align: left !important; padding-left: 10px !important; }
+            table.report-table td.text-left { text-align: left !important; padding-left: 10px !important; }
+            table.report-table td.text-right { text-align: right !important; padding-right: 10px !important; }
+            table.report-table td.font-bold { font-weight: bold; }
             
-            /* Vertical Header for Many Columns */
+            /* Vertical Header for Many Columns (Teacher View) */
             .vertical-header-print { 
                 writing-mode: vertical-rl; 
                 transform: rotate(180deg); 
@@ -167,8 +182,8 @@
             }
 
             /* Footer & Signature */
-            .print-footer { 
-                margin-top: 20px; 
+            .report-footer { 
+                margin-top: 30px; 
                 display: flex; 
                 justify-content: space-between; 
                 page-break-inside: avoid; 
@@ -195,28 +210,12 @@
             }
             .empty-space { height: 30px; }
             
-            /* Student Info Box */
-            .student-info {
-                border: 1px solid #000;
-                padding: 8px 15px;
-                margin-bottom: 10px;
-            }
-            .student-info div {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 3px;
-                font-size: 10pt;
-            }
-            
             /* Teacher Specific Print (Landscape) */
-            .teacher-print-mode @page { size: A4 landscape; margin: 10mm; }
+            .teacher-print-mode @page { size: A4 landscape; margin: 10mm 15mm; }
             .teacher-print-container { width: 100%; }
-            .teacher-print-header h1 { font-size: 16pt; font-weight: bold; }
             
             /* Page Break Control */
             tr { break-inside: avoid; page-break-inside: avoid; }
-            .print-container { display: flex; gap: 20px; }
-            .print-column { flex: 1; }
         }
     </style>
 </head>
@@ -1173,7 +1172,6 @@
                         
                         {/* STUDENT VIEW */}
                         {view === 'student' && (
-                            // ... (Student view code remains unchanged)
                             <>
                                 <div className="max-w-xl mx-auto mt-8 animate-slide-up screen-only">
                                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
@@ -1232,7 +1230,7 @@
 
                                 {searchResult && (
                                     <div className="print-only">
-                                        <div className="student-report-header print-header">
+                                        <div className="student-report-header report-header">
                                             <img src="https://img2.pic.in.th/pic/233ac8fb1b9bc7776379f86a7a2ed8d4.jpg" alt="โรงเรียนพิษณุโลกพิทยาคม" />
                                             <h1>รายงานผลการเรียนรายบุคคล</h1>
                                             <h2>รายวิชาชีววิทยา 2 (ว30242)</h2>
@@ -1243,7 +1241,7 @@
                                             <div><span><strong>ระดับชั้น/ห้อง:</strong> {searchResult.room}</span><span><strong>เลขที่:</strong> {searchResult.no}</span></div>
                                             <div><span><strong>วันที่พิมพ์:</strong> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
                                         </div>
-                                        <table className="print-table">
+                                        <table className="report-table">
                                             <thead><tr><th style={{width: '60%'}}>รายการประเมิน / ตัวชี้วัด</th><th style={{width: '20%'}}>คะแนนเต็ม</th><th style={{width: '20%'}}>คะแนนที่ได้</th></tr></thead>
                                             <tbody>
                                                 {sections.map(sec => {
@@ -1264,7 +1262,7 @@
                                                 <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '12pt'}}>{(() => { let total = 0; sections.forEach(s => { if(s.published===false) return; s.groups?.forEach(g => { if(g.published===false) return; g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); })})}); return parseFloat(total.toFixed(2)); })()}</td></tr>
                                             </tbody>
                                         </table>
-                                        <div className="print-footer">
+                                        <div className="report-footer">
                                             <div className="signature-block">
                                                 <div className="empty-space"></div>
                                                 <div className="signature-line"></div>
