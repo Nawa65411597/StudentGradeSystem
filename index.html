@@ -146,29 +146,29 @@
             }
 
             /* Table Styling */
-            table.report-table { 
+            table.print-table { 
                 width: 100% !important; 
                 border-collapse: collapse; 
                 border: 1px solid #000; 
                 font-size: 10pt;
                 margin-bottom: 15px;
             }
-            table.report-table th { 
-                background-color: #f0f0f0 !important; 
+            table.print-table th { 
+                background-color: white !important; 
                 font-weight: bold; 
                 border: 1px solid #000 !important; 
                 padding: 4px;
                 vertical-align: middle;
             }
-            table.report-table td { 
+            table.print-table td { 
                 border: 1px solid #000 !important; 
                 padding: 4px; 
                 text-align: center; 
                 vertical-align: middle;
             }
-            table.report-table td.text-left { text-align: left !important; padding-left: 10px !important; }
-            table.report-table td.text-right { text-align: right !important; padding-right: 10px !important; }
-            table.report-table td.font-bold { font-weight: bold; }
+            table.print-table td.text-left { text-align: left !important; padding-left: 10px !important; }
+            table.print-table td.text-right { text-align: right !important; padding-right: 10px !important; }
+            table.print-table td.font-bold { font-weight: bold; }
             
             /* Vertical Header for Many Columns (Teacher View) */
             .vertical-header-print { 
@@ -192,7 +192,7 @@
             }
             .signature-block { 
                 text-align: center; 
-                width: 40%; 
+                width: 30%; /* ปรับขนาดให้พอดี 3 คนในหน้าครู หรือ 2 คนในหน้าเด็ก */
                 position: relative;
             }
             .signature-line { 
@@ -214,8 +214,12 @@
             .teacher-print-mode @page { size: A4 landscape; margin: 10mm 15mm; }
             .teacher-print-container { width: 100%; }
             
+            /* Analysis Print (Portrait) */
+            .analysis-print-mode @page { size: A4 portrait; margin: 15mm 20mm; }
+
             /* Page Break Control */
             tr { break-inside: avoid; page-break-inside: avoid; }
+            .avoid-break { break-inside: avoid; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -1101,73 +1105,207 @@
                     {/* CONTENT */}
                     <div className="max-w-7xl mx-auto p-4 md:p-6">
                         
-                        {/* TEACHER PRINT VIEW (Optimized 2-Column Layout) */}
+                        {/* TEACHER PRINT VIEW - DYNAMIC BASED ON TAB */}
                         {view === 'teacher' && (
-                            <div className="print-only teacher-print-mode">
-                                <div className="teacher-print-wrapper">
-                                    <div className="print-header teacher-print-header" style={{textAlign: 'center', marginBottom: '20px'}}>
-                                        <img src="https://img2.pic.in.th/pic/233ac8fb1b9bc7776379f86a7a2ed8d4.jpg" alt="โรงเรียนพิษณุโลกพิทยาคม" style={{height:'100px', marginBottom:'5px'}} />
-                                        <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2 (ว30242)</h1>
-                                        <h2>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h2>
-                                        <p>ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'} | ครูผู้สอน: นายนวรัตน์ เครือก๋า</p>
-                                    </div>
-                                    <div className="teacher-print-container" style={{columnCount: 2, columnGap: '20px', width: '100%'}}>
-                                        {[0, 1].map(colIndex => {
-                                            const half = Math.ceil(processedStudents.length / 2);
-                                            const studentsInCol = processedStudents.slice(colIndex * half, (colIndex + 1) * half);
-                                            if (studentsInCol.length === 0) return null;
-                                            return (
-                                                <div className="print-column" key={colIndex} style={{breakInside: 'avoid'}}>
-                                                    <table className="print-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th className="w-no" style={{width: '30px'}}>ที่</th>
-                                                                <th className="w-id" style={{width: '50px'}}>รหัส</th>
-                                                                <th className="w-name">ชื่อ-นามสกุล</th>
-                                                                {sections.map(sec => sec.groups.map(g => g.columns.map(c => <th key={c.id} className="w-score" style={{width: '25px'}}><div className="vertical-header-print" style={{height:'60px'}}>{c.name}</div><div style={{borderTop:'1px solid #ccc', fontSize:'8pt'}}>({c.max})</div></th>)))}
-                                                                <th style={{width: '40px'}}>รวม</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {studentsInCol.map(s => {
-                                                                let total = 0;
-                                                                return (
-                                                                    <tr key={s.id}>
-                                                                        <td>{s.no}</td><td>{s.id}</td><td className="text-left">{s.name}</td>
-                                                                        {sections.map(sec => sec.groups.map(g => g.columns.map(c => { 
-                                                                            const val = calculateColumnValue(s, g, c); 
-                                                                            if(c.type === 'manual') total += parseFloat(s.scores?.[c.id] || 0);
-                                                                            return <td key={c.id}>{val && val !== '-' ? val : ''}</td>; 
-                                                                        })))}
-                                                                        <td style={{fontWeight:'bold'}}>{total > 0 ? parseFloat(total.toFixed(2)) : ''}</td>
-                                                                    </tr>
-                                                                );
+                            <>
+                                {/* 1. SCORE SHEET PRINT (Landscape) */}
+                                {teacherTab === 'scores' && (
+                                    <div className="print-only teacher-print-mode">
+                                        <div className="teacher-print-wrapper">
+                                            <div className="print-header" style={{marginBottom: '15px'}}>
+                                                <img src="https://img2.pic.in.th/pic/233ac8fb1b9bc7776379f86a7a2ed8d4.jpg" alt="โรงเรียนพิษณุโลกพิทยาคม" />
+                                                <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2 (ว30242)</h1>
+                                                <h2>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h2>
+                                                <p>ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'} | ครูผู้สอน: นายนวรัตน์ เครือก๋า</p>
+                                            </div>
+                                            
+                                            <div className="teacher-print-container">
+                                                <table className="print-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th className="w-no" style={{width: '40px'}}>ที่</th>
+                                                            <th className="w-id" style={{width: '60px'}}>รหัส</th>
+                                                            <th className="w-name" style={{width: '200px'}}>ชื่อ-นามสกุล</th>
+                                                            {sections.map(sec => {
+                                                                if (sec.published === false) return null;
+                                                                return sec.groups.map(g => {
+                                                                    if (g.published === false) return null;
+                                                                    return g.columns.map(c => (
+                                                                        <th key={c.id} className="w-score">
+                                                                            <div className="vertical-header-print" style={{height:'80px', marginBottom: '5px'}}>{c.name}</div>
+                                                                            <div style={{borderTop:'1px solid #ccc', fontSize:'9pt', paddingTop:'2px'}}>({c.max})</div>
+                                                                        </th>
+                                                                    ));
+                                                                });
                                                             })}
-                                                        </tbody>
-                                                    </table>
+                                                            <th style={{width: '60px'}}>รวม<br/>(100)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {processedStudents.map(s => {
+                                                            let total = 0;
+                                                            return (
+                                                                <tr key={s.id}>
+                                                                    <td>{s.no}</td>
+                                                                    <td>{s.id}</td>
+                                                                    <td className="text-left">{s.name}</td>
+                                                                    {sections.map(sec => {
+                                                                        if (sec.published === false) return null;
+                                                                        return sec.groups.map(g => {
+                                                                            if (g.published === false) return null;
+                                                                            return g.columns.map(c => { 
+                                                                                const val = calculateColumnValue(s, g, c); 
+                                                                                if(c.type === 'manual') total += parseFloat(s.scores?.[c.id] || 0);
+                                                                                return <td key={c.id}>{val && val !== '-' ? val : ''}</td>; 
+                                                                            });
+                                                                        });
+                                                                    })}
+                                                                    <td style={{fontWeight:'bold'}}>{total > 0 ? parseFloat(total.toFixed(2)) : ''}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {/* Footer Signature */}
+                                            <div className="report-footer">
+                                                <div className="signature-block">
+                                                    <div className="empty-space"></div>
+                                                    <div className="signature-line"></div>
+                                                    <p>(นายนวรัตน์  เครือก๋า)</p>
+                                                    <p>ครูผู้สอน</p>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="print-footer" style={{marginTop: '30px', breakInside: 'avoid'}}>
-                                        <div className="signature-block">
-                                            <div className="signature-line"></div>
-                                            <p>(นายนวรัตน์  เครือก๋า)</p>
-                                            <p>ครูผู้สอน</p>
-                                        </div>
-                                        <div className="signature-block">
-                                            <div className="signature-line"></div>
-                                            <p>(นางสาวพรวดี ใจเที่ยงธรรม)</p>
-                                            <p>หัวหน้ากลุ่มสาระฯ</p>
-                                        </div>
-                                        <div className="signature-block">
-                                            <div className="signature-line"></div>
-                                            <p>ผู้อำนวยการสถานศึกษา</p>
-                                            <p>(...........................................................)</p>
+                                                <div className="signature-block">
+                                                    <div className="empty-space"></div>
+                                                    <div className="signature-line"></div>
+                                                    <p>(นางสาวพรวดี ใจเที่ยงธรรม)</p>
+                                                    <p>หัวหน้ากลุ่มสาระฯ</p>
+                                                </div>
+                                                <div className="signature-block">
+                                                    <div className="empty-space"></div>
+                                                    <div className="signature-line"></div>
+                                                    <p>(...........................................................)</p>
+                                                    <p>ผู้อำนวยการสถานศึกษา</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                )}
+
+                                {/* 2. ANALYSIS PRINT (Portrait) */}
+                                {teacherTab === 'analysis' && (
+                                    <div className="print-only analysis-print-mode">
+                                        <div className="print-header">
+                                            <img src="https://img2.pic.in.th/pic/233ac8fb1b9bc7776379f86a7a2ed8d4.jpg" alt="โรงเรียนพิษณุโลกพิทยาคม" />
+                                            <h1>รายงานสรุปและวิเคราะห์ผลการเรียน</h1>
+                                            <h2>รายวิชาชีววิทยา 2 (ว30242) ภาคเรียนที่ 2 ปีการศึกษา 2568</h2>
+                                            <p>ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : 'ทุกห้องเรียน'} | จำนวนนักเรียนทั้งหมด {processedStudents.length} คน</p>
+                                        </div>
+
+                                        <div style={{display: 'flex', gap: '15px', marginBottom: '20px'}}>
+                                            {/* High */}
+                                            <div style={{flex: 1, border: '1px solid #22c55e', borderRadius: '8px', padding: '10px'}}>
+                                                <div style={{textAlign: 'center', borderBottom: '1px solid #22c55e', paddingBottom: '5px', marginBottom: '10px', color: '#15803d', fontWeight: 'bold'}}>
+                                                    กลุ่มเก่ง (Excellent) <br/> <span style={{fontSize: '10pt'}}>{analysisData.high.length} คน ({((analysisData.high.length/processedStudents.length)*100 || 0).toFixed(1)}%)</span>
+                                                </div>
+                                                <table className="print-table" style={{marginBottom: 0}}>
+                                                    <thead><tr><th>เลขที่</th><th>ชื่อ-สกุล</th><th>คะแนน</th></tr></thead>
+                                                    <tbody>
+                                                        {analysisData.high.map(s => (
+                                                            <tr key={s.id}><td>{s.no}</td><td className="text-left">{s.name}</td><td>{s.total.toFixed(2)}</td></tr>
+                                                        ))}
+                                                        {analysisData.high.length===0 && <tr><td colSpan="3">- ไม่มี -</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {/* Mid */}
+                                            <div style={{flex: 1, border: '1px solid #eab308', borderRadius: '8px', padding: '10px'}}>
+                                                <div style={{textAlign: 'center', borderBottom: '1px solid #eab308', paddingBottom: '5px', marginBottom: '10px', color: '#a16207', fontWeight: 'bold'}}>
+                                                    กลุ่มปานกลาง (Average) <br/> <span style={{fontSize: '10pt'}}>{analysisData.mid.length} คน ({((analysisData.mid.length/processedStudents.length)*100 || 0).toFixed(1)}%)</span>
+                                                </div>
+                                                <table className="print-table" style={{marginBottom: 0}}>
+                                                    <thead><tr><th>เลขที่</th><th>ชื่อ-สกุล</th><th>คะแนน</th></tr></thead>
+                                                    <tbody>
+                                                        {analysisData.mid.map(s => (
+                                                            <tr key={s.id}><td>{s.no}</td><td className="text-left">{s.name}</td><td>{s.total.toFixed(2)}</td></tr>
+                                                        ))}
+                                                        {analysisData.mid.length===0 && <tr><td colSpan="3">- ไม่มี -</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {/* Low */}
+                                            <div style={{flex: 1, border: '1px solid #ef4444', borderRadius: '8px', padding: '10px'}}>
+                                                <div style={{textAlign: 'center', borderBottom: '1px solid #ef4444', paddingBottom: '5px', marginBottom: '10px', color: '#b91c1c', fontWeight: 'bold'}}>
+                                                    กลุ่มต้องปรับปรุง (Need Impr.) <br/> <span style={{fontSize: '10pt'}}>{analysisData.low.length} คน ({((analysisData.low.length/processedStudents.length)*100 || 0).toFixed(1)}%)</span>
+                                                </div>
+                                                <table className="print-table" style={{marginBottom: 0}}>
+                                                    <thead><tr><th>เลขที่</th><th>ชื่อ-สกุล</th><th>คะแนน</th></tr></thead>
+                                                    <tbody>
+                                                        {analysisData.low.map(s => (
+                                                            <tr key={s.id}><td>{s.no}</td><td className="text-left">{s.name}</td><td>{s.total.toFixed(2)}</td></tr>
+                                                        ))}
+                                                        {analysisData.low.length===0 && <tr><td colSpan="3">- ไม่มี -</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div className="report-footer avoid-break">
+                                            <div className="signature-block">
+                                                <img src="https://img5.pic.in.th/file/secure-sv1/-1ca5254ffcb95fc1.png" alt="ลายเซ็น" className="signature-img"/>
+                                                <div className="signature-line"></div>
+                                                <p>(นายนวรัตน์ เครือก๋า)</p>
+                                                <p>ผู้รายงาน</p>
+                                            </div>
+                                            <div className="signature-block">
+                                                <div className="empty-space"></div>
+                                                <div className="signature-line"></div>
+                                                <p>(...........................................................)</p>
+                                                <p>หัวหน้ากลุ่มสาระฯ</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 3. STUDENTS LIST PRINT (Portrait) */}
+                                {teacherTab === 'students' && (
+                                    <div className="print-only analysis-print-mode">
+                                        <div className="print-header">
+                                            <img src="https://img2.pic.in.th/pic/233ac8fb1b9bc7776379f86a7a2ed8d4.jpg" alt="โรงเรียนพิษณุโลกพิทยาคม" />
+                                            <h1>รายชื่อนักเรียน</h1>
+                                            <h2>รายวิชาชีววิทยา 2 (ว30242)</h2>
+                                            <p>ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : 'ทุกห้องเรียน'} | จำนวน {processedStudents.length} คน</p>
+                                        </div>
+                                        <table className="print-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style={{width:'50px'}}>ที่</th>
+                                                    <th style={{width:'80px'}}>รหัส</th>
+                                                    <th>ชื่อ-นามสกุล</th>
+                                                    <th style={{width:'80px'}}>ห้อง</th>
+                                                    <th style={{width:'150px'}}>หมายเหตุ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {processedStudents.map((s, idx) => (
+                                                    <tr key={s.id}>
+                                                        <td>{s.no}</td>
+                                                        <td>{s.id}</td>
+                                                        <td className="text-left">{s.name}</td>
+                                                        <td>{s.room}</td>
+                                                        <td></td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        <div className="report-footer">
+                                             <div className="signature-block" style={{width:'100%'}}>
+                                                <p>พิมพ์วันที่: {new Date().toLocaleDateString('th-TH')}</p>
+                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                         
                         {/* STUDENT VIEW */}
@@ -1248,18 +1386,18 @@
                                                     if (sec.published === false) return null;
                                                     return (
                                                         <React.Fragment key={sec.id}>
-                                                            <tr style={{backgroundColor: '#f9fafb'}}><td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td></tr>
+                                                            <tr><td colSpan="3" className="text-left" style={{fontWeight: 'bold', paddingLeft: '10px'}}>{sec.title}</td></tr>
                                                             {sec.groups?.map(g => {
                                                                 if (g.published === false) return null;
                                                                 return g.columns?.map(c => {
                                                                     const val = calculateColumnValue(searchResult, g, c);
-                                                                    return <tr key={c.id}><td className="text-left" style={{paddingLeft: '30px'}}>{c.name}</td><td>{c.max}</td><td>{val || '-'}</td></tr>;
+                                                                    return <tr key={c.id}><td className="text-left" style={{paddingLeft: '10px'}}>{c.name}</td><td>{c.max}</td><td>{val || '-'}</td></tr>;
                                                                 })
                                                             })}
                                                         </React.Fragment>
                                                     );
                                                 })}
-                                                <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '20px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '12pt'}}>{(() => { let total = 0; sections.forEach(s => { if(s.published===false) return; s.groups?.forEach(g => { if(g.published===false) return; g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); })})}); return parseFloat(total.toFixed(2)); })()}</td></tr>
+                                                <tr style={{borderTop: '2px solid black'}}><td className="text-right" style={{fontWeight: 'bold', paddingRight: '10px'}}>รวมคะแนนทั้งหมด</td><td></td><td style={{fontWeight: 'bold', fontSize: '12pt'}}>{(() => { let total = 0; sections.forEach(s => { if(s.published===false) return; s.groups?.forEach(g => { if(g.published===false) return; g.columns?.forEach(c => { if(c.type === 'manual') total += parseFloat(searchResult.scores?.[c.id] || 0); })})}); return parseFloat(total.toFixed(2)); })()}</td></tr>
                                             </tbody>
                                         </table>
                                         <div className="report-footer">
