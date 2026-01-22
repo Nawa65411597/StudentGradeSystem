@@ -218,7 +218,7 @@
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIG ---
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
@@ -271,7 +271,8 @@
             ExternalLink: (p) => <Icon {...p} p={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
             Eye: (p) => <Icon {...p} p={<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>} />,
             EyeOff: (p) => <Icon {...p} p={<><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />,
-            Chart: (p) => <Icon {...p} p={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>} />
+            Chart: (p) => <Icon {...p} p={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>} />,
+            Activity: (p) => <Icon {...p} p={<><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>} />
         };
 
         const SEED_SECTIONS = [
@@ -332,6 +333,10 @@
             // UI States
             const [searchId, setSearchId] = useState('');
             const [searchResult, setSearchResult] = useState(null);
+            
+            // Activity Log & Presence States
+            const [activeUsers, setActiveUsers] = useState([]);
+            const [accessHistory, setAccessHistory] = useState([]);
             
             // New States for Student Search Dropdown
             const [studentSuggestions, setStudentSuggestions] = useState([]);
@@ -415,6 +420,56 @@
                 return () => unsub();
             }, [scannerSessionId, isMobileScannerActive, students]);
 
+            // --- PRESENCE SYSTEM (Heartbeat) ---
+            useEffect(() => {
+                if (!user || useLocalStorage) return;
+                
+                const updatePresence = () => {
+                    const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_presence', user.uid);
+                    setDoc(presenceRef, {
+                        lastActive: Date.now(),
+                        role: view,
+                        viewingStudentId: searchResult?.id || null, // Track who they are looking at
+                        viewingStudentName: searchResult?.name || null
+                    }, { merge: true });
+                };
+
+                updatePresence(); // Initial call
+                const interval = setInterval(updatePresence, 60000); // Heartbeat every 60s
+                
+                return () => clearInterval(interval);
+            }, [user, view, searchResult]);
+
+            // --- FETCH ACTIVITY LOGS (Teacher Only) ---
+            useEffect(() => {
+                if (view !== 'teacher' || useLocalStorage) return;
+
+                // 1. Active Users (Presence)
+                const unsubPresence = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_presence'), (snap) => {
+                    const now = Date.now();
+                    const active = [];
+                    snap.forEach(d => {
+                        const data = d.data();
+                        // Consider active if updated within last 2 minutes
+                        if (now - data.lastActive < 2 * 60 * 1000) {
+                            active.push({ id: d.id, ...data });
+                        }
+                    });
+                    setActiveUsers(active);
+                });
+
+                // 2. Access History (Logs)
+                const unsubLogs = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'access_logs'), (snap) => {
+                    const logs = [];
+                    snap.forEach(d => logs.push({ id: d.id, ...d.data() }));
+                    // Sort descending by timestamp
+                    logs.sort((a, b) => b.timestamp - a.timestamp);
+                    setAccessHistory(logs.slice(0, 50)); // Keep last 50 records
+                });
+
+                return () => { unsubPresence(); unsubLogs(); };
+            }, [view]);
+
             useEffect(() => {
                 const isAnyModalOpen = isScannerOpen || scoreModalData || studentModalData || isAddStudentOpen || isImportOpen || isMobilePairOpen || isSectionSettingsOpen || isGroupModalOpen || isColumnModalOpen || isPasswordConfirmOpen;
                 if (!isAnyModalOpen) {
@@ -483,6 +538,17 @@
                 setSearchId(s.name); // Show name in input
                 setShowStudentDropdown(false);
                 setWarning({show: false, msg: ''});
+
+                // --- LOG ACCESS ---
+                if (!useLocalStorage && user) {
+                    addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'access_logs'), {
+                        studentId: s.id,
+                        studentName: s.name,
+                        room: s.room,
+                        timestamp: Date.now(),
+                        type: 'check_score'
+                    });
+                }
             };
 
             const navigateStudent = (direction) => {
@@ -1119,6 +1185,7 @@
                                 <div className="flex space-x-2 bg-white p-1.5 rounded-2xl mb-6 w-fit shadow-sm border border-gray-200 mx-auto md:mx-0 overflow-x-auto">
                                     <button onClick={() => setTeacherTab('scores')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition whitespace-nowrap ${teacherTab==='scores' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.FileSpreadsheet/> บันทึกคะแนน</button>
                                     <button onClick={() => setTeacherTab('analysis')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition whitespace-nowrap ${teacherTab==='analysis' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Chart/> วิเคราะห์ผู้เรียน</button>
+                                    <button onClick={() => setTeacherTab('activity')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition whitespace-nowrap ${teacherTab==='activity' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Activity/> การเคลื่อนไหว</button>
                                     <button onClick={() => setTeacherTab('students')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition whitespace-nowrap ${teacherTab==='students' ? 'bg-primary-100 text-primary-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Users/> รายชื่อนักเรียน</button>
                                     <button onClick={() => setTeacherTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition whitespace-nowrap ${teacherTab==='settings' ? 'bg-slate-100 text-slate-700 shadow-inner' : 'text-slate-500 hover:bg-slate-50'}`}><Icons.Settings/> โครงสร้างวิชา</button>
                                 </div>
@@ -1220,88 +1287,74 @@
                                     </div>
                                 )}
 
-                                {/* ANALYSIS TAB */}
-                                {teacherTab === 'analysis' && (
+                                {/* ACTIVITY TAB (New) */}
+                                {teacherTab === 'activity' && (
                                     <div className="space-y-6 animate-fade-in">
-                                        <div className="bg-white p-4 rounded-2xl shadow-sm border flex justify-between items-center glass-card">
-                                            <h3 className="font-bold flex gap-2 text-gray-700 font-display"><Icons.Chart className="text-primary-500"/> วิเคราะห์ผลการเรียน (เฉพาะช่องคะแนนดิบ)</h3>
-                                            <div className="flex gap-2 items-center">
-                                                <span className="text-sm font-bold text-slate-500">ห้อง:</span>
-                                                <select className="bg-gray-50 border border-gray-200 text-sm font-bold rounded-lg p-2 outline-none cursor-pointer text-primary-700" value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
-                                                    <option value="All">ทั้งหมด</option>
-                                                    {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
-                                                </select>
-                                                <button onClick={() => window.print()} className="ml-2 bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm flex gap-2 hover:bg-slate-800 transition"><Icons.Print size={16}/> Print Report</button>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {/* High Group */}
-                                            <div className="bg-green-50 rounded-2xl border border-green-100 p-4 shadow-sm">
-                                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-green-200">
-                                                    <h4 className="font-bold text-green-800 font-display">กลุ่มเก่ง (Excellent)</h4>
-                                                    <span className="bg-green-200 text-green-800 text-xs font-bold px-2 py-1 rounded-full">{analysisData.high.length} คน</span>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            {/* Active Users Card */}
+                                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                                <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                                                    <h3 className="font-bold flex gap-2 text-gray-700"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse mt-1.5"></div> กำลังใช้งานขณะนี้ ({activeUsers.length})</h3>
                                                 </div>
-                                                <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                                    {analysisData.high.map(s => (
-                                                        <div key={s.id} className="bg-white p-3 rounded-xl border border-green-100 shadow-sm flex justify-between items-center">
-                                                            <div>
-                                                                <div className="font-bold text-slate-700">{s.name}</div>
-                                                                <div className="text-xs text-slate-400">#{s.no} | {s.id}</div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <div className="font-bold text-green-600 text-lg">{s.total.toFixed(2)}</div>
-                                                                <div className="text-[10px] text-green-400 font-bold">{s.percent.toFixed(0)}%</div>
-                                                            </div>
+                                                <div className="p-4 max-h-[400px] overflow-y-auto">
+                                                    {activeUsers.length === 0 ? (
+                                                        <div className="text-center text-gray-400 py-8">ไม่มีผู้ใช้งานอื่นขณะนี้</div>
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            {activeUsers.map((u, idx) => (
+                                                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${u.role==='teacher' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                                            {u.role==='teacher' ? <Icons.Lock size={18}/> : <Icons.User size={18}/>}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="font-bold text-sm text-gray-700">{u.role === 'teacher' ? 'ครูผู้สอน' : 'นักเรียน / ผู้ปกครอง'}</div>
+                                                                            <div className="text-xs text-gray-400">สถานะ: {u.viewingStudentName ? `กำลังดูผลของ ${u.viewingStudentName}` : 'กำลังค้นหา/ดูหน้าหลัก'}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-xs text-green-500 font-bold bg-green-50 px-2 py-1 rounded">ออนไลน์</div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
-                                                    {analysisData.high.length === 0 && <div className="text-center text-gray-400 py-4 text-sm">ไม่มีนักเรียนในกลุ่มนี้</div>}
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {/* Mid Group */}
-                                            <div className="bg-yellow-50 rounded-2xl border border-yellow-100 p-4 shadow-sm">
-                                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-yellow-200">
-                                                    <h4 className="font-bold text-yellow-800 font-display">กลุ่มปานกลาง (Average)</h4>
-                                                    <span className="bg-yellow-200 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">{analysisData.mid.length} คน</span>
+                                            {/* Access History Card */}
+                                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                                <div className="p-4 border-b bg-gray-50">
+                                                    <h3 className="font-bold flex gap-2 text-gray-700"><Icons.LogOut className="text-gray-400"/> ประวัติการเข้าชมล่าสุด</h3>
                                                 </div>
-                                                <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                                    {analysisData.mid.map(s => (
-                                                        <div key={s.id} className="bg-white p-3 rounded-xl border border-yellow-100 shadow-sm flex justify-between items-center">
-                                                            <div>
-                                                                <div className="font-bold text-slate-700">{s.name}</div>
-                                                                <div className="text-xs text-slate-400">#{s.no} | {s.id}</div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <div className="font-bold text-yellow-600 text-lg">{s.total.toFixed(2)}</div>
-                                                                <div className="text-[10px] text-yellow-500 font-bold">{s.percent.toFixed(0)}%</div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    {analysisData.mid.length === 0 && <div className="text-center text-gray-400 py-4 text-sm">ไม่มีนักเรียนในกลุ่มนี้</div>}
-                                                </div>
-                                            </div>
-
-                                            {/* Low Group */}
-                                            <div className="bg-red-50 rounded-2xl border border-red-100 p-4 shadow-sm">
-                                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-red-200">
-                                                    <h4 className="font-bold text-red-800 font-display">กลุ่มต้องปรับปรุง (Need Impr.)</h4>
-                                                    <span className="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-full">{analysisData.low.length} คน</span>
-                                                </div>
-                                                <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                                    {analysisData.low.map(s => (
-                                                        <div key={s.id} className="bg-white p-3 rounded-xl border border-red-100 shadow-sm flex justify-between items-center">
-                                                            <div>
-                                                                <div className="font-bold text-slate-700">{s.name}</div>
-                                                                <div className="text-xs text-slate-400">#{s.no} | {s.id}</div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <div className="font-bold text-red-600 text-lg">{s.total.toFixed(2)}</div>
-                                                                <div className="text-[10px] text-red-400 font-bold">{s.percent.toFixed(0)}%</div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    {analysisData.low.length === 0 && <div className="text-center text-gray-400 py-4 text-sm">ไม่มีนักเรียนในกลุ่มนี้</div>}
+                                                <div className="max-h-[400px] overflow-y-auto">
+                                                    <table className="w-full text-sm text-left">
+                                                        <thead className="bg-gray-50 text-gray-500 sticky top-0">
+                                                            <tr>
+                                                                <th className="p-3">เวลา</th>
+                                                                <th className="p-3">นักเรียนที่ถูกตรวจสอบ</th>
+                                                                <th className="p-3 text-right">ห้อง</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {accessHistory.map(log => (
+                                                                <tr key={log.id} className="hover:bg-gray-50 transition">
+                                                                    <td className="p-3 text-gray-500 font-mono text-xs">
+                                                                        {new Date(log.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})} 
+                                                                        <span className="text-gray-300 ml-1">{new Date(log.timestamp).toLocaleDateString('th-TH', {day:'numeric', month:'short'})}</span>
+                                                                    </td>
+                                                                    <td className="p-3">
+                                                                        <div className="font-bold text-gray-700">{log.studentName}</div>
+                                                                        <div className="text-xs text-gray-400 font-mono">{log.studentId}</div>
+                                                                    </td>
+                                                                    <td className="p-3 text-right">
+                                                                        <span className="bg-primary-50 text-primary-600 px-2 py-1 rounded text-xs font-bold">{log.room}</span>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                            {accessHistory.length === 0 && (
+                                                                <tr><td colSpan="3" className="p-8 text-center text-gray-400">ยังไม่มีประวัติการเข้าชม</td></tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
