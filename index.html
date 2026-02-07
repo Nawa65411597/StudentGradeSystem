@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud v7.8 (Super Compact)</title>
+    <title>GradePro Cloud v8.0 (Draft Mode)</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +61,7 @@
             white-space: nowrap;
             text-align: left;
             height: 140px; 
-            padding: 4px 0px; /* Reduced padding for compact 32px */
+            padding: 4px 0px; 
             margin: 0 auto;
             width: 100%;
             display: flex;
@@ -71,10 +71,8 @@
             text-overflow: ellipsis;
         }
 
-        /* Sticky Columns Configuration - Fixed Pixel Widths */
+        /* Sticky Columns Configuration */
         .sticky-col { position: sticky; background-color: #ffffff; z-index: 40; } 
-        
-        /* Exact Widths */
         .sticky-left-0 { left: 0; width: 40px; min-width: 40px; max-width: 40px; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { left: 40px; width: 60px; min-width: 60px; max-width: 60px; border-right: 1px solid #e2e8f0; }
         .sticky-left-2 { left: 100px; width: 180px; min-width: 180px; max-width: 180px; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
@@ -88,6 +86,12 @@
         tr:nth-child(even) .sticky-col { background-color: #ffffff; }
         tr:nth-child(odd) .sticky-col { background-color: #f8fafc; } 
         tr:hover .sticky-col { background-color: #eff6ff; } 
+        
+        /* Unpublished Column Pattern */
+        .unpublished-col {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(200, 200, 200, 0.1) 5px, rgba(200, 200, 200, 0.1) 10px);
+            background-color: #f9fafb;
+        }
 
         /* Print Styles */
         @media print {
@@ -451,7 +455,8 @@
             const calculateAutoScore = (s, g, c) => {
                 if (!g.columns) return '-';
                 let total = 0, max = 0;
-                g.columns.filter(cl => cl.type === 'manual').forEach(cl => {
+                // Only count PUBLISHED manual columns for auto calculation
+                g.columns.filter(cl => cl.type === 'manual' && cl.published !== false).forEach(cl => {
                     total += parseFloat(s.scores?.[cl.id] || 0); max += parseFloat(cl.max || 0);
                 });
                 if (c.type === 'sum') return Math.ceil(total);
@@ -465,17 +470,24 @@
                 let hasPercent = false;
                 let totalManual = 0;
 
-                sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                    if (c.type === 'percent') {
-                        const val = calculateAutoScore(student, g, c);
-                        if (val !== '-') {
-                            totalPercent += parseFloat(val);
-                        }
-                        hasPercent = true;
-                    } else if (c.type === 'manual') {
-                        totalManual += parseFloat(student.scores?.[c.id] || 0);
-                    }
-                })));
+                sections.forEach(s => {
+                     if (s.published === false) return;
+                     s.groups?.forEach(g => {
+                        if (g.published === false) return;
+                        g.columns?.forEach(c => {
+                             if (c.published === false) return;
+                             if (c.type === 'percent') {
+                                 const val = calculateAutoScore(student, g, c);
+                                 if (val !== '-') {
+                                     totalPercent += parseFloat(val);
+                                 }
+                                 hasPercent = true;
+                             } else if (c.type === 'manual') {
+                                 totalManual += parseFloat(student.scores?.[c.id] || 0);
+                             }
+                        });
+                     });
+                });
 
                 // Prefer % score if available, otherwise raw score
                 return Math.ceil(hasPercent ? totalPercent : totalManual);
@@ -533,14 +545,29 @@
             };
             const handleExportCSV = () => {
                 let csv = "\uFEFFเลขที่,รหัส,ชื่อ,ห้อง";
-                sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => csv += `,${c.name}(${c.max})`)));
+                sections.forEach(s => {
+                    if (s.published === false) return;
+                    s.groups?.forEach(g => {
+                        if (g.published === false) return;
+                        g.columns?.forEach(c => {
+                            if (c.published !== false) csv += `,${c.name}(${c.max})`;
+                        });
+                    });
+                });
                 csv += ",รวม,เกรด\n";
                 filteredStudents.forEach(s => {
                     let row = `${s.no},${s.id},${s.name},${s.room}`;
-                    sections.forEach(sec => sec.groups?.forEach(grp => grp.columns?.forEach(col => {
-                        const val = col.type === 'manual' ? getScore(s, col.id) : calculateAutoScore(s, grp, col);
-                        row += `,${val || ''}`;
-                    })));
+                    sections.forEach(sec => {
+                        if (sec.published === false) return;
+                        sec.groups?.forEach(grp => {
+                             if (grp.published === false) return;
+                             grp.columns?.forEach(col => {
+                                if (col.published === false) return;
+                                const val = col.type === 'manual' ? getScore(s, col.id) : calculateAutoScore(s, grp, col);
+                                row += `,${val || ''}`;
+                             });
+                        });
+                    });
                     const total = calculateTotalScore(s);
                     row += `,${total},${calculateGrade(total)}`;
                     csv += row + "\n";
@@ -646,7 +673,15 @@
             const analysisData = useMemo(() => {
                 const data = { high: [], mid: [], low: [] };
                 let totalMax = 0;
-                sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type==='manual') totalMax += parseFloat(c.max); })));
+                sections.forEach(s => {
+                    if(s.published === false) return;
+                    s.groups?.forEach(g => {
+                         if(g.published === false) return;
+                         g.columns?.forEach(c => { 
+                             if(c.type==='manual' && c.published !== false) totalMax += parseFloat(c.max); 
+                         });
+                    });
+                });
                 if(totalMax === 0) return data;
                 filteredStudents.forEach(s => {
                     const total = calculateTotalScore(s);
@@ -681,7 +716,7 @@
                         <div className="w-full px-4 h-16 flex justify-between items-center">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('student')}>
                                 <div className="bg-gradient-to-tr from-primary-600 to-primary-400 text-white p-2 rounded-lg shadow-glow"><Icons.Cloud size={20}/></div>
-                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.8</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
+                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v8.0</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('คัดลอกลิงก์แล้ว'); }} className="text-slate-500 hover:text-primary-600 px-2 py-2 rounded-full transition"><Icons.Share size={20}/></button>
@@ -734,6 +769,7 @@
                                                             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 font-bold text-slate-700 font-display flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary-500"></div> {sec.title}</div>
                                                             <div className="p-4 bg-white space-y-3">
                                                                 {sec.groups?.map(grp => grp.published !== false && grp.columns?.map(col => {
+                                                                    if (col.published === false) return null;
                                                                     let val = col.type === 'manual' ? getScore(studentViewData, col.id) : calculateAutoScore(studentViewData, grp, col);
                                                                     let numVal = parseFloat(val);
                                                                     let max = parseFloat(col.max);
@@ -835,10 +871,13 @@
                                                         {sections.map((sec, idx) => {
                                                             if (sec.published === false) return null;
                                                             let cols = 0;
-                                                            sec.groups?.forEach(g => { if(g.published !== false) cols += (g.columns?.length || 0); });
+                                                            sec.groups?.forEach(g => { 
+                                                                if(g.published !== false) {
+                                                                    cols += (g.columns?.length || 0); 
+                                                                }
+                                                            });
                                                             if (cols === 0) return null;
                                                             
-                                                            // Theme Color Logic
                                                             const themes = SECTION_COLORS;
                                                             const theme = themes[idx % themes.length];
 
@@ -861,10 +900,12 @@
                                                                 return g.columns?.map(col => {
                                                                     const isSum = col.type === 'sum' || col.type === 'percent';
                                                                     const theme = SECTION_COLORS[idx % SECTION_COLORS.length];
+                                                                    const isHidden = col.published === false;
                                                                     return (
-                                                                        <th key={col.id} className={`border-r border-b border-slate-200 relative group min-w-[32px] max-w-[32px] w-[32px] hover:bg-slate-50 transition ${isSum ? 'bg-slate-50' : ''}`}>
-                                                                            <div className="vertical-text text-xs font-medium text-slate-600">
-                                                                                {col.name}
+                                                                        <th key={col.id} className={`border-r border-b border-slate-200 relative group min-w-[32px] max-w-[32px] w-[32px] hover:bg-slate-50 transition ${isSum ? 'bg-slate-50' : ''} ${isHidden ? 'bg-gray-100 opacity-60 unpublished-col' : ''}`}>
+                                                                            <div className="vertical-text text-xs font-medium text-slate-600 flex items-center gap-1">
+                                                                                {col.name} 
+                                                                                {isHidden && <Icons.EyeOff size={10} className="text-red-400 rotate-180"/>}
                                                                             </div>
                                                                         </th>
                                                                     );
@@ -881,8 +922,9 @@
                                                                 if (g.published === false) return null;
                                                                 return g.columns?.map(col => {
                                                                     const theme = SECTION_COLORS[idx % SECTION_COLORS.length];
+                                                                    const isHidden = col.published === false;
                                                                     return (
-                                                                        <th key={col.id} className={`p-1 text-center border-r border-b border-slate-200 font-bold ${theme.bg} ${theme.text} bg-opacity-30`}>
+                                                                        <th key={col.id} className={`p-1 text-center border-r border-b border-slate-200 font-bold ${theme.bg} ${theme.text} bg-opacity-30 ${isHidden ? 'opacity-40' : ''}`}>
                                                                             {col.max}
                                                                         </th>
                                                                     );
@@ -912,14 +954,15 @@
                                                                         if (g.published === false) return null;
                                                                         return g.columns?.map(col => {
                                                                             const isAuto = col.type !== 'manual';
+                                                                            const isHidden = col.published === false;
                                                                             const val = isAuto ? calculateAutoScore(s, g, col) : s.scores?.[col.id];
                                                                             return (
-                                                                                <td key={col.id} className={`p-0 border-r border-slate-100 text-center relative h-8 min-w-[32px] max-w-[32px] w-[32px] ${isAuto ? 'bg-slate-50' : ''}`}>
+                                                                                <td key={col.id} className={`p-0 border-r border-slate-100 text-center relative h-8 min-w-[32px] max-w-[32px] w-[32px] ${isAuto ? 'bg-slate-50' : ''} ${isHidden ? 'bg-gray-50 unpublished-col' : ''}`}>
                                                                                     {isAuto ? 
-                                                                                        <div className="flex items-center justify-center h-full text-slate-800 font-bold text-xs">{val}</div> : 
+                                                                                        <div className={`flex items-center justify-center h-full text-slate-800 font-bold text-xs ${isHidden ? 'opacity-40' : ''}`}>{val}</div> : 
                                                                                         <div onClick={() => isPopupMode && openScoreModal(s, col)} className="w-full h-full">
                                                                                             <input 
-                                                                                                className={`w-full h-full text-center bg-transparent outline-none focus:bg-blue-100 focus:text-blue-700 transition font-mono text-slate-600 hover:bg-slate-50 text-sm ${isPopupMode ? 'cursor-pointer pointer-events-none' : ''}`}
+                                                                                                className={`w-full h-full text-center bg-transparent outline-none focus:bg-blue-100 focus:text-blue-700 transition font-mono text-slate-600 hover:bg-slate-50 text-sm ${isPopupMode ? 'cursor-pointer pointer-events-none' : ''} ${isHidden ? 'text-gray-400' : ''}`}
                                                                                                 value={val || ''} 
                                                                                                 placeholder=""
                                                                                                 readOnly={isPopupMode}
@@ -1098,29 +1141,53 @@
                                                                 <div className="flex-1"><label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">ชื่อบทเรียน</label><input className="w-full bg-transparent font-bold text-lg text-slate-800 outline-none focus:border-b-2 focus:border-primary-500 transition-all placeholder-slate-400" placeholder="เช่น บทที่ 1..." value={sec.title} onChange={e => { const newSecs = [...sections]; newSecs[sIdx].title = e.target.value; setSections(newSecs); saveConfig(newSecs); }} /></div>
                                                             </div>
                                                             <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                                <button onClick={() => { 
+                                                                    const newSecs = [...sections];
+                                                                    newSecs[sIdx].published = (newSecs[sIdx].published === false ? true : false);
+                                                                    setSections(newSecs); saveConfig(newSecs); 
+                                                                }} className={`text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm border border-slate-200 ${sec.published === false ? 'bg-gray-100 text-gray-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`} title={sec.published === false ? "คลิกเพื่อแสดง" : "คลิกเพื่อซ่อน"}>
+                                                                    {sec.published === false ? <Icons.EyeOff size={14}/> : <Icons.Eye size={14}/>} {sec.published === false ? "ซ่อนอยู่" : "แสดง"}
+                                                                </button>
+                                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
                                                                 <button onClick={() => { const newSecs = [...sections]; newSecs[sIdx].groups = [...(newSecs[sIdx].groups || []), { id: Date.now(), title: '', columns: [] }]; setSections(newSecs); saveConfig(newSecs); }} className="text-xs bg-white text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm border border-slate-200"><Icons.Plus size={14}/> เพิ่มกลุ่ม</button>
                                                                 <button onClick={() => { setModal({ type: 'confirm', title: 'ลบบทเรียน', message: 'ยืนยัน?', onConfirm: () => { const newSecs = sections.filter((_, i) => i !== sIdx); setSections(newSecs); saveConfig(newSecs); setModal(null); }}); }} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"><Icons.Trash size={18}/></button>
                                                             </div>
                                                         </div>
                                                         <div className="p-6 space-y-6 bg-white">
                                                             {sec.groups?.map((grp, gIdx) => (
-                                                                <div key={grp.id} className="relative pl-4 border-l-2 border-slate-100 hover:border-primary-200 transition-colors">
+                                                                <div key={grp.id} className={`relative pl-4 border-l-2 transition-colors ${grp.published === false ? 'border-gray-200 opacity-60' : 'border-slate-100 hover:border-primary-200'}`}>
                                                                     <div className="flex justify-between items-start mb-3">
                                                                         <div className="flex-1"><input className="bg-transparent font-bold text-slate-700 text-sm outline-none focus:text-primary-600 transition w-full placeholder-slate-300" placeholder="ชื่อกลุ่ม (ไม่บังคับ)..." value={grp.title} onChange={e => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].title = e.target.value; setSections(newSecs); saveConfig(newSecs); }} /></div>
                                                                         <div className="flex gap-2">
+                                                                            <button onClick={() => { 
+                                                                                const newSecs = [...sections]; 
+                                                                                newSecs[sIdx].groups[gIdx].published = (newSecs[sIdx].groups[gIdx].published === false ? true : false);
+                                                                                setSections(newSecs); saveConfig(newSecs); 
+                                                                            }} className="text-slate-400 hover:text-slate-600 transition" title={grp.published === false ? "แสดงกลุ่ม" : "ซ่อนกลุ่ม"}>
+                                                                                {grp.published === false ? <Icons.EyeOff size={14}/> : <Icons.Eye size={14}/>}
+                                                                            </button>
                                                                             <button onClick={() => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].columns.push({ id: 'c'+Date.now(), name: '', max: 10, type: 'manual' }); setSections(newSecs); saveConfig(newSecs); }} className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold transition flex items-center gap-1"><Icons.Plus size={10}/> ช่องคะแนน</button>
                                                                             <button onClick={() => { const newSecs = [...sections]; newSecs[sIdx].groups.splice(gIdx, 1); setSections(newSecs); saveConfig(newSecs); }} className="text-slate-300 hover:text-red-400"><Icons.X size={14}/></button>
                                                                         </div>
                                                                     </div>
                                                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                                                         {grp.columns?.map((col, cIdx) => (
-                                                                            <div key={col.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col gap-2 relative group/col hover:border-primary-300 hover:shadow-sm transition">
+                                                                            <div key={col.id} className={`bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col gap-2 relative group/col hover:border-primary-300 hover:shadow-sm transition ${col.published === false ? 'opacity-50 grayscale' : ''}`}>
                                                                                 <input className="bg-transparent text-xs font-bold text-slate-700 outline-none w-full placeholder-slate-300" value={col.name} placeholder="ชื่อช่อง" onChange={e => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].columns[cIdx].name = e.target.value; setSections(newSecs); saveConfig(newSecs); }} />
                                                                                 <div className="flex items-center justify-between">
                                                                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded px-1.5 py-0.5"><span className="text-[9px] text-slate-400">Max</span><input className="w-6 text-center text-[10px] font-mono outline-none text-slate-600" value={col.max} onChange={e => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].columns[cIdx].max = e.target.value; setSections(newSecs); saveConfig(newSecs); }} /></div>
                                                                                     <button onClick={() => { const newSecs = [...sections]; const types = ['manual', 'sum', 'percent']; const nextType = types[(types.indexOf(col.type) + 1) % types.length]; newSecs[sIdx].groups[gIdx].columns[cIdx].type = nextType; setSections(newSecs); saveConfig(newSecs); }} className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${col.type === 'manual' ? 'bg-white border-slate-200 text-slate-400' : col.type === 'sum' ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-orange-50 border-orange-200 text-orange-600'}`}>{col.type === 'manual' ? 'MAN' : col.type === 'sum' ? 'SUM' : '%'}</button>
                                                                                 </div>
-                                                                                <button onClick={() => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].columns.splice(cIdx, 1); setSections(newSecs); saveConfig(newSecs); }} className="absolute -top-2 -right-2 bg-white text-red-400 border border-red-100 rounded-full p-0.5 opacity-0 group-hover/col:opacity-100 shadow-sm hover:bg-red-50 transition"><Icons.X size={12}/></button>
+                                                                                <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/col:opacity-100 transition-opacity bg-white/80 rounded px-1">
+                                                                                    <button onClick={() => { 
+                                                                                        const newSecs = [...sections]; 
+                                                                                        newSecs[sIdx].groups[gIdx].columns[cIdx].published = (newSecs[sIdx].groups[gIdx].columns[cIdx].published === false ? true : false);
+                                                                                        setSections(newSecs); saveConfig(newSecs); 
+                                                                                    }} className="text-slate-400 hover:text-slate-600 p-0.5" title={col.published === false ? "แสดง" : "ซ่อน"}>
+                                                                                        {col.published === false ? <Icons.EyeOff size={10}/> : <Icons.Eye size={10}/>}
+                                                                                    </button>
+                                                                                    <button onClick={() => { const newSecs = [...sections]; newSecs[sIdx].groups[gIdx].columns.splice(cIdx, 1); setSections(newSecs); saveConfig(newSecs); }} className="text-red-300 hover:text-red-500 p-0.5"><Icons.X size={10}/></button>
+                                                                                </div>
                                                                             </div>
                                                                         ))}
                                                                     </div>
@@ -1160,7 +1227,7 @@
                             <div className="p-8">
                                 <div className="report-header"><h1>รายงานผลการเรียนรายบุคคล</h1><h2>{sysInfo.subject} ({sysInfo.code})</h2><p>ปีการศึกษา {sysInfo.year} | {sysInfo.school}</p></div>
                                 <div className="flex justify-between mb-6 text-lg border-b border-gray-300 pb-4"><div><p><strong>ชื่อ-สกุล:</strong> {studentViewData.name}</p><p><strong>รหัสประจำตัว:</strong> {studentViewData.id}</p></div><div className="text-right"><p><strong>ชั้น:</strong> {studentViewData.room}</p><p><strong>เลขที่:</strong> {studentViewData.no}</p></div></div>
-                                <table><thead><tr className="bg-gray-200"><th className="text-left w-3/5">รายการประเมิน</th><th className="w-1/5">คะแนนเต็ม</th><th className="w-1/5">คะแนนที่ได้</th></tr></thead><tbody>{sections.map(sec => sec.published !== false && (<React.Fragment key={sec.id}><tr><td colSpan="3" className="text-left font-bold bg-gray-100">{sec.title}</td></tr>{sec.groups?.map(grp => grp.published !== false && grp.columns?.map(col => { let val = col.type === 'manual' ? getScore(studentViewData, col.id) : calculateAutoScore(studentViewData, grp, col); let max = col.max; let width = (parseFloat(val)/parseFloat(max))*50; return <tr key={col.id}><td className="text-left pl-6 flex justify-between"><span>{col.name}</span><div className="progress-bar-print"><div className="progress-fill-print" style={{width: width+'px'}}></div></div></td><td>{max}</td><td className="font-bold">{val}</td></tr>; }))}</React.Fragment>))}
+                                <table><thead><tr className="bg-gray-200"><th className="text-left w-3/5">รายการประเมิน</th><th className="w-1/5">คะแนนเต็ม</th><th className="w-1/5">คะแนนที่ได้</th></tr></thead><tbody>{sections.map(sec => sec.published !== false && (<React.Fragment key={sec.id}><tr><td colSpan="3" className="text-left font-bold bg-gray-100">{sec.title}</td></tr>{sec.groups?.map(grp => grp.published !== false && grp.columns?.map(col => { if(col.published === false) return null; let val = col.type === 'manual' ? getScore(studentViewData, col.id) : calculateAutoScore(studentViewData, grp, col); let max = col.max; let width = (parseFloat(val)/parseFloat(max))*50; return <tr key={col.id}><td className="text-left pl-6 flex justify-between"><span>{col.name}</span><div className="progress-bar-print"><div className="progress-fill-print" style={{width: width+'px'}}></div></div></td><td>{max}</td><td className="font-bold">{val}</td></tr>; }))}</React.Fragment>))}
                                 <tr className="bg-slate-100 border-t-2 border-black"><td className="text-right font-bold pr-4">รวมคะแนน</td><td>100</td><td className="font-bold">{calculateTotalScore(studentViewData)}</td></tr>
                                 <tr className="bg-yellow-50"><td className="text-right font-bold pr-4">เกรดที่ได้</td><td></td><td className="font-bold text-lg">{calculateGrade(calculateTotalScore(studentViewData))}</td></tr>
                                 </tbody></table>
@@ -1182,7 +1249,11 @@
                                             {sections.map(sec => {
                                                 if (sec.published === false) return null;
                                                 let cols = 0;
-                                                sec.groups?.forEach(g => { if(g.published !== false) cols += (g.columns?.length || 0); });
+                                                sec.groups?.forEach(g => { 
+                                                    if(g.published !== false) {
+                                                        cols += (g.columns?.filter(c => c.published !== false).length || 0); 
+                                                    }
+                                                });
                                                 if(cols===0) return null;
                                                 return <th key={sec.id} colSpan={cols} style={{backgroundColor: '#f0f9ff'}}>{sec.title}</th>;
                                             })}
@@ -1194,9 +1265,10 @@
                                                 if (sec.published === false) return null;
                                                 return sec.groups?.map(g => {
                                                     if(g.published === false) return null;
-                                                    return g.columns?.map(col => (
-                                                        <th key={col.id} className="vertical-text-print" style={{height:'100px', fontSize:'9pt'}}>{col.name}</th>
-                                                    ));
+                                                    return g.columns?.map(col => {
+                                                        if (col.published === false) return null;
+                                                        return <th key={col.id} className="vertical-text-print" style={{height:'100px', fontSize:'9pt'}}>{col.name}</th>;
+                                                    });
                                                 });
                                             })}
                                         </tr>
@@ -1205,9 +1277,10 @@
                                                 if (sec.published === false) return null;
                                                 return sec.groups?.map(g => {
                                                     if(g.published === false) return null;
-                                                    return g.columns?.map(col => (
-                                                        <th key={col.id} style={{fontSize:'8pt'}}>{col.max}</th>
-                                                    ));
+                                                    return g.columns?.map(col => {
+                                                        if (col.published === false) return null;
+                                                        return <th key={col.id} style={{fontSize:'8pt'}}>{col.max}</th>;
+                                                    });
                                                 });
                                             })}
                                         </tr>
@@ -1222,6 +1295,7 @@
                                                     <td className="text-left">{s.name}</td>
                                                     <td>{s.room}</td>
                                                     {sections.map(s => s.groups?.map(g => g.columns?.map(c => { 
+                                                        if (c.published === false) return null;
                                                         const val = c.type === 'manual' ? s.scores?.[c.id] : calculateAutoScore(s, g, c); 
                                                         return <td key={c.id}>{val || ''}</td> 
                                                     })))}
