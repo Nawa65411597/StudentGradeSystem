@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud v7.5 (Full Width Fixed)</title>
+    <title>GradePro Cloud v7.7 (Compact)</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,9 +42,9 @@
         h1, h2, h3, h4, h5, h6, .font-display, button { font-family: 'Prompt', sans-serif !important; }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* Animations */
@@ -60,33 +60,32 @@
             transform: rotate(180deg);
             white-space: nowrap;
             text-align: left;
-            height: 180px; 
-            padding: 8px 4px;
+            height: 140px; 
+            padding: 4px 2px; /* Reduced padding */
             margin: 0 auto;
             width: 100%;
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Align text to bottom (rotated top) */
+            justify-content: flex-start;
         }
 
-        /* Sticky Columns Configuration */
-        /* Explicitly set background color to white to prevent transparency overlap issues */
+        /* Sticky Columns Configuration - Compact */
         .sticky-col { position: sticky; background-color: #ffffff; z-index: 40; } 
         
-        /* Specific Positions */
-        .sticky-left-0 { left: 0; width: 50px; min-width: 50px; border-right: 1px solid #e2e8f0; }
-        .sticky-left-1 { left: 50px; width: 80px; min-width: 80px; border-right: 1px solid #e2e8f0; }
-        .sticky-left-2 { left: 130px; width: 250px; min-width: 250px; border-right: 1px solid #e2e8f0; box-shadow: 6px 0 10px -4px rgba(0,0,0,0.1); }
+        /* Specific Positions - Adjusted for Compactness */
+        .sticky-left-0 { left: 0; width: 40px; min-width: 40px; border-right: 1px solid #e2e8f0; }
+        .sticky-left-1 { left: 40px; width: 60px; min-width: 60px; border-right: 1px solid #e2e8f0; }
+        .sticky-left-2 { left: 100px; width: 180px; min-width: 180px; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
         
-        /* Header Specifics: Headers need higher z-index than body sticky cols to stay on top */
-        thead { position: sticky; top: 0; z-index: 50; }
+        /* Header Specifics */
+        thead { z-index: 50; position: sticky; top: 0; }
         thead th { background-color: #fff; }
-        thead .sticky-col { z-index: 60; } /* Sticky headers on top of everything */
+        thead .sticky-col { z-index: 60; } 
 
-        /* Fix for rows background in sticky columns */
+        /* Row Backgrounds */
         tr:nth-child(even) .sticky-col { background-color: #ffffff; }
-        tr:nth-child(odd) .sticky-col { background-color: #f8fafc; } /* Slight var for striped if needed, but solid white is safer for overlapping */
-        tr:hover .sticky-col { background-color: #eff6ff; } /* Highlight color match */
+        tr:nth-child(odd) .sticky-col { background-color: #f8fafc; } 
+        tr:hover .sticky-col { background-color: #eff6ff; } 
 
         /* Print Styles */
         @media print {
@@ -453,8 +452,8 @@
                 g.columns.filter(cl => cl.type === 'manual').forEach(cl => {
                     total += parseFloat(s.scores?.[cl.id] || 0); max += parseFloat(cl.max || 0);
                 });
-                if (c.type === 'sum') return parseFloat(total.toFixed(2));
-                if (c.type === 'percent') return max === 0 ? 0 : parseFloat(((total / max) * (c.max || 100)).toFixed(2));
+                if (c.type === 'sum') return Math.ceil(total);
+                if (c.type === 'percent') return max === 0 ? 0 : Math.ceil((total / max) * (c.max || 100));
                 return '-';
             };
 
@@ -477,7 +476,7 @@
                 })));
 
                 // Prefer % score if available, otherwise raw score
-                return parseFloat((hasPercent ? totalPercent : totalManual).toFixed(2));
+                return Math.ceil(hasPercent ? totalPercent : totalManual);
             };
 
             const calculateGrade = (score) => {
@@ -680,7 +679,7 @@
                         <div className="w-full px-4 h-16 flex justify-between items-center">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('student')}>
                                 <div className="bg-gradient-to-tr from-primary-600 to-primary-400 text-white p-2 rounded-lg shadow-glow"><Icons.Cloud size={20}/></div>
-                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.5</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
+                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.7</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('คัดลอกลิงก์แล้ว'); }} className="text-slate-500 hover:text-primary-600 px-2 py-2 rounded-full transition"><Icons.Share size={20}/></button>
@@ -827,9 +826,9 @@
                                                 <thead className="bg-white text-slate-700 font-display z-50 sticky top-0 shadow-sm">
                                                     {/* TOP ROW: Section Headers */}
                                                     <tr>
-                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-0 min-w-[50px] text-center border-b border-r border-slate-200 z-[60]">ที่</th>
-                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-1 min-w-[80px] border-b border-r border-slate-200 z-[60]">รหัส</th>
-                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-2 min-w-[250px] border-b border-r border-slate-200 z-[60]">ชื่อ-นามสกุล</th>
+                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-0 min-w-[40px] text-center border-b border-r border-slate-200 z-[60]">ที่</th>
+                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-1 min-w-[60px] border-b border-r border-slate-200 z-[60]">รหัส</th>
+                                                        <th rowSpan="3" className="p-3 sticky-col sticky-left-2 min-w-[180px] border-b border-r border-slate-200 z-[60]">ชื่อ-นามสกุล</th>
                                                         <th rowSpan="3" className="p-3 border-b border-r border-slate-200 min-w-[50px] text-center">ห้อง</th>
                                                         
                                                         {sections.map((sec, idx) => {
@@ -862,7 +861,7 @@
                                                                     const isSum = col.type === 'sum' || col.type === 'percent';
                                                                     const theme = SECTION_COLORS[idx % SECTION_COLORS.length];
                                                                     return (
-                                                                        <th key={col.id} className={`border-r border-b border-slate-200 relative group min-w-[40px] max-w-[50px] hover:bg-slate-50 transition ${isSum ? 'bg-slate-50' : ''}`}>
+                                                                        <th key={col.id} className={`border-r border-b border-slate-200 relative group min-w-[28px] max-w-[32px] hover:bg-slate-50 transition ${isSum ? 'bg-slate-50' : ''}`}>
                                                                             <div className="vertical-text text-xs font-medium text-slate-600">
                                                                                 {col.name}
                                                                             </div>
@@ -896,10 +895,10 @@
                                                     {filteredStudents.map((s, idx) => {
                                                         const totalScore = calculateTotalScore(s);
                                                         return (
-                                                            <tr key={s.id} className={`hover:bg-blue-50/50 transition group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}> 
+                                                            <tr key={s.id} className={`hover:bg-blue-50/20 transition group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}> 
                                                                 <td className={`p-2 text-center sticky-col sticky-left-0 transition font-mono text-slate-400 border-r border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.no}</td>
                                                                 <td className={`p-2 sticky-col sticky-left-1 transition font-mono font-bold text-slate-500 text-xs border-r border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.id}</td>
-                                                                <td className={`p-2 sticky-col sticky-left-2 transition font-medium text-slate-700 truncate border-r border-slate-100 max-w-[250px] ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                                                                <td className={`p-2 sticky-col sticky-left-2 transition font-medium text-slate-700 truncate border-r border-slate-100 max-w-[180px] ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                                                                     <div className="flex items-center justify-between w-full">
                                                                         <span className="truncate" title={s.name}>{s.name}</span>
                                                                         {s.note && <div className="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded ml-1 flex-shrink-0" title={s.note}>!</div>}
