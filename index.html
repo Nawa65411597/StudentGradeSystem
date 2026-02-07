@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud v7.1 (Vertical Header)</title>
+    <title>GradePro Cloud v7.2 (Data Suite)</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,7 +58,7 @@
             transform: rotate(180deg);
             white-space: nowrap;
             text-align: left;
-            height: 160px; /* Adjust based on max text length */
+            height: 140px; 
             padding: 8px 4px;
             margin: 0 auto;
             width: 100%;
@@ -100,7 +100,19 @@
 
         // --- CONFIG ---
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const userConfig = { apiKey: "", authDomain: "grade-pro-v4.firebaseapp.com", projectId: "grade-pro-v4" }; 
+        
+        // Your Personal Firebase Config
+        const userConfig = {
+            apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
+            authDomain: "studentgradesystem-2a33f.firebaseapp.com",
+            projectId: "studentgradesystem-2a33f",
+            storageBucket: "studentgradesystem-2a33f.firebasestorage.app",
+            messagingSenderId: "339470940730",
+            appId: "1:339470940730:web:cc60c26a4c209caa6d1303",
+            measurementId: "G-7MZ12J60VQ"
+        };
+        
+        // Use envConfig if running in preview, otherwise use your config (userConfig)
         const firebaseConfig = envConfig || userConfig;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -153,7 +165,8 @@
             Backspace: (p) => <Icon {...p} p={<><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></>} />,
             Note: (p) => <Icon {...p} p={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>} />,
             Refresh: (p) => <Icon {...p} p={<><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></>} />,
-            Database: (p) => <Icon {...p} p={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />
+            Database: (p) => <Icon {...p} p={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>} />,
+            Save: (p) => <Icon {...p} p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>} />
         };
 
         const SECTION_COLORS = [
@@ -295,6 +308,7 @@
             const [mobilePairOpen, setMobilePairOpen] = useState(false);
             const [sessionId, setSessionId] = useState('');
             const [isMobileScanner, setIsMobileScanner] = useState(false);
+            const restoreInputRef = useRef(null);
 
             // Init
             useEffect(() => {
@@ -480,6 +494,60 @@
                 setIsImporting(false);
             };
 
+            const handleRestore = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.students && data.sections) {
+                            if (!confirm('ข้อมูลปัจจุบันจะถูกเขียนทับ ยืนยันการกู้คืน?')) return;
+                            
+                            // Restore Info & Sections
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), { 
+                                sections: data.sections, 
+                                info: data.info || DEFAULT_INFO 
+                            }, { merge: true });
+
+                            // Restore Students (Batch)
+                            const batch = writeBatch(db);
+                            data.students.forEach(s => {
+                                batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id), s);
+                            });
+                            await batch.commit();
+                            
+                            showToast('กู้คืนข้อมูลสำเร็จ!', 'success');
+                            window.location.reload();
+                        } else {
+                            showToast('ไฟล์ไม่ถูกต้อง', 'error');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null; // Reset input
+            };
+
+            const handleClearData = async () => {
+                setModal({ 
+                    type: 'confirm', 
+                    title: '⚠ Lล้างข้อมูลทั้งหมด', 
+                    message: 'คุณแน่ใจหรือไม่ที่จะลบข้อมูลนักเรียนและคะแนนทั้งหมด? (การตั้งค่าวิชาจะไม่หาย)', 
+                    onConfirm: async () => {
+                        const batch = writeBatch(db);
+                        students.forEach(s => {
+                            batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id));
+                        });
+                        await batch.commit();
+                        setModal(null);
+                        showToast('ล้างข้อมูลเรียบร้อย', 'success');
+                    }
+                });
+            };
+
             const filteredStudents = useMemo(() => {
                 let res = students;
                 if (selectedRoom !== 'All') res = res.filter(s => s.room === selectedRoom);
@@ -526,7 +594,7 @@
                         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('student')}>
                                 <div className="bg-gradient-to-tr from-primary-600 to-primary-400 text-white p-2 rounded-lg shadow-glow"><Icons.Cloud size={20}/></div>
-                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.1</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
+                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.2</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('คัดลอกลิงก์แล้ว'); }} className="text-slate-500 hover:text-primary-600 px-2 py-2 rounded-full transition"><Icons.Share size={20}/></button>
@@ -855,7 +923,68 @@
                                             </div>
                                         </div>
 
-                                        {/* Settings - Score Structure Editor */}
+                                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="bg-orange-100 text-orange-600 p-2 rounded-lg"><Icons.Chart size={20}/></div>
+                                                    <h3 className="font-bold text-lg text-slate-800">เกณฑ์การตัดเกรด (Grading Scale)</h3>
+                                                </div>
+                                                <button onClick={() => { setSysInfo({...sysInfo, grading: DEFAULT_INFO.grading}); saveConfig(null, {...sysInfo, grading: DEFAULT_INFO.grading}); showToast('คืนค่าเกณฑ์มาตรฐานแล้ว'); }} className="text-xs text-orange-600 bg-orange-50 px-3 py-1 rounded-lg hover:bg-orange-100 font-bold flex items-center gap-1"><Icons.Refresh size={12}/> Reset</button>
+                                            </div>
+                                            <div className="p-6 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
+                                                {['4', '3.5', '3', '2.5', '2', '1.5', '1', '0'].map(g => (
+                                                    g !== '0' && (
+                                                        <div key={g} className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                                                            <div className="text-2xl font-bold text-slate-700 mb-1">{g}</div>
+                                                            <div className="text-[10px] text-slate-400 uppercase mb-1">Min Score</div>
+                                                            <input type="number" className="w-full text-center p-1 rounded border border-slate-300 font-bold text-primary-600" value={(sysInfo.grading || DEFAULT_INFO.grading)[g]} onChange={e => {
+                                                                const newGrading = { ...(sysInfo.grading || DEFAULT_INFO.grading), [g]: parseFloat(e.target.value) };
+                                                                const newInfo = { ...sysInfo, grading: newGrading };
+                                                                setSysInfo(newInfo); saveConfig(null, newInfo);
+                                                            }} />
+                                                        </div>
+                                                    )
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* New Data Management Card */}
+                                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+                                                <div className="bg-indigo-100 text-indigo-600 p-2 rounded-lg"><Icons.Database size={20}/></div>
+                                                <h3 className="font-bold text-lg text-slate-800">จัดการข้อมูล (Data Management)</h3>
+                                            </div>
+                                            <div className="p-6">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                                    <div className="border rounded-xl p-4 bg-slate-50 hover:bg-white transition-colors">
+                                                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-2"><Icons.Download size={16}/> สำรองข้อมูล</h4>
+                                                        <p className="text-xs text-slate-500 mb-4">ดาวน์โหลดข้อมูลทั้งหมดเก็บไว้ (รายชื่อ, คะแนน, การตั้งค่า) เป็นไฟล์ .json</p>
+                                                        <div className="flex gap-2">
+                                                            <button onClick={handleExportCSV} className="flex-1 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-green-600 font-bold hover:border-green-300 transition">Export CSV (Excel)</button>
+                                                            <button onClick={handleBackup} className="flex-1 py-2 text-sm bg-slate-800 text-white rounded-lg hover:bg-slate-900 font-bold transition">Backup JSON</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="border rounded-xl p-4 bg-slate-50 hover:bg-white transition-colors">
+                                                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-2"><Icons.Upload size={16}/> กู้คืนข้อมูล</h4>
+                                                        <p className="text-xs text-slate-500 mb-4">นำไฟล์ .json ที่สำรองไว้กลับมาใช้งาน</p>
+                                                        <input type="file" ref={restoreInputRef} onChange={handleRestore} className="hidden" accept=".json" />
+                                                        <button onClick={() => restoreInputRef.current.click()} className="w-full py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-indigo-600 font-bold hover:border-indigo-300 transition">เลือกไฟล์ Backup (.json)</button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="border-t pt-6">
+                                                    <h4 className="font-bold text-red-600 mb-2 text-sm uppercase tracking-wider flex items-center gap-2"><Icons.Alert size={16}/> Danger Zone</h4>
+                                                    <div className="flex justify-between items-center bg-red-50 p-4 rounded-xl border border-red-100">
+                                                        <div className="text-sm text-red-800">
+                                                            <strong>ล้างข้อมูลทั้งหมด (Factory Reset)</strong><br/>
+                                                            ลบรายชื่อนักเรียนและคะแนนทั้งหมด แต่เก็บโครงสร้างวิชาไว้
+                                                        </div>
+                                                        <button onClick={handleClearData} className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg font-bold hover:bg-red-600 hover:text-white transition shadow-sm text-sm">ล้างข้อมูล</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-end">
                                                 <div><h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Icons.Database className="text-primary-600"/> โครงสร้างคะแนน</h3></div>
