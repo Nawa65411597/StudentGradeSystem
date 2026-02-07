@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -20,6 +20,7 @@
 
     <script>
         tailwind.config = {
+        darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Sarabun', 'sans-serif'], display: ['Prompt', 'sans-serif'] },
@@ -109,7 +110,21 @@
             .vertical-text-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 120px; white-space: nowrap; text-align: left; margin: 0 auto; }
         }
         .print-only { display: none; }
-    </style>
+    
+/* ===== THEME PATCH (Dark / Print / Mono) ===== */
+.font-mono{font-family:'IBM Plex Mono',monospace!important}
+.dark body{background:#020617;color:#e5e7eb}
+.dark .bg-white{background:#020617!important}
+.dark .text-slate-800,.dark .text-slate-700,.dark .text-slate-600{color:#e5e7eb!important}
+.dark .border-slate-200{border-color:#334155!important}
+@media print{
+ *{background:white!important;color:black!important;box-shadow:none!important}
+ body{font-size:10pt}
+ th,td{border:1px solid #000!important;padding:4px}
+ @page{size:A4 landscape;margin:10mm}
+}
+
+</style>
 </head>
 <body>
     <div id="root"></div>
@@ -201,6 +216,7 @@
         function Modal({ isOpen, title, children, onClose, footer }) {
             if (!isOpen) return null;
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-scale overflow-hidden relative z-10 max-h-[90vh] flex flex-col">
@@ -233,6 +249,7 @@
             };
 
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale ring-4 ring-white/20">
                         <div className="bg-slate-800 text-white p-6 flex justify-between items-start relative overflow-hidden">
@@ -285,10 +302,12 @@
                 };
                 const up = () => setDragging(false);
                 window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
-                return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+                return (
+  <div className={darkMode ? 'dark' : ''}>) => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
             }, [dragging]);
 
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed z-[150] bg-white rounded-2xl shadow-2xl border border-slate-200 w-64 overflow-hidden animate-scale virtual-numpad" style={{ left: pos.x, top: pos.y }}>
                     <div className="bg-slate-100 p-2 cursor-move flex justify-between items-center border-b border-slate-200" onMouseDown={e => { setDragging(true); offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }; }}>
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1"><Icons.Calculator size={12}/> Keypad</span>
@@ -311,9 +330,11 @@
                 scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
                     onScan(decodedText); scanner.stop().catch(console.error);
                 }, () => {}).catch(console.error);
-                return () => { try { scanner.stop(); } catch(e) {} };
+                return (
+  <div className={darkMode ? 'dark' : ''}>) => { try { scanner.stop(); } catch(e) {} };
             }, []);
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-4">
                     <button onClick={onClose} className="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full backdrop-blur-md"><Icons.X size={24}/></button>
                     <h3 className="text-white text-xl font-bold mb-6 font-display animate-pulse">Scanning...</h3>
@@ -328,6 +349,7 @@
                 if (qrRef.current) new QRCode(qrRef.current, { text: window.location.href.split('?')[0] + '?scan_session=' + sessionId, width: 180, height: 180 });
             }, []);
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
                     <div className="bg-white p-8 rounded-3xl text-center max-w-sm w-full relative">
                         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><Icons.X/></button>
@@ -343,6 +365,7 @@
         function ProgressBar({ current, max, color }) {
             const percent = max > 0 ? (current / max) * 100 : 0;
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="w-full bg-slate-100 rounded-full h-2.5 dark:bg-gray-700 mt-1 overflow-hidden border border-slate-200">
                     <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(percent, 100)}%` }}></div>
                 </div>
@@ -355,6 +378,7 @@
             
             // State
             const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
             const [user, setUser] = useState(null);
             const [view, setView] = useState('student');
             const [students, setStudents] = useState([]);
@@ -446,7 +470,8 @@
                     });
                 }
 
-                return () => { unsubSections(); unsubStudents(); clearInterval(heartbeat); unsubLogs(); unsubPresence(); unsubSession(); };
+                return (
+  <div className={darkMode ? 'dark' : ''}>) => { unsubSections(); unsubStudents(); clearInterval(heartbeat); unsubLogs(); unsubPresence(); unsubSession(); };
             }, [user, view, studentViewData, sessionId]);
 
             // Helpers
@@ -695,6 +720,7 @@
             if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>;
 
             if (isMobileScanner) return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-4">
                     <h1 className="text-white font-bold text-xl mb-4">Mobile Scanner</h1>
                     <div id="reader" className="w-full max-w-sm bg-gray-800 rounded-xl overflow-hidden border-2 border-primary-500"></div>
@@ -710,6 +736,7 @@
             );
 
             return (
+  <div className={darkMode ? 'dark' : ''}>
                 <div className="min-h-screen pb-20 no-print font-sans">
                     {toast && <div className={`fixed top-4 right-4 z-[300] px-6 py-3 rounded-xl shadow-lg font-bold text-white animate-fade-in toast-container ${toast.type==='error'?'bg-red-500':'bg-green-500'}`}>{toast.msg}</div>}
                     <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm glass-panel">
@@ -775,6 +802,7 @@
                                                                     let max = parseFloat(col.max);
                                                                     let color = numVal >= max*0.8 ? 'bg-green-500' : (numVal >= max*0.5 ? 'bg-yellow-500' : 'bg-red-500');
                                                                     return (
+  <div className={darkMode ? 'dark' : ''}>
                                                                         <div key={col.id}>
                                                                             <div className="flex justify-between items-center text-sm mb-1">
                                                                                 <span className="font-medium text-slate-600">{col.name}</span>
@@ -882,6 +910,7 @@
                                                             const theme = themes[idx % themes.length];
 
                                                             return (
+  <div className={darkMode ? 'dark' : ''}>
                                                                 <th key={sec.id} colSpan={cols} className={`p-2 text-center border-b border-r border-white text-sm font-bold ${theme.bg} ${theme.text} overflow-hidden text-ellipsis whitespace-nowrap`}>
                                                                     {sec.title}
                                                                 </th>
@@ -902,6 +931,7 @@
                                                                     const theme = SECTION_COLORS[idx % SECTION_COLORS.length];
                                                                     const isHidden = col.published === false;
                                                                     return (
+  <div className={darkMode ? 'dark' : ''}>
                                                                         <th key={col.id} className={`border-r border-b border-slate-200 relative group min-w-[32px] max-w-[32px] w-[32px] hover:bg-slate-50 transition ${isSum ? 'bg-slate-50' : ''} ${isHidden ? 'bg-gray-100 opacity-60 unpublished-col' : ''}`}>
                                                                             <div className="vertical-text text-xs font-medium text-slate-600 flex items-center gap-1">
                                                                                 {col.name} 
@@ -924,6 +954,7 @@
                                                                     const theme = SECTION_COLORS[idx % SECTION_COLORS.length];
                                                                     const isHidden = col.published === false;
                                                                     return (
+  <div className={darkMode ? 'dark' : ''}>
                                                                         <th key={col.id} className={`p-1 text-center border-r border-b border-slate-200 font-bold ${theme.bg} ${theme.text} bg-opacity-30 ${isHidden ? 'opacity-40' : ''}`}>
                                                                             {col.max}
                                                                         </th>
@@ -938,6 +969,7 @@
                                                     {filteredStudents.map((s, idx) => {
                                                         const totalScore = calculateTotalScore(s);
                                                         return (
+  <div className={darkMode ? 'dark' : ''}>
                                                             <tr key={s.id} className={`hover:bg-blue-50/20 transition group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}> 
                                                                 <td className={`p-1 text-center sticky-col sticky-left-0 transition font-mono text-slate-400 border-r border-slate-100 text-xs ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.no}</td>
                                                                 <td className={`p-1 text-center sticky-col sticky-left-1 transition font-mono font-bold text-slate-500 text-[10px] border-r border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.id}</td>
@@ -957,6 +989,7 @@
                                                                             const isHidden = col.published === false;
                                                                             const val = isAuto ? calculateAutoScore(s, g, col) : s.scores?.[col.id];
                                                                             return (
+  <div className={darkMode ? 'dark' : ''}>
                                                                                 <td key={col.id} className={`p-0 border-r border-slate-100 text-center relative h-8 min-w-[32px] max-w-[32px] w-[32px] ${isAuto ? 'bg-slate-50' : ''} ${isHidden ? 'bg-gray-50 unpublished-col' : ''}`}>
                                                                                     {isAuto ? 
                                                                                         <div className={`flex items-center justify-center h-full text-slate-800 font-bold text-xs ${isHidden ? 'opacity-40' : ''}`}>{val}</div> : 
@@ -1134,6 +1167,7 @@
                                                 {sections.map((sec, sIdx) => {
                                                     const theme = SECTION_COLORS[sIdx % SECTION_COLORS.length];
                                                     return (
+  <div className={darkMode ? 'dark' : ''}>
                                                     <div key={sec.id} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition hover:shadow-md">
                                                         <div className={`px-6 py-4 border-b border-slate-100 flex flex-wrap gap-4 justify-between items-center group ${theme.bg} bg-opacity-20`}>
                                                             <div className="flex items-center gap-4 flex-1">
@@ -1289,6 +1323,7 @@
                                         {filteredStudents.map(s => { 
                                             const total = calculateTotalScore(s); 
                                             return (
+  <div className={darkMode ? 'dark' : ''}>
                                                 <tr key={s.id}>
                                                     <td>{s.no}</td>
                                                     <td>{s.id}</td>
