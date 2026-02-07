@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GradePro Cloud v7.2 (Data Suite)</title>
+    <title>GradePro Cloud v7.3 (Fixed)</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,24 +66,41 @@
             align-items: center;
         }
 
-        /* Sticky Columns */
-        .sticky-col { position: sticky; z-index: 30; background-color: inherit; }
+        /* Sticky Columns - Fixed Overlap by ensuring solid background inheritance */
+        .sticky-col { position: sticky; z-index: 30; background-color: inherit; } 
         .sticky-left-0 { left: 0; border-right: 1px solid #e2e8f0; }
         .sticky-left-1 { left: 40px; border-right: 1px solid #e2e8f0; }
         .sticky-left-2 { left: 100px; border-right: 1px solid #e2e8f0; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
         
-        /* Ensure headers stay on top of body content */
+        /* Ensure headers stay on top */
         thead { z-index: 40; position: sticky; top: 0; }
         thead th { background-color: #fff; }
 
-        /* Print Styles */
+        /* Print Styles - Fixed for multi-page */
         @media print {
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
-            .no-print, nav, button, .fixed-ui, ::-webkit-scrollbar, .toast-container { display: none !important; }
+            .no-print, nav, button, .fixed-ui, ::-webkit-scrollbar, .toast-container, .virtual-numpad { display: none !important; }
             .print-only { display: block !important; width: 100%; height: auto; overflow: visible; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-            th, td { border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; }
+            
+            /* Reset Layout for Print */
+            #root, main, .overflow-x-auto, .max-h-\[75vh\], .bg-white { 
+                overflow: visible !important; 
+                height: auto !important; 
+                max-height: none !important; 
+                width: 100% !important;
+                position: static !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            
+            th, td { border: 1px solid #000 !important; padding: 4px; text-align: center; vertical-align: middle; }
             .text-left { text-align: left !important; padding-left: 8px !important; }
+            
             @page { margin: 10mm; size: A4 landscape; } 
             .vertical-text-print { writing-mode: vertical-rl; transform: rotate(180deg); height: 120px; white-space: nowrap; text-align: left; margin: 0 auto; }
         }
@@ -100,8 +117,6 @@
 
         // --- CONFIG ---
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        
-        // Your Personal Firebase Config
         const userConfig = {
             apiKey: "AIzaSyAT_suSpvRBboyuf7cFaqlCidllBsJqYM0",
             authDomain: "studentgradesystem-2a33f.firebaseapp.com",
@@ -111,8 +126,6 @@
             appId: "1:339470940730:web:cc60c26a4c209caa6d1303",
             measurementId: "G-7MZ12J60VQ"
         };
-        
-        // Use envConfig if running in preview, otherwise use your config (userConfig)
         const firebaseConfig = envConfig || userConfig;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -219,7 +232,7 @@
             }, [dragging]);
 
             return (
-                <div className="fixed z-[150] bg-white rounded-2xl shadow-2xl border border-slate-200 w-64 overflow-hidden animate-scale" style={{ left: pos.x, top: pos.y }}>
+                <div className="fixed z-[150] bg-white rounded-2xl shadow-2xl border border-slate-200 w-64 overflow-hidden animate-scale virtual-numpad" style={{ left: pos.x, top: pos.y }}>
                     <div className="bg-slate-100 p-2 cursor-move flex justify-between items-center border-b border-slate-200" onMouseDown={e => { setDragging(true); offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }; }}>
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1"><Icons.Calculator size={12}/> Keypad</span>
                         <button onClick={onClose}><Icons.X size={14} className="text-slate-400 hover:text-red-500"/></button>
@@ -391,13 +404,26 @@
                 return '-';
             };
 
-            // --- INTELLIGENCE FEATURES v7.0 ---
+            // --- INTELLIGENCE FEATURES v7.0 (Fixed Logic) ---
             const calculateTotalScore = (student) => {
-                let total = 0;
+                let totalPercent = 0;
+                let hasPercent = false;
+                let totalManual = 0;
+
                 sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => {
-                    if (c.type === 'manual') total += parseFloat(student.scores?.[c.id] || 0);
+                    if (c.type === 'percent') {
+                        const val = calculateAutoScore(student, g, c);
+                        if (val !== '-') {
+                            totalPercent += parseFloat(val);
+                        }
+                        hasPercent = true;
+                    } else if (c.type === 'manual') {
+                        totalManual += parseFloat(student.scores?.[c.id] || 0);
+                    }
                 })));
-                return parseFloat(total.toFixed(2));
+
+                // Prefer % score if available, otherwise raw score
+                return parseFloat((hasPercent ? totalPercent : totalManual).toFixed(2));
             };
 
             const calculateGrade = (score) => {
@@ -503,49 +529,27 @@
                         const data = JSON.parse(event.target.result);
                         if (data.students && data.sections) {
                             if (!confirm('ข้อมูลปัจจุบันจะถูกเขียนทับ ยืนยันการกู้คืน?')) return;
-                            
-                            // Restore Info & Sections
-                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), { 
-                                sections: data.sections, 
-                                info: data.info || DEFAULT_INFO 
-                            }, { merge: true });
-
-                            // Restore Students (Batch)
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), { sections: data.sections, info: data.info || DEFAULT_INFO }, { merge: true });
                             const batch = writeBatch(db);
-                            data.students.forEach(s => {
-                                batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id), s);
-                            });
+                            data.students.forEach(s => { batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id), s); });
                             await batch.commit();
-                            
                             showToast('กู้คืนข้อมูลสำเร็จ!', 'success');
                             window.location.reload();
-                        } else {
-                            showToast('ไฟล์ไม่ถูกต้อง', 'error');
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', 'error');
-                    }
+                        } else { showToast('ไฟล์ไม่ถูกต้อง', 'error'); }
+                    } catch (err) { console.error(err); showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', 'error'); }
                 };
                 reader.readAsText(file);
-                e.target.value = null; // Reset input
+                e.target.value = null;
             };
 
             const handleClearData = async () => {
-                setModal({ 
-                    type: 'confirm', 
-                    title: '⚠ Lล้างข้อมูลทั้งหมด', 
-                    message: 'คุณแน่ใจหรือไม่ที่จะลบข้อมูลนักเรียนและคะแนนทั้งหมด? (การตั้งค่าวิชาจะไม่หาย)', 
-                    onConfirm: async () => {
-                        const batch = writeBatch(db);
-                        students.forEach(s => {
-                            batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id));
-                        });
-                        await batch.commit();
-                        setModal(null);
-                        showToast('ล้างข้อมูลเรียบร้อย', 'success');
-                    }
-                });
+                setModal({ type: 'confirm', title: '⚠ ล้างข้อมูลทั้งหมด', message: 'คุณแน่ใจหรือไม่ที่จะลบข้อมูลนักเรียนและคะแนนทั้งหมด?', onConfirm: async () => {
+                    const batch = writeBatch(db);
+                    students.forEach(s => { batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'students', s.id)); });
+                    await batch.commit();
+                    setModal(null);
+                    showToast('ล้างข้อมูลเรียบร้อย', 'success');
+                }});
             };
 
             const filteredStudents = useMemo(() => {
@@ -562,9 +566,9 @@
                 sections.forEach(s => s.groups?.forEach(g => g.columns?.forEach(c => { if(c.type==='manual') totalMax += parseFloat(c.max); })));
                 if(totalMax === 0) return data;
                 filteredStudents.forEach(s => {
-                    let score = 0;
-                    sections.forEach(sec => sec.groups?.forEach(grp => grp.columns?.forEach(col => { if(col.type==='manual') score += parseFloat(s.scores?.[col.id] || 0); })));
-                    const pct = (score / totalMax) * 100;
+                    const total = calculateTotalScore(s);
+                    // Use a standard 100 base for categorization or adjust logic if needed
+                    const pct = total; // Assuming total score is out of 100 for now based on grading scale
                     if(pct >= 80) data.high.push(s); else if(pct >= 50) data.mid.push(s); else data.low.push(s);
                 });
                 return data;
@@ -594,7 +598,7 @@
                         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('student')}>
                                 <div className="bg-gradient-to-tr from-primary-600 to-primary-400 text-white p-2 rounded-lg shadow-glow"><Icons.Cloud size={20}/></div>
-                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.2</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
+                                <div className="leading-tight"><div className="font-display font-bold text-xl text-slate-800 tracking-tight">GradePro <span className="text-primary-600 text-sm">v7.3</span></div><div className="text-[10px] text-slate-500 font-medium hidden sm:block">{sysInfo.school}</div></div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('คัดลอกลิงก์แล้ว'); }} className="text-slate-500 hover:text-primary-600 px-2 py-2 rounded-full transition"><Icons.Share size={20}/></button>
@@ -801,10 +805,10 @@
                                                     {filteredStudents.map((s, idx) => {
                                                         const totalScore = calculateTotalScore(s);
                                                         return (
-                                                            <tr key={s.id} className={`hover:bg-blue-50/50 transition group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                                                                <td className="p-2 text-center sticky-col sticky-left-0 group-hover:bg-blue-50 transition font-mono text-slate-400 border-r border-slate-100">{s.no}</td>
-                                                                <td className="p-2 sticky-col sticky-left-1 group-hover:bg-blue-50 transition font-mono font-bold text-slate-500 text-xs border-r border-slate-100">{s.id}</td>
-                                                                <td className="p-2 sticky-col sticky-left-2 group-hover:bg-blue-50 transition font-medium text-slate-700 truncate border-r border-slate-100 max-w-[180px]">
+                                                            <tr key={s.id} className={`hover:bg-blue-50/20 transition group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}> 
+                                                                <td className={`p-2 text-center sticky-col sticky-left-0 transition font-mono text-slate-400 border-r border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.no}</td>
+                                                                <td className={`p-2 sticky-col sticky-left-1 transition font-mono font-bold text-slate-500 text-xs border-r border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{s.id}</td>
+                                                                <td className={`p-2 sticky-col sticky-left-2 transition font-medium text-slate-700 truncate border-r border-slate-100 max-w-[180px] ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                                                                     <div className="flex items-center justify-between w-full">
                                                                         <span className="truncate" title={s.name}>{s.name}</span>
                                                                         {s.note && <div className="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded ml-1 flex-shrink-0" title={s.note}>!</div>}
